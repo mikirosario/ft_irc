@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/01/28 16:13:00 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/01 17:02:51 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,15 @@
 // 	return (0);
 // }
 
+// get sockaddr, IPv4 or IPv6:
+void *get_in_addr(struct sockaddr *sa)
+{
+    if (sa->sa_family == AF_INET)
+		return (&(reinterpret_cast<struct sockaddr_in *>(sa)->sin_addr));
+    else
+		return (&(reinterpret_cast<struct sockaddr_in6 *>(sa)->sin6_addr));
+}
+
 //Listen test
 int	main(void)
 {
@@ -107,25 +116,44 @@ int	main(void)
 	{
 		//iterate results list for valid entry
 
-		int	sockfd;
+		int	connection_sockfd;
 
-		if ((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
+		if ((connection_sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
 			std::cerr << "Socket file descriptor open failed." << "\n";
 		else
 		{
-			if (bind(sockfd, res->ai_addr, res->ai_addrlen) == -1)
+			if (bind(connection_sockfd, res->ai_addr, res->ai_addrlen) == -1)
 				std::cerr << "Bind socket file descriptor to " << service << " port failed." << "\n";
-			else if (listen(sockfd, 10) == -1)
+			else if (listen(connection_sockfd, 20) == -1)
 				std::cerr << "Listen on " << service << " port through socket file descriptor failed." << "\n";
 			else
 			{
-				while (0)
+				struct sockaddr_storage	their_addr;
+				socklen_t				addr_size = sizeof(struct sockaddr_storage);
+				char					ipstr[INET6_ADDRSTRLEN];
+				int						data_sockfd;
+				while (1)
 				{
-					//accept()
+					std::cout << "Chiripi" << std::endl;
+					data_sockfd = accept(connection_sockfd, reinterpret_cast<struct sockaddr *>(&their_addr), &addr_size); //connect() request over connection_sockfd returns
+					if (data_sockfd < 0)
+						std::cerr << "Accept " << service << " connection through socket file descriptor failed." << "\n";
 					//do stuff
+
+					inet_ntop(their_addr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&their_addr)), ipstr, INET6_ADDRSTRLEN);
+					std::cout << "server: got connection from " << ipstr << std::endl;
+
+					if (fork() == 0)
+					{
+						close(connection_sockfd);
+						if (send(data_sockfd, "Hello world!", 13, 0) == -1) //this would be in own loop if only chunk was sent?
+							perror("send");
+						close(data_sockfd);
+						exit(EXIT_SUCCESS);
+					}
 				}
 			}
-			if (close(sockfd) == -1)
+			if (close(connection_sockfd) == -1)
 				std::cerr << "Close socket file descriptor failed." << "\n";
 			else
 				std::cout << "Everything OK!" << std::endl;
