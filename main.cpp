@@ -6,24 +6,15 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/01 20:44:54 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/04 20:53:34 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h> //inet_ntop
-#include <netdb.h>
-#include <unistd.h> //close
-#include <fcntl.h>
-#include <poll.h>
-#include <iostream>
-#include <cstring> //for memset
+#include "ircserv.hpp"
 
+//Global - for use with signal
+int	listener_fd; //global variable initializes to 0
 
-#define MAX_CONNECTIONS 1024 //debug move me to header
-
-int	listener_fd;
 //Notes
 //service	==	port
 //------------------
@@ -46,55 +37,48 @@ int	listener_fd;
     };
 */
 
-//DNS resolve test
-// int	main(void)
-// {
-// 	char const *			node = "www.github.com";
-// 	char const *			service = "https";
-// 	char					ipstr[INET6_ADDRSTRLEN];
-// 	struct addrinfo			hints;
-// 	struct addrinfo *		res; //linked list
-// 	struct addrinfo *		list_index;
-// 	int						gai_status;
+//SOCKADDR STRUCT
+/*
+    struct sockaddr {																		BYTES
+        unsigned short    sa_family;    // address family, AF_xxx							2
+        char              sa_data[14];  // 14 bytes of protocol address						14
+    }; 																						16 OK
+*/
 
-// 	std::memset(&hints, 0, sizeof(addrinfo));
-// 	hints.ai_family = AF_UNSPEC; // don't care IPv4 or IPv6
-// 	hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-// 	hints.ai_flags = AI_PASSIVE; // fill in my IP for me
-// 	gai_status = getaddrinfo(node, service, &hints, &res);
-// 	if (gai_status) //non-zero gai_status means error, no allocation in that case
-// 		std::cerr << "getaddrinfo error: " << gai_strerror(gai_status) << std::endl;
-// 	else
-// 	{
-// 		std::cout << "IP Address for: " << node << "\n";
-		
-// 		for (list_index = res; list_index != NULL; list_index = list_index->ai_next)
-// 		{
-// 			void *		addr;
-// 			std::string	ipver;
+//SOCKADDR_IN STRUCT
+// (IPv4 only)
+/*
+    struct sockaddr_in {																	BYTES
+        short int          sin_family;  // Address family, AF_INET							2
+        unsigned short int sin_port;    // Port number										2
+        struct in_addr     sin_addr;    // Internet address (uint32_t / 4-byte address)		4 -> IPv4 addr starts here (sockaddr + 4)
+        unsigned char      sin_zero[8]; // Same size as struct sockaddr						8 -> padded with zeros here
+    };																						16 OK
+*/
 
-// 			if (list_index->ai_family == AF_INET) //IPv4
-// 			{
-// 				struct sockaddr_in *	ipv4 = reinterpret_cast<struct sockaddr_in *>(list_index->ai_addr);
-// 				addr = &(ipv4->sin_addr);
-// 				ipver = "IPv4";
-// 			}
-// 			else //IPv6
-// 			{
-// 				struct sockaddr_in6 *	ipv6 = reinterpret_cast<struct sockaddr_in6 *>(list_index->ai_addr);
-// 				addr = &(ipv6->sin6_addr);
-// 				ipver = "IPv6";
-// 			}
-// 			inet_ntop(list_index->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
-// 			std::cout << ipver << ": " << ipstr << std::endl;
-// 		}
-// 		freeaddrinfo(res);
-// 	}
-// 	return (0);
-// }
+//SOCKADDR_IN6 STRUCT
+// (IPv6 only)
+/*
+    struct sockaddr_in6 {																	BYTES
+        u_int16_t       sin6_family;   // address family, AF_INET6							2
+        u_int16_t       sin6_port;     // port number, Network Byte Order					2
+        u_int32_t       sin6_flowinfo; // IPv6 flow information								4
+        struct in6_addr sin6_addr;     // IPv6 address (16-byte monster address)			16 -> IPv6 addr starts here (sockaddr + 8)
+        u_int32_t       sin6_scope_id; // Scope ID											4 -> What??
+    };																						28 -> WHAT??? How is it not overflow of sockaddr??? :?
+*/
 
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
+/*! @brief	Gets a pointer to the IPv4 or IPv6 socket address as the address
+**			family is AF_INET or AF_INET6, respectively.
+**
+** @details	By casting sockaddr to sockaddr_in or sockadddr_in6 we can get the
+**			data appropriate to the family, whether IPv4 or IPv6. This function
+**			does that.
+**
+** @param sa	A pointer to a filled-in sockaddr.
+** @return	A void pointer to the socket's IPv4 or IPv6 address.
+*/
+void *	get_in_addr(struct sockaddr * sa)
 {
     if (sa->sa_family == AF_INET)
 		return (&(reinterpret_cast<struct sockaddr_in *>(sa)->sin_addr));
@@ -102,128 +86,16 @@ void *get_in_addr(struct sockaddr *sa)
 		return (&(reinterpret_cast<struct sockaddr_in6 *>(sa)->sin6_addr));
 }
 
-// //Listen test
-// int	main(void)
-// {
-// 	char const *			service = "irc";
-// 	struct addrinfo			hints;
-// 	struct addrinfo *		res; //linked list
-// 	//struct addrinfo *		list_index;
-// 	int						gai_status;
 
-// 	std::memset(&hints, 0, sizeof(addrinfo));
-// 	hints.ai_family = AF_UNSPEC; // don't care IPv4 or IPv6
-// 	hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-// 	hints.ai_flags = AI_PASSIVE; // fill in my IP for me
-// 	gai_status = getaddrinfo(NULL, service, &hints, &res);
-// 	if (gai_status) //non-zero gai_status means error, no allocation in that case
-// 		std::cerr << "getaddrinfo error: " << gai_strerror(gai_status) << std::endl;
-// 	else //attempt to open socket and listen
-// 	{
-// 		//iterate results list for valid entry
-
-// 		int	connection_sockfd;
-
-// 		if ((connection_sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
-// 			std::cerr << "Socket file descriptor open failed." << "\n";
-// 		else
-// 		{
-// 			if (bind(connection_sockfd, res->ai_addr, res->ai_addrlen) == -1)
-// 				std::cerr << "Bind socket file descriptor to " << service << " port failed." << "\n";
-// 			else if (listen(connection_sockfd, 20) == -1)
-// 				std::cerr << "Listen on " << service << " port through socket file descriptor failed." << "\n";
-// 			else
-// 			{
-// 				struct sockaddr_storage	their_addr;
-// 				socklen_t				addr_size = sizeof(struct sockaddr_storage);
-// 				char					ipstr[INET6_ADDRSTRLEN];
-// 				int						data_sockfd;
-
-// 				while (1)
-// 				{
-// 					std::cout << "Chiripi" << std::endl;
-// 					data_sockfd = accept(connection_sockfd, reinterpret_cast<struct sockaddr *>(&their_addr), &addr_size); //connect() request over connection_sockfd returns
-// 					if (data_sockfd < 0)
-// 						std::cerr << "Accept " << service << " connection through socket file descriptor failed." << "\n";
-// 					//do stuff
-
-// 					inet_ntop(their_addr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&their_addr)), ipstr, INET6_ADDRSTRLEN);
-// 					std::cout << "server: got connection from " << ipstr << std::endl;
-
-// 					if (fork() == 0)
-// 					{
-// 						close(connection_sockfd);
-// 						if (send(data_sockfd, "Hello world!", 13, 0) == -1) //this would be in own loop if only chunk was sent?
-// 							perror("send");
-// 						close(data_sockfd);
-// 						exit(EXIT_SUCCESS);
-// 					}
-// 				}
-// 			}
-// 			if (close(connection_sockfd) == -1)
-// 				std::cerr << "Close socket file descriptor failed." << "\n";
-// 			else
-// 				std::cout << "Everything OK!" << std::endl;
-// 		}
-		
-
-// 		freeaddrinfo(res);
-// 	}
-// 	return (0);
-// }
-
-//Return listener socket
-int	get_listener_socket(void)
-{
-	char const *			service = "irc";
-	struct addrinfo			hints;
-	struct addrinfo *		res; //linked list
-	//struct addrinfo *		list_index;
-	int						gai_status;
-	int						ret = -1;
-
-	std::memset(&hints, 0, sizeof(addrinfo));
-	hints.ai_family = AF_UNSPEC; // don't care IPv4 or IPv6
-	hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-	hints.ai_flags = AI_PASSIVE; // fill in my IP for me
-	gai_status = getaddrinfo(NULL, service, &hints, &res);
-	if (gai_status) //non-zero gai_status means error, no allocation in that case
-		std::cerr << "getaddrinfo error: " << gai_strerror(gai_status) << std::endl;
-	else //attempt to open socket and listen
-	{
-		//iterate results list for valid entry
-
-		int	connection_sockfd;
-
-		if ((connection_sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
-			std::cerr << "Socket file descriptor open failed." << "\n";
-		else
-		{
-			if (bind(connection_sockfd, res->ai_addr, res->ai_addrlen) == -1)
-				std::cerr << "Bind socket file descriptor to " << service << " port failed." << "\n";
-			else if (fcntl(connection_sockfd, F_SETFL, O_NONBLOCK) == - 1)
-			{
-				close(connection_sockfd);
-				std::cerr << "Fcntl non-blocking call failed failed.\n";
-			}
-			else if (listen(connection_sockfd, 20) == -1)
-			{
-				close(connection_sockfd);
-				std::cerr << "Listen on " << service << " port through socket file descriptor failed." << "\n";
-			}
-			else
-			{
-				ret = connection_sockfd;
-				std::cout << "Everything OK!" << std::endl;
-			}
-		}
-		freeaddrinfo(res);
-	}
-	return (ret);
-}
-
-void	add_to_pfds(struct pollfd (&pfds)[MAX_CONNECTIONS], const int newfd, int & count)
-//void	add_to_pfds(struct pollfd * pfds, const int newfd, int & count)
+/*! @brief	Adds a new connection socket to the end of the unordered pfds array.
+**
+** @param pfds	A reference to an array of MAX_CONNECTIONS pollfd structs.
+** @param newfd	The new connection socket to be added.
+** @param count	A reference to the integer keeping track of the number of
+**				elements in the pfds array.
+**
+*/
+void	add_to_pfds(struct pollfd (&pfds)[MAX_CONNECTIONS], int const newfd, int & count)
 {
 	// std::cerr << "received: " << newfd << std::endl; //debug
 	// std::cerr << "count: " << count << std::endl; //debug
@@ -233,20 +105,52 @@ void	add_to_pfds(struct pollfd (&pfds)[MAX_CONNECTIONS], const int newfd, int & 
 	++count;
 }
 
-void	del_from_pfds(struct pollfd (&pfds)[MAX_CONNECTIONS], const int index, int & count)
-//void	del_from_pfds(struct pollfd * pfds, const int index, int & count)
+//debug THIS PFDS THING COULD BE TURNED INTO A CLASS TO MAKE IT MORE C++-like and user-amigable :P
+/*! @brief	Removes the indexed connection from the unordered pfds array.
+**
+** @details	The connection to be removed is closed by calling the
+**			close_connection function. The last element in the pfds array is
+**			copied over the element to be removed and the count is reduced by
+**			one.
+**
+** @param pfds	A reference to an array of MAX_CONNECTIONS pollfd structs.
+** @param index	A valid index within the pfds array indicating the pollfd object
+**				to remove. Behaviour is undefined if the index is invalid.
+** @param count	A reference to the integer keeping track of the number of
+**				elements in the pfds array.
+*/
+void	del_from_pfds(struct pollfd (&pfds)[MAX_CONNECTIONS], int const index, int & count)
 {
+	close_connection(pfds[index].fd);
 	pfds[index] = pfds[count - 1];
 	--count;
 }
 
+/*! @brief Closes program.
+**
+** @param exit_type EXIT_SUCCESS or EXIT_FAILURE
+** @param close_event Description of reason for closure.
+*/
+void	close_server(int const exit_type, std::string const & close_event)
+{
+	//close all connections.
+	if (listener_fd > 0)
+		close(listener_fd);
+	if (exit_type == EXIT_SUCCESS)
+		std::cout << '\n' << close_event << std::endl;
+	else
+		std::cerr << '\n' << close_event << '\n' << "CONTACT YOUR SERVER ADMIN." << std::endl;
+	exit(exit_type);
+}
+
+/*! @brief Handles any keyboard signals while the server is running.
+**
+** @param sig Signal type (SIGINT, SIGQUIT, etc.)
+*/
 void	signal_handler(int sig)
 {
-	if (sig == SIGINT && listener_fd > 0)
-	{
-		close(listener_fd);
-		exit(0);
-	}
+	if (sig == SIGINT)
+		close_server(EXIT_SUCCESS, std::string("IRCSERV CLOSED ON CTRL+C/SIGINT."));
 }
 
 int	main(void)
@@ -261,20 +165,22 @@ int	main(void)
 	char						msgbuf[1024];
 	//std::string					msgbuf(1024, '\0'); //pre-reserve 1024 bytes
 	
+	//server setup
 	if ((pfds[connection_count].fd = get_listener_socket()) == -1)
-		return (-1);
+		close_server(EXIT_FAILURE, std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
 	listener_fd = pfds[connection_count].fd;
-	signal(SIGINT, signal_handler);
-	pfds[connection_count++].events = POLLIN; //report ready to read on incoming
+	if (signal(SIGINT, signal_handler) == SIG_ERR) //set up signal handler; if they fail, exit
+		close_server(EXIT_FAILURE, std::string("IRCSERV CLOSED ON SIGNAL CALL FAILED."));
+	pfds[connection_count++].events = POLLIN; //report ready to read on incoming connection
+
+	//server loop
 	while (1)
 	{
 		int	poll_count = poll(pfds, connection_count, -1);
-		//std::cerr << poll_count << std::endl; //debug
+		
+		//Poll listener first
 		if (poll_count == -1)
-		{
-			std::cerr << "FATAL poll error" << std::endl;
-			return (-1);
-		}
+			close_server(EXIT_FAILURE, std::string("FATAL poll error"));
 		if (pfds[0].revents & POLLIN) //if listener is ready to read, we have new connection
 		{
 			new_connection = accept(pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
@@ -283,11 +189,11 @@ int	main(void)
 			else
 			{
 				add_to_pfds(pfds, new_connection, connection_count);
-				//std::cerr << "new connection fd: " << new_connection << " recorded fd: " << pfds[1].fd << std::endl; //debug
 				std::cout << "pollserver: new connection from " << inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) << " on socket " << new_connection << std::endl;
 			}
 			--poll_count;
 		}
+
 		for (int i = 1, polled = 0; polled < poll_count; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
 		{
 			if (pfds[i].revents & POLLIN) //client fd pending data receipt
@@ -297,9 +203,10 @@ int	main(void)
 				{
 					case 0 :
 						std::cerr << "pollserver: socket " << pfds[i].fd << "hung up." << std::endl;
+						del_from_pfds(pfds, i, connection_count);
+						break ;
 					case -1 :
 						std::cerr << "recv error" << std::endl;
-						close(pfds[i].fd);
 						del_from_pfds(pfds, i, connection_count);
 						break ;
 					default :
@@ -312,6 +219,6 @@ int	main(void)
 			}
 		}
 	}
-	close(pfds[0].fd);
+	close_server(EXIT_SUCCESS, "Channel closed");
 	return (0);
 }
