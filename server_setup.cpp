@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   server_setup.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 18:55:07 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/04 20:36:59 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/09 23:21:20 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
+#include <cstdio> //for perror
 
 /*! @brief	Attempts to open a TCP stream socket to standard IRC port 194 to
 ** 			listen for incoming connections.
@@ -32,7 +33,7 @@
 */
 int	get_listener_socket(void)
 {
-	char const *			service = "irc";
+	char const *			service = "194"; //"irc" lookup seems to be failing on Linux?
 	struct addrinfo			hints;
 	struct addrinfo *		res = NULL; //linked list
 	//struct addrinfo *		list_index;
@@ -57,11 +58,11 @@ int	get_listener_socket(void)
 		else
 		{
 			if (bind(connection_sockfd, res->ai_addr, res->ai_addrlen) == -1)
-				print_err(std::string("Bind socket file descriptor to IRC port failed."));
+				perror("Bind socket file descriptor to IRC port failed");//debug, confirm whether strerror or perror is legal
 			else if (fcntl(connection_sockfd, F_SETFL, O_NONBLOCK) == - 1) //non-blocking flag
-				print_err(std::string("Fcntl non-blocking call failed failed."));
+				perror("Fcntl non-blocking call failed"); //debug, confirm whether strerror or perror is legal
 			else if (listen(connection_sockfd, 20) == -1)
-				print_err(std::string("Listen on IRC port through socket file descriptor failed."));
+				perror("Listen on IRC port through socket file descriptor failed");//debug, confirm whether strerror or perror is legal
 			else
 			{
 				ret = connection_sockfd;
@@ -69,7 +70,7 @@ int	get_listener_socket(void)
 			}
 			if (ret == -1)
 				if ((close(connection_sockfd)) == -1)
-					print_err(std::string("Close socket from get_listener_socket failed."));
+					perror("Close socket from get_listener_socket failed");//debug, confirm whether strerror or perror is legal
 		}
 		freeaddrinfo(res); //debug res is assigned if getaddrinfo fails? freeaddrinfo handles NULL ref?
 	}

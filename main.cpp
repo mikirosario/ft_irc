@@ -3,13 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/04 20:53:34 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/09 22:29:10 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifdef __linux__
+# include <csignal> //for SIGNAL DEFINITIONS ON LINUX
+# include <cstdlib> //for EXIT definitions on LINUX
+#endif
 #include "ircserv.hpp"
 
 //Global - for use with signal
