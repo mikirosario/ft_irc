@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 11:03:45 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 13:42:55 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,14 @@ IRC_Server::IRC_Server(void)
 {
 }
 
-IRC_Server::IRC_Server(std::string const & arg) : _connections(0)
+IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) : _connections(0)
 {
-	init(arg);
+	init(port, pass, netinfo);
 }
 
 IRC_Server::~IRC_Server(void)
 {
 	close_server(EXIT_SUCCESS, "SERVER INSTANCE EXITED");
-}
-
-IRC_Server &	IRC_Server::operator=(std::string const & arg)
-{
-	this->init(arg);
-	return (*this);
 }
 
 /**
@@ -56,7 +50,8 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 	bool						ret = false;
 
 	//does network info exist?
-	if	(*network_info_begin == '[' && network_info_end != end						//first character is '[' and there is a ']'
+	if	(arg.size() > 0																//argument is not empty
+		&& *network_info_begin == '[' && network_info_end != end					//first character is '[' and there is a ']'
 		&& std::count(network_info_begin, network_info_end, ':') == 2)				//there are 2 ':' betweeen '[' and ']'
 	{
 		int i = 0;
@@ -178,17 +173,41 @@ void	IRC_Server::remove_connection(int index)
 	--_connections;
 }
 
-bool	IRC_Server::init(std::string const & arg = std::string())
+void	IRC_Server::get_port(std::string const & arg) throw (std::invalid_argument, std::out_of_range)
 {
+		//comprobaciones?
+	// try
+	// {
+	// 	int port = std::stoi(arg);
+	// 	_servport = port;
+	// 	return (true);
+	// }
+	// catch (std::invalid_argument & e)
+	// {
+	// 	std::cerr << "get_port failed: ";
+	// 	std::cerr << e.what() << std::endl;
+	// }
+	// catch (std::out_of_range & e)
+	// {
+	// 	std::cerr << "get_port failed: ";
+	// 	std::cerr << e.what() << std::endl;
+	// }
+	_servport = arg;
+}
+
+bool	IRC_Server::init(std::string const & port, std::string const & pass, std::string const & netinfo = std::string())
+{
+	(void)pass;
 	//bool	ret = false;
 	int		listener_fd;
 	//is there an argument to parse? default params???
-	if (arg.size() == 0)
-		return (false);	
-	if (get_network_info(arg))
+	// if (netinfo.size() == 0)
+	// 	return (false);	
+	if (get_network_info(netinfo)) //we don't use it
 	{
 		std::cout << "Has network info"	<< std::endl;
 	}
+	get_port(port);
 	//else <--default params here
 	//server setup
 	listener_fd = get_listener_socket();
@@ -230,7 +249,7 @@ void	IRC_Server::close_server(int const exit_type, std::string const & close_eve
 
 std::string const &	IRC_Server::get_port(void) const
 {
-	return (_netport);
+	return (_servport);
 }
 
 /*! @brief	Attempts to open a TCP stream socket to standard IRC port 194 to

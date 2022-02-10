@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 10:57:38 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 13:42:28 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,14 +71,15 @@ class IRC_Server
 				return ("Unable to Create Server due to Bad Argument");
 			}
 		};
-		std::string			_nethost;
+		std::string			_nethost; //no longer needed?? what??
 		std::string			_netport;
 		std::string			_netpass;
+		std::string			_servport; 
+		std::string			_servpass;
 		struct pollfd		_pfds[MAX_CONNECTIONS];
 		int					_connections;
 		//struct pollfd	_pfds[MAX_CONNECTIONS];
-		// std::string _servport; //no longer needed?? what??
-		// std::string _servpass;
+		
 		//Copy constructor
 						IRC_Server(IRC_Server const & server);
 		//Assignment overload
@@ -86,8 +87,9 @@ class IRC_Server
 
 		//Parsing
 		bool	get_network_info(std::string const & arg);
+		void	get_port(std::string const & arg) throw (std::invalid_argument, std::out_of_range);
 		//bool	get_network_info(std::pair<std::string::const_iterator, std::string::const_iterator> & range) const;
-		bool	init(std::string const & arg);
+		bool	init(std::string const & port, std::string const & pass, std::string const & netinfo);
 
 		//Setup
 		void *	get_in_addr(struct sockaddr * sa) const;
@@ -108,10 +110,9 @@ class IRC_Server
 		//Default constructor
 						IRC_Server(void);
 		//Argument constructor
-						IRC_Server(std::string const & arg);
+						IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo);
 		//Destructor
 						~IRC_Server(void);
-		IRC_Server &		operator=(std::string const & arg);
 		std::string const &	get_port(void) const;
 
 };

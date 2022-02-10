@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 11:01:45 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 13:37:57 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,16 +168,18 @@ int	main(int argc, char ** argv)
 	// char						remoteIP[INET6_ADDRSTRLEN];
 	// char						msgbuf[1024];
 	//std::string					msgbuf(1024, '\0'); //pre-reserve 1024 bytes
-	
-	IRC_Server	test;
 
-	if (argc == 2)
+	if (argc == 4)
 	{
-		char *	arg = *(argv + 1);
+		char *	netinfo = *(argv + 1);
+		char *	port = *(argv + 2);
+		char *	pass = *(argv + 3);
+		(void)port;
+		(void)pass;
 		//remove leading white spaces
-		while (*arg && std::isspace(*arg))
-			++arg;
-		test = std::string(arg);
+		while (*netinfo && std::isspace(*netinfo))
+			++netinfo;
+		IRC_Server	bleh((std::string(port)), std::string(pass), std::string(netinfo)); //the vexing parse!
 	}
 
 	// //server setup
