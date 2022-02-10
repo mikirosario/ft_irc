@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 13:42:28 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 21:59:20 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,21 @@
  * [ ':' prefix hspace ] command [ params ] "\r\n"
  */
 
+enum Args
+{
+	PASSWORD = 1,
+	PORT,
+	NETINFO
+};
 
 class IRC_Server
 {
 	private:
 		enum		State
 		{
-			ONLINE,
-			OFFLINE
+			CONFIG_FAIL = -1,
+			OFFLINE,
+			ONLINE
 		}			_state;
 
 		struct BadArgumentException : public std::exception
@@ -87,9 +94,9 @@ class IRC_Server
 
 		//Parsing
 		bool	get_network_info(std::string const & arg);
-		void	get_port(std::string const & arg) throw (std::invalid_argument, std::out_of_range);
+		//void	get_port(std::string const & arg) throw (std::invalid_argument, std::out_of_range);
 		//bool	get_network_info(std::pair<std::string::const_iterator, std::string::const_iterator> & range) const;
-		bool	init(std::string const & port, std::string const & pass, std::string const & netinfo);
+		bool	init(std::string const & netinfo);
 
 		//Setup
 		void *	get_in_addr(struct sockaddr * sa) const;
@@ -110,7 +117,7 @@ class IRC_Server
 		//Default constructor
 						IRC_Server(void);
 		//Argument constructor
-						IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo);
+						IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo = std::string());
 		//Destructor
 						~IRC_Server(void);
 		std::string const &	get_port(void) const;

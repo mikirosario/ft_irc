@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 13:37:57 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 22:09:59 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,6 @@
 # include <cstdlib> //for EXIT definitions on LINUX
 #endif
 #include "ircserv.hpp"
-
-//Global - for use with signal
-int	listener_fd; //global variable initializes to 0
 
 //Notes
 //service	==	port
@@ -72,74 +69,15 @@ int	listener_fd; //global variable initializes to 0
     };																						28 -> WHAT??? How is it not overflow of sockaddr??? :?
 */
 
-/*! @brief	Gets a pointer to the IPv4 or IPv6 socket address as the address
-**			family is AF_INET or AF_INET6, respectively.
-**
-** @details	By casting sockaddr to sockaddr_in or sockadddr_in6 we can get the
-**			data appropriate to the family, whether IPv4 or IPv6. This function
-**			does that.
-**
-** @param sa	A pointer to a filled-in sockaddr.
-** @return	A void pointer to the socket's IPv4 or IPv6 address.
-*/
-void *	get_in_addr(struct sockaddr * sa)
-{
-    if (sa->sa_family == AF_INET)
-		return (&(reinterpret_cast<struct sockaddr_in *>(sa)->sin_addr));
-    else
-		return (&(reinterpret_cast<struct sockaddr_in6 *>(sa)->sin6_addr));
-}
-
-
-/*! @brief	Adds a new connection socket to the end of the unordered pfds array.
-**
-** @param pfds	A reference to an array of MAX_CONNECTIONS pollfd structs.
-** @param newfd	The new connection socket to be added.
-** @param count	A reference to the integer keeping track of the number of
-**				elements in the pfds array.
-**
-*/
-void	add_to_pfds(struct pollfd (&pfds)[MAX_CONNECTIONS], int const newfd, int & count)
-{
-	// std::cerr << "received: " << newfd << std::endl; //debug
-	// std::cerr << "count: " << count << std::endl; //debug
-	pfds[count].fd = newfd;
-	//std::cerr << "recorded: " << pfds[count].fd << std::endl; //debug
-	pfds[count].events = POLLIN;
-	++count;
-}
-
-//debug THIS PFDS THING COULD BE TURNED INTO A CLASS TO MAKE IT MORE C++-like and user-amigable :P
-/*! @brief	Removes the indexed connection from the unordered pfds array.
-**
-** @details	The connection to be removed is closed by calling the
-**			close_connection function. The last element in the pfds array is
-**			copied over the element to be removed and the count is reduced by
-**			one.
-**
-** @param pfds	A reference to an array of MAX_CONNECTIONS pollfd structs.
-** @param index	A valid index within the pfds array indicating the pollfd object
-**				to remove. Behaviour is undefined if the index is invalid.
-** @param count	A reference to the integer keeping track of the number of
-**				elements in the pfds array.
-*/
-void	del_from_pfds(struct pollfd (&pfds)[MAX_CONNECTIONS], int const index, int & count)
-{
-	close_connection(pfds[index].fd);
-	pfds[index] = pfds[count - 1];
-	--count;
-}
-
-/*! @brief Closes program.
+// ---- CLOSE_SERVER ---- //
+/*!
+** @brief Closes program.
 **
 ** @param exit_type EXIT_SUCCESS or EXIT_FAILURE
 ** @param close_event Description of reason for closure.
 */
 void	close_server(int const exit_type, std::string const & close_event)
 {
-	//close all connections.
-	if (listener_fd > 0)
-		close(listener_fd);
 	if (exit_type == EXIT_SUCCESS)
 		std::cout << '\n' << close_event << std::endl;
 	else
@@ -147,7 +85,8 @@ void	close_server(int const exit_type, std::string const & close_event)
 	exit(exit_type);
 }
 
-/*! @brief Handles any keyboard signals while the server is running.
+/*!
+** @brief Handles any keyboard signals while the program is running.
 **
 ** @param sig Signal type (SIGINT, SIGQUIT, etc.)
 */
@@ -157,85 +96,80 @@ void	signal_handler(int sig)
 		close_server(EXIT_SUCCESS, std::string("IRCSERV CLOSED ON CTRL+C/SIGINT."));
 }
 
+// ---- GET_ARG --- //
+/*!
+** @brief	Retrieves the argument arg_name from the argv array.
+**
+** @details	The Args enum defines NETINFO, PORT and PASSWORD arguments,
+**			equivalent to 3, 2 and 1, respectively, in terms of their distance
+**			from argc. (NETINFO is argc - 3, PASSWORD is argc - 1, etc.) This
+**			relation is invariant to argument count and is used to quickly
+**			calculate the desired argument address using pointer arithmetic.
+**
+** @param	argv The argument array passed to the program from the command line.
+** @param	argc The argument count.
+** @param	arg_name Args(NETINFO), Args(PORT) or Args(PASSWORD).
+** @return	A pointer to the argument indicated by arg_name in the argv array.
+*/
+static char const *	get_arg(char const * const * argv, int const argc, enum Args const arg_name)
+{
+	return (*(argv + argc - arg_name));
+}
+
+// ---- MAIN ---- //
+/*!
+** @brief	If the argument count is correct, attempts to instantiate the
+**			IRC_Server server object.
+**
+** @details Due to obsolete subject specifications, we are required to parse for
+**			network information for server-to-server connections, even though we
+**			no longer use them in this iteration of the project. The server
+**			object will accept and save network information if given, but it
+**			will not use it. Otherwise, an empty string can be passed in place
+**			of 'netinfo'.
+**
+**			In the 4 arguments case, we will accept the netinfo argument unless
+**			it is filled only with white spaces, removing any leading white
+**			spaces.
+**
+**			In both the 4 and 3 arguments cases we accept the port and
+**			password arguments and attempt to instantiate a server instance
+**			using all arguments. If no netinfo argument was given, or netinfo
+**			was full of white spaces, it will be an empty string.
+**
+**			In any other case we scold the user for not entering the requisite
+**			number of arguments.
+**
+** @param	argc The command line argument count.
+** @param	argv The command line argument array.
+** @return	Returns -1 if the wrong number of arguments are given, otherwise 0.
+**			We can use the server state in future to return more error codes if
+**			the server closes unexpectedly. (See IRC_Server::State)
+**/
 int	main(int argc, char ** argv)
 {
-	// int							connection_count = 0;
-	// //int							listener;
-	// int							new_connection;
-	// struct	sockaddr_storage	remoteaddr;
-	// socklen_t					addrlen = sizeof(remoteaddr);
-	// struct pollfd				pfds[MAX_CONNECTIONS];
-	// char						remoteIP[INET6_ADDRSTRLEN];
-	// char						msgbuf[1024];
-	//std::string					msgbuf(1024, '\0'); //pre-reserve 1024 bytes
+	std::string	netinfo;
+	std::string	port;
+	std::string	pass;
 
-	if (argc == 4)
+	signal(SIGINT, signal_handler);
+	switch (argc)
 	{
-		char *	netinfo = *(argv + 1);
-		char *	port = *(argv + 2);
-		char *	pass = *(argv + 3);
-		(void)port;
-		(void)pass;
-		//remove leading white spaces
-		while (*netinfo && std::isspace(*netinfo))
-			++netinfo;
-		IRC_Server	bleh((std::string(port)), std::string(pass), std::string(netinfo)); //the vexing parse!
+		case (4):
+			for (char const * arg = get_arg(argv, argc, Args(NETINFO)); *arg; ++arg) //remove leading white spaces
+				if (!std::isspace(*arg))
+					netinfo = arg;
+		case (3):
+		{
+			port = get_arg(argv, argc, Args(PORT));
+			pass = get_arg(argv, argc, Args(PASSWORD));
+			IRC_Server	server_instance(port, pass, netinfo);
+			break ;
+		}
+		default:
+			std::cerr	<< "> ./ircserv [host:port_network:password_network] port password\n"
+						<< "> ./ircserv port password"
+						<< std::endl;
 	}
-
-	// //server setup
-	// if ((pfds[connection_count].fd = get_listener_socket()) == -1)
-	// 	close_server(EXIT_FAILURE, std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
-	// listener_fd = pfds[connection_count].fd;
-	// if (signal(SIGINT, signal_handler) == SIG_ERR) //set up signal handler; if they fail, exit
-	// 	close_server(EXIT_FAILURE, std::string("IRCSERV CLOSED ON SIGNAL CALL FAILED."));
-	// pfds[connection_count++].events = POLLIN; //report ready to read on incoming connection
-
-	// //server loop
-	// while (1)
-	// {
-	// 	int	poll_count = poll(pfds, connection_count, -1);
-		
-	// 	//Poll listener first
-	// 	if (poll_count == -1)
-	// 		close_server(EXIT_FAILURE, std::string("FATAL poll error"));
-	// 	if (pfds[0].revents & POLLIN) //if listener is ready to read, we have new connection
-	// 	{
-	// 		new_connection = accept(pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
-	// 		if (new_connection == -1)
-	// 			std::cerr << "accept error" << std::endl;
-	// 		else
-	// 		{
-	// 			add_to_pfds(pfds, new_connection, connection_count);
-	// 			std::cout << "pollserver: new connection from " << inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) << " on socket " << new_connection << std::endl;
-	// 		}
-	// 		--poll_count;
-	// 	}
-
-	// 	for (int i = 1, polled = 0; polled < poll_count; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
-	// 	{
-	// 		if (pfds[i].revents & POLLIN) //client fd pending data receipt
-	// 		{
-	// 			int nbytes = recv(pfds[i].fd, msgbuf, sizeof msgbuf, 0);
-	// 			switch (nbytes) //error cases and default successful data reception case
-	// 			{
-	// 				case 0 :
-	// 					std::cerr << "pollserver: socket " << pfds[i].fd << " hung up." << std::endl;
-	// 					del_from_pfds(pfds, i, connection_count);
-	// 					break ;
-	// 				case -1 :
-	// 					std::cerr << "recv error" << std::endl;
-	// 					del_from_pfds(pfds, i, connection_count);
-	// 					break ;
-	// 				default :
-	// 					for (int j = 1; j < connection_count; ++j) //send to all clients
-	// 						if (j != i) //do not send to self
-	// 							if (send(pfds[j].fd, msgbuf, nbytes, 0) == -1)
-	// 								std::cerr << "send error" << std::endl;
-	// 			}
-	// 			++polled;
-	// 		}
-	// 	}
-	// }
-	// close_server(EXIT_SUCCESS, "Channel closed");
 	return (0);
 }

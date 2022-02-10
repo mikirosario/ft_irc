@@ -6,19 +6,20 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 13:42:55 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 21:09:36 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
 
+/* CONSTRUCTORS AND DESTRUCTOR */
 IRC_Server::IRC_Server(void)
 {
 }
 
-IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) : _connections(0)
+IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) : _servport(port), _servpass(pass), _connections(0)
 {
-	init(port, pass, netinfo);
+	init(netinfo);
 }
 
 IRC_Server::~IRC_Server(void)
@@ -50,7 +51,7 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 	bool						ret = false;
 
 	//does network info exist?
-	if	(arg.size() > 0																//argument is not empty
+	if	(!arg.empty()															//argument is not empty
 		&& *network_info_begin == '[' && network_info_end != end					//first character is '[' and there is a ']'
 		&& std::count(network_info_begin, network_info_end, ':') == 2)				//there are 2 ':' betweeen '[' and ']'
 	{
@@ -70,6 +71,58 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 		// //debug
 	}
 	return (ret);
+}
+
+// void	IRC_Server::get_port(std::string const & arg) throw (std::invalid_argument, std::out_of_range)
+// {
+// 		//comprobaciones?
+// 	// try
+// 	// {
+// 	// 	int port = std::stoi(arg);
+// 	// 	_servport = port;
+// 	// 	return (true);
+// 	// }
+// 	// catch (std::invalid_argument & e)
+// 	// {
+// 	// 	std::cerr << "get_port failed: ";
+// 	// 	std::cerr << e.what() << std::endl;
+// 	// }
+// 	// catch (std::out_of_range & e)
+// 	// {
+// 	// 	std::cerr << "get_port failed: ";
+// 	// 	std::cerr << e.what() << std::endl;
+// 	// }
+// 	_servport = arg;
+// }
+
+bool	IRC_Server::init(std::string const & netinfo)
+{
+	//bool	ret = false;
+	int		listener_fd;
+	//is there an argument to parse? default params???
+	// if (netinfo.size() == 0)
+	// 	return (false);	
+	if (get_network_info(netinfo)) //we don't use it
+	{
+		std::cout << "Has network info"	<< std::endl;
+	}
+
+	//server setup
+	listener_fd = get_listener_socket();
+	if (listener_fd == -1)
+	{
+		_state = OFFLINE;
+		close_server((EXIT_FAILURE), std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
+		return (false);
+	}
+	else
+	{
+		add_connection(listener_fd);
+		_state = ONLINE;
+	}
+	//signal handling
+	server_loop();
+	return (true);
 }
 
 /*! @brief	Gets a pointer to the IPv4 or IPv6 socket address as the address
@@ -171,60 +224,6 @@ void	IRC_Server::remove_connection(int index)
 	close_connection(_pfds[index].fd);
 	_pfds[index] = _pfds[_connections - 1];
 	--_connections;
-}
-
-void	IRC_Server::get_port(std::string const & arg) throw (std::invalid_argument, std::out_of_range)
-{
-		//comprobaciones?
-	// try
-	// {
-	// 	int port = std::stoi(arg);
-	// 	_servport = port;
-	// 	return (true);
-	// }
-	// catch (std::invalid_argument & e)
-	// {
-	// 	std::cerr << "get_port failed: ";
-	// 	std::cerr << e.what() << std::endl;
-	// }
-	// catch (std::out_of_range & e)
-	// {
-	// 	std::cerr << "get_port failed: ";
-	// 	std::cerr << e.what() << std::endl;
-	// }
-	_servport = arg;
-}
-
-bool	IRC_Server::init(std::string const & port, std::string const & pass, std::string const & netinfo = std::string())
-{
-	(void)pass;
-	//bool	ret = false;
-	int		listener_fd;
-	//is there an argument to parse? default params???
-	// if (netinfo.size() == 0)
-	// 	return (false);	
-	if (get_network_info(netinfo)) //we don't use it
-	{
-		std::cout << "Has network info"	<< std::endl;
-	}
-	get_port(port);
-	//else <--default params here
-	//server setup
-	listener_fd = get_listener_socket();
-	if (listener_fd == -1)
-	{
-		_state = OFFLINE;
-		close_server(EXIT_FAILURE, std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
-		return (false);
-	}
-	else
-	{
-		add_connection(listener_fd);
-		_state = ONLINE;
-	}
-	//signal handling
-	server_loop();
-	return (true);
 }
 
 /*! @brief Closes server.
