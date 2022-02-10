@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/09 22:29:10 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/10 04:28:57 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,7 @@ void	signal_handler(int sig)
 		close_server(EXIT_SUCCESS, std::string("IRCSERV CLOSED ON CTRL+C/SIGINT."));
 }
 
-int	main(void)
+int	main(int argc, char ** argv)
 {
 	int							connection_count = 0;
 	//int							listener;
@@ -169,6 +169,16 @@ int	main(void)
 	char						msgbuf[1024];
 	//std::string					msgbuf(1024, '\0'); //pre-reserve 1024 bytes
 	
+	IRC_Server	test;
+
+	if (argc == 2)
+	{
+		char *	arg = *(argv + 1);
+		//remove leading white spaces
+		while (*arg && std::isspace(*arg))
+			++arg;
+		test = std::string(arg);
+	}
 	//server setup
 	if ((pfds[connection_count].fd = get_listener_socket()) == -1)
 		close_server(EXIT_FAILURE, std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
@@ -206,7 +216,7 @@ int	main(void)
 				switch (nbytes) //error cases and default successful data reception case
 				{
 					case 0 :
-						std::cerr << "pollserver: socket " << pfds[i].fd << "hung up." << std::endl;
+						std::cerr << "pollserver: socket " << pfds[i].fd << " hung up." << std::endl;
 						del_from_pfds(pfds, i, connection_count);
 						break ;
 					case -1 :
