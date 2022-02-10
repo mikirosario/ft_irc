@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 04:28:57 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 11:01:45 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int	listener_fd; //global variable initializes to 0
 //------------------
 //http		==	80
 //https		==	443
-//irc		==	194
+//irc		==	194, 6667 sin permisos
 
 //ADDRINFO STRUCT
 /*
@@ -159,14 +159,14 @@ void	signal_handler(int sig)
 
 int	main(int argc, char ** argv)
 {
-	int							connection_count = 0;
-	//int							listener;
-	int							new_connection;
-	struct	sockaddr_storage	remoteaddr;
-	socklen_t					addrlen = sizeof(remoteaddr);
-	struct pollfd				pfds[MAX_CONNECTIONS];
-	char						remoteIP[INET6_ADDRSTRLEN];
-	char						msgbuf[1024];
+	// int							connection_count = 0;
+	// //int							listener;
+	// int							new_connection;
+	// struct	sockaddr_storage	remoteaddr;
+	// socklen_t					addrlen = sizeof(remoteaddr);
+	// struct pollfd				pfds[MAX_CONNECTIONS];
+	// char						remoteIP[INET6_ADDRSTRLEN];
+	// char						msgbuf[1024];
 	//std::string					msgbuf(1024, '\0'); //pre-reserve 1024 bytes
 	
 	IRC_Server	test;
@@ -179,60 +179,61 @@ int	main(int argc, char ** argv)
 			++arg;
 		test = std::string(arg);
 	}
-	//server setup
-	if ((pfds[connection_count].fd = get_listener_socket()) == -1)
-		close_server(EXIT_FAILURE, std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
-	listener_fd = pfds[connection_count].fd;
-	if (signal(SIGINT, signal_handler) == SIG_ERR) //set up signal handler; if they fail, exit
-		close_server(EXIT_FAILURE, std::string("IRCSERV CLOSED ON SIGNAL CALL FAILED."));
-	pfds[connection_count++].events = POLLIN; //report ready to read on incoming connection
 
-	//server loop
-	while (1)
-	{
-		int	poll_count = poll(pfds, connection_count, -1);
+	// //server setup
+	// if ((pfds[connection_count].fd = get_listener_socket()) == -1)
+	// 	close_server(EXIT_FAILURE, std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
+	// listener_fd = pfds[connection_count].fd;
+	// if (signal(SIGINT, signal_handler) == SIG_ERR) //set up signal handler; if they fail, exit
+	// 	close_server(EXIT_FAILURE, std::string("IRCSERV CLOSED ON SIGNAL CALL FAILED."));
+	// pfds[connection_count++].events = POLLIN; //report ready to read on incoming connection
+
+	// //server loop
+	// while (1)
+	// {
+	// 	int	poll_count = poll(pfds, connection_count, -1);
 		
-		//Poll listener first
-		if (poll_count == -1)
-			close_server(EXIT_FAILURE, std::string("FATAL poll error"));
-		if (pfds[0].revents & POLLIN) //if listener is ready to read, we have new connection
-		{
-			new_connection = accept(pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
-			if (new_connection == -1)
-				std::cerr << "accept error" << std::endl;
-			else
-			{
-				add_to_pfds(pfds, new_connection, connection_count);
-				std::cout << "pollserver: new connection from " << inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) << " on socket " << new_connection << std::endl;
-			}
-			--poll_count;
-		}
+	// 	//Poll listener first
+	// 	if (poll_count == -1)
+	// 		close_server(EXIT_FAILURE, std::string("FATAL poll error"));
+	// 	if (pfds[0].revents & POLLIN) //if listener is ready to read, we have new connection
+	// 	{
+	// 		new_connection = accept(pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
+	// 		if (new_connection == -1)
+	// 			std::cerr << "accept error" << std::endl;
+	// 		else
+	// 		{
+	// 			add_to_pfds(pfds, new_connection, connection_count);
+	// 			std::cout << "pollserver: new connection from " << inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) << " on socket " << new_connection << std::endl;
+	// 		}
+	// 		--poll_count;
+	// 	}
 
-		for (int i = 1, polled = 0; polled < poll_count; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
-		{
-			if (pfds[i].revents & POLLIN) //client fd pending data receipt
-			{
-				int nbytes = recv(pfds[i].fd, msgbuf, sizeof msgbuf, 0);
-				switch (nbytes) //error cases and default successful data reception case
-				{
-					case 0 :
-						std::cerr << "pollserver: socket " << pfds[i].fd << " hung up." << std::endl;
-						del_from_pfds(pfds, i, connection_count);
-						break ;
-					case -1 :
-						std::cerr << "recv error" << std::endl;
-						del_from_pfds(pfds, i, connection_count);
-						break ;
-					default :
-						for (int j = 1; j < connection_count; ++j) //send to all clients
-							if (j != i) //do not send to self
-								if (send(pfds[j].fd, msgbuf, nbytes, 0) == -1)
-									std::cerr << "send error" << std::endl;
-				}
-				++polled;
-			}
-		}
-	}
-	close_server(EXIT_SUCCESS, "Channel closed");
+	// 	for (int i = 1, polled = 0; polled < poll_count; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
+	// 	{
+	// 		if (pfds[i].revents & POLLIN) //client fd pending data receipt
+	// 		{
+	// 			int nbytes = recv(pfds[i].fd, msgbuf, sizeof msgbuf, 0);
+	// 			switch (nbytes) //error cases and default successful data reception case
+	// 			{
+	// 				case 0 :
+	// 					std::cerr << "pollserver: socket " << pfds[i].fd << " hung up." << std::endl;
+	// 					del_from_pfds(pfds, i, connection_count);
+	// 					break ;
+	// 				case -1 :
+	// 					std::cerr << "recv error" << std::endl;
+	// 					del_from_pfds(pfds, i, connection_count);
+	// 					break ;
+	// 				default :
+	// 					for (int j = 1; j < connection_count; ++j) //send to all clients
+	// 						if (j != i) //do not send to self
+	// 							if (send(pfds[j].fd, msgbuf, nbytes, 0) == -1)
+	// 								std::cerr << "send error" << std::endl;
+	// 			}
+	// 			++polled;
+	// 		}
+	// 	}
+	// }
+	// close_server(EXIT_SUCCESS, "Channel closed");
 	return (0);
 }

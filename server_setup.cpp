@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server_setup.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 18:55:07 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/09 23:21:20 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/10 09:51:32 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 */
 int	get_listener_socket(void)
 {
-	char const *			service = "194"; //"irc" lookup seems to be failing on Linux?
+	char const *			service = "6667"; //"irc" lookup seems to be failing on Linux?
 	struct addrinfo			hints;
 	struct addrinfo *		res = NULL; //linked list
 	//struct addrinfo *		list_index;

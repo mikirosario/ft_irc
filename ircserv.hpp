@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 06:20:01 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/10 10:57:38 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <exception>
 
 #include <string>
+#include <vector>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h> //inet_ntop
@@ -58,9 +60,8 @@ class IRC_Server
 	private:
 		enum		State
 		{
-			ALIVE,
-			RESTART,
-			DIE
+			ONLINE,
+			OFFLINE
 		}			_state;
 
 		struct BadArgumentException : public std::exception
@@ -70,11 +71,14 @@ class IRC_Server
 				return ("Unable to Create Server due to Bad Argument");
 			}
 		};
-		std::string	_nethost;
-		std::string	_netport;
-		std::string	_netpass;
-		std::string _servport;
-		std::string _servpass;
+		std::string			_nethost;
+		std::string			_netport;
+		std::string			_netpass;
+		struct pollfd		_pfds[MAX_CONNECTIONS];
+		int					_connections;
+		//struct pollfd	_pfds[MAX_CONNECTIONS];
+		// std::string _servport; //no longer needed?? what??
+		// std::string _servpass;
 		//Copy constructor
 						IRC_Server(IRC_Server const & server);
 		//Assignment overload
@@ -83,7 +87,23 @@ class IRC_Server
 		//Parsing
 		bool	get_network_info(std::string const & arg);
 		//bool	get_network_info(std::pair<std::string::const_iterator, std::string::const_iterator> & range) const;
-		void	init(std::string const & arg) throw(BadArgumentException);
+		bool	init(std::string const & arg);
+
+		//Setup
+		void *	get_in_addr(struct sockaddr * sa) const;
+		int		get_listener_socket(void) const;
+
+		//Closing
+		void	close_server(int const exit_type, std::string const & close_event);
+		void	close_connection(int fd);
+		void	remove_connection(int fd);
+
+		//Adding
+		void	add_connection(int fd);
+
+		//Running
+		void	server_loop(void);
+		
 	public:
 		//Default constructor
 						IRC_Server(void);
@@ -91,7 +111,9 @@ class IRC_Server
 						IRC_Server(std::string const & arg);
 		//Destructor
 						~IRC_Server(void);
-		IRC_Server &	operator=(std::string const & arg);
+		IRC_Server &		operator=(std::string const & arg);
+		std::string const &	get_port(void) const;
+
 };
 
 int		get_listener_socket(void);
