@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 20:26:36 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 20:59:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -350,14 +350,60 @@ void		IRC_Server::accept_connection(void)
 }
 
 /*!
+** @brief	Queries client to determine whether or not new data is pending receipt.
+**
+** @param	i The position in the @a _pfds array of the client to be polled.
+** @return	true if a client has new data pending receipt, otherwise false.
+*/
+bool	IRC_Server::poll_client(int i) const
+{
+	return (_pfds[i].revents & POLLIN); //socket fd pending data receipt
+}
+
+/*!
 ** @brief	Queries listener to determine whether or not a new connection request
 **			is pending.
+**
+** @details	This is just a wrapper around @a ::poll_client() to improve
+**			code clarity through explicit naming. "Client 0" is the listener.
 **
 ** @return	true if a new connection request is pending, otherwise false.
 */
 bool	IRC_Server::poll_listener(void) const
 {
-	return (_pfds[0].revents & POLLIN); //if listener is ready to read, we have new connection
+	return (poll_client(0)); //if listener is ready to read, we have new connection
+}
+
+/*!
+** @brief	Sends client message to interpreters for processing.
+**
+** @details The default case hands over the client message to the interpreter
+**			module, where everyone on the team can develop encapsulated
+**			submodules for different RFC functionalities.
+** @param	i The position in the @a _pfds array of the client with a message.
+*/
+void	IRC_Server::process_client_message(int i)
+{
+	char						msgbuf[MSG_BUF_SIZE];
+
+	int nbytes = recv(_pfds[i].fd, msgbuf, sizeof msgbuf, 0);
+	switch (nbytes) //error cases and default successful data reception case
+	{
+		case 0 :
+			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
+			remove_connection(i);
+			break ;
+		case -1 :
+			std::cerr << "recv error" << std::endl;
+			remove_connection(i);
+			break ;
+		//handover to interpreter module in default case
+		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
+			for (int j = 1; j < _connections; ++j) //send to all clients (this is just test code, no RFC stuff yet)
+				if (j != i) //do not send to self
+					if (send(_pfds[j].fd, msgbuf, nbytes, 0) == -1)
+						std::cerr << "send error" << std::endl;
+	}
 }
 
 /*!
@@ -420,12 +466,9 @@ bool	IRC_Server::poll_listener(void) const
 */
 void	IRC_Server::server_loop(void)
 {
-	char						msgbuf[MSG_BUF_SIZE];
-
 	while (_state == State(ONLINE))
 	{
 		int	poll_count = poll(_pfds, _connections, -1);
-		
 		
 		if (poll_count == -1)
 			close_server(EXIT_FAILURE, std::string("FATAL poll error"));
@@ -441,29 +484,12 @@ void	IRC_Server::server_loop(void)
 			//Poll clients
 			for (int i = 1, polled = 0; polled < poll_count; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
 			{
-				if (_pfds[i].revents & POLLIN) //client fd pending data receipt
+				if (poll_client(i) == true)
 				{
-					int nbytes = recv(_pfds[i].fd, msgbuf, sizeof msgbuf, 0);
-					switch (nbytes) //error cases and default successful data reception case
-					{
-						case 0 :
-							std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
-							remove_connection(i);
-							break ;
-						case -1 :
-							std::cerr << "recv error" << std::endl;
-							remove_connection(i);
-							break ;
-						default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
-							for (int j = 1; j < _connections; ++j) //send to all clients (this is just test code, no RFC stuff yet)
-								if (j != i) //do not send to self
-									if (send(_pfds[j].fd, msgbuf, nbytes, 0) == -1)
-										std::cerr << "send error" << std::endl;
-					}
+					process_client_message(i);
 					++polled;
 				}
 			}
 		}
-		
 	}
 }
