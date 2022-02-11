@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 21:59:20 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/11 14:06:11 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 
 #include <string>
 #include <vector>
+#include <cstdio> //perror
+#include <algorithm>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -68,7 +70,8 @@ class IRC_Server
 		{
 			CONFIG_FAIL = -1,
 			OFFLINE,
-			ONLINE
+			ONLINE,
+			RESTART
 		}			_state;
 
 		struct BadArgumentException : public std::exception

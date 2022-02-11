@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 21:09:36 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/11 14:08:47 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,14 +111,14 @@ bool	IRC_Server::init(std::string const & netinfo)
 	listener_fd = get_listener_socket();
 	if (listener_fd == -1)
 	{
-		_state = OFFLINE;
+		_state = State(OFFLINE);
 		close_server((EXIT_FAILURE), std::string ("IRCSERV CLOSED ON GET_LISTENER_SOCKET CALL FAILED."));
 		return (false);
 	}
 	else
 	{
 		add_connection(listener_fd);
-		_state = ONLINE;
+		_state = State(ONLINE);
 	}
 	//signal handling
 	server_loop();
@@ -150,7 +150,7 @@ void	IRC_Server::server_loop(void)
 	char						remoteIP[INET6_ADDRSTRLEN];
 	char						msgbuf[MSG_BUF_SIZE];
 
-	while (1)
+	while (_state == State(ONLINE))
 	{
 		int	poll_count = poll(_pfds, _connections, -1);
 		
@@ -243,7 +243,7 @@ void	IRC_Server::close_server(int const exit_type, std::string const & close_eve
 		std::cout << '\n' << close_event << std::endl;
 	else
 		std::cerr << '\n' << close_event << '\n' << "CONTACT YOUR SERVER ADMIN." << std::endl;
-	_state = OFFLINE;
+	_state = State(OFFLINE);
 }
 
 std::string const &	IRC_Server::get_port(void) const
