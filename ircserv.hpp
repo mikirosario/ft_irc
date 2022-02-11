@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 21:47:01 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 23:03:06 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include <vector>
 #include <cstdio> //perror
 #include <algorithm>
-#include <set>
+#include <map>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -33,45 +33,6 @@
 
 #define MAX_CONNECTIONS 1024
 #define MSG_BUF_SIZE 512 //maximum message length in IRC RFC including \r\n termination.
-
-class User
-{
-	private:
-		enum State
-		{
-			DISCONNECTED,
-			CONNECTED
-		}			_state;
-		std::string	_nick; //maximum nick length 9 chars
-		std::string _pass; //super secure!! xD I guess this should be scrambled before storage?
-		std::string	_IPaddr; //I AM KNOW WHERE U LIVE BISH I AM HAS YOURE IP I IS H@X000R
-				User(void);
-	public:
-				User(User const & src);
-				~User(void);
-				User(std::string const & user_info);
-		User &	operator=(User const & src);
-};
-
-//One option could be to have a set of registered Users, and an array of clients that just mirrors the _pfds array
-// and searches for an existing user_profile on instantiation.
-
-class Client
-{
-	private:
-		typedef std::set<User>::iterator t_user_ptr;
-		int			_pfds_pos;
-		t_user_ptr	_user_profile;
-	public:
-		Client(User const & src);
-		~Client(void);
-		Client(std::string const & user_info)
-		{
-			(void)user_info;
-			//search User set for existing profile; if exists, save address to User profile, or iterator, or whatever
-		}
-		Client &	operator=(User const & src);
-};
 
 // class Channel
 // {
@@ -96,20 +57,50 @@ class IRC_Server
 			ONLINE,
 			RESTART
 		}			_state;
-
-		struct BadArgumentException : public std::exception
+	//One option could be to have a map of registered Users, and an array of clients that just mirrors the _pfds array
+	// and searches for an existing user_profile on instantiation. We can use add_connection and remove_connection to
+	//ensure they mirror each other precisely. If no registered User exists, we add one to the map.
+		class User
 		{
-			char const *	what() const throw()
-			{
-				return ("Unable to Create Server due to Bad Argument");
-			}
+			private:
+				enum State
+				{
+					DISCONNECTED,
+					CONNECTED
+				}			_state;
+				std::string	_nick; //maximum nick length 9 chars
+				std::string _pass; //super secure!! xD I guess this should be scrambled before storage?
+				std::string	_IPaddr; //I AM KNOW WHERE U LIVE BISH I AM HAS YOURE IP I IS H@X000R
+						User(void);
+			public:
+				//		User(User const & src) {}
+						~User(void) {}
+						User(std::string const & user_info) { _nick = user_info; }
+				//User &	operator=(User const & src);
 		};
+		class Client
+		{
+			private:
+				typedef std::map<std::string, User>::iterator t_user_ptr;
+				std::string	_nick;
+				t_user_ptr	_user_profile;
+			public:
+				Client(void);
+				Client(User const & src);
+				~Client(void);
+				Client(std::string const & user_info);
+				Client &	operator=(Client const & src);
+				void	find_nick(std::string const & nick, IRC_Server & server);
+		};
+		//friend Client;
 		std::string			_nethost; //no longer needed?? what??
 		std::string			_netport;
 		std::string			_netpass;
 		std::string			_servport; 
 		std::string			_servpass;
 		struct pollfd		_pfds[MAX_CONNECTIONS];
+		Client				_clients[MAX_CONNECTIONS];
+		std::map<std::string, User>		_reg_users;
 		int					_connections;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
