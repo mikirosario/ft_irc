@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 19:38:18 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 20:25:04 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -377,11 +377,50 @@ std::string const &	IRC_Server::get_port(void) const
 **			at the end. We process this message. This is where all the lovely
 **			RFC parsing and interpreting stuff will need to happen. :P
 */
-void	IRC_Server::server_loop(void)
+
+/*!
+** @brief	Attempts to connect the IRC_Server object to a new client. Should
+**			only be called when (_pfds[0].revents & POLLIN) returns true.
+**
+** @details	This function will attempt to accept a client connection request
+**			over the listener_fd. If unable to do so, an error message will be
+**			output to standard error. Otherwise, the connection will be added to
+**			the @a _pfds array and a confirmation message indicating the socket
+**			file descriptor and the remote IP of the client will be output to
+**			standard output.
+*/
+void		IRC_Server::accept_connection(void)
 {
 	struct	sockaddr_storage	remoteaddr;
 	socklen_t					addrlen = sizeof(remoteaddr);
 	char						remoteIP[INET6_ADDRSTRLEN];
+	int							new_connection;
+	
+	new_connection = accept(_pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
+	if (new_connection == -1)
+		perror("poll_listener could not accept connection");
+	else
+	{
+		add_connection(new_connection);
+		std::cout << "pollserver: new connection from "
+		<< inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN)
+		<< " on socket " << new_connection << std::endl;
+	}
+}
+
+/*!
+** @brief	Queries listener to determine whether or not a new connection request
+**			is pending.
+**
+** @return	true if a new connection request is pending, otherwise false.
+*/
+bool	IRC_Server::poll_listener(void) const
+{
+	return (_pfds[0].revents & POLLIN); //if listener is ready to read, we have new connection
+}
+
+void	IRC_Server::server_loop(void)
+{
 	char						msgbuf[MSG_BUF_SIZE];
 
 	while (_state == State(ONLINE))
@@ -394,17 +433,10 @@ void	IRC_Server::server_loop(void)
 		else
 		{
 			//Poll listener first
-				if (_pfds[0].revents & POLLIN) //if listener is ready to read, we have new connection
+			if (poll_listener() == true)
 			{
-				int new_connection = accept(_pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
-				if (new_connection == -1)
-					std::cerr << "accept error" << std::endl;
-				else
-				{
-					add_connection(new_connection);
-					std::cout << "pollserver: new connection from " << inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) << " on socket " << new_connection << std::endl;
-				}
-				--poll_count;
+				accept_connection();
+				--poll_count; //If listener had to be polled, we decrement poll_count as we did that job here.
 			}
 
 			//Poll clients

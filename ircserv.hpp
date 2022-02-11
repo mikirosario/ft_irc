@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 17:06:52 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 20:20:01 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,8 @@ class IRC_Server
 
 		//Running
 		void	server_loop(void);
+		void	accept_connection(void);
+		bool	poll_listener(void) const;
 		
 	public:
 		/* CONSTRUCTORS AND DESTRUCTOR */
