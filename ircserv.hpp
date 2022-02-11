@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 17:05:59 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 17:06:52 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,6 @@
 // 	private:
 // 		std::string	_name; //up to 50 characters, first character must be '&', '#', '+' or '!', and no spaces, ASCII 7 (bel) or commas allowed. case-insensitive
 // }
-
-/**
- * Parse any message using the IRC protocol.
- * \par Format:
- * [ ':' prefix hspace ] command [ params ] "\r\n"
- */
 
 enum Args
 {
@@ -123,10 +117,5 @@ class IRC_Server
 		std::string const &	get_port(void) const;
 
 };
-
-int		get_listener_socket(void);
-void	close_connection(int const fd);
-void	close_server(int const exit_type, std::string const & close_event);
-void	print_err(std::string const & msg);
 
 #endif
