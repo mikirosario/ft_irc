@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 23:03:06 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 23:23:31 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ class IRC_Server
 		void	close_server(int const exit_type, std::string const & close_event);
 		void	close_connection(int fd);
 
-		//Pollfd array
+		//Connection handling
 		void	remove_connection(int fd);
 		void	add_connection(int fd);
 

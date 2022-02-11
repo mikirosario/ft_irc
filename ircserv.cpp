@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 22:35:45 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 23:23:10 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,7 +271,7 @@ void	IRC_Server::close_connection(int const fd)
 
 }
 
-	// -- POLLFD ARRAY -- //
+	// -- CONNECTION HANDLING -- //
 /*!
 ** @brief	Adds an open connection to the @a _pollfds array.
 **
@@ -280,6 +280,10 @@ void	IRC_Server::close_connection(int const fd)
 **			socket for in @a events . We poll for incoming unread data. The
 **			socket file descriptor should be a valid fd returned by the
 **			@a accept() function. @see accept()
+**
+**			While the @a _clients array mirrors the @a _pollfds array, the data
+**			can't be filled in until sent by the user, so it is done from an RFC
+**			module.
 **
 ** @param	fd The new socket file descriptor to add.
 */
@@ -296,6 +300,9 @@ void	IRC_Server::add_connection(int fd)
 ** @details	The @a _pollfds array is unordered, so deletion merely consists of
 **			overwriting the deleted connection with the data of the last
 **			connection in the array and decrementing the _connections counter.
+**			The @a _clients array must always have the same sequence as the
+**			@a _pollfds array, as every indexed client must remain associated
+**			with the pollfd at the same index, so we mirror this action.
 ** @param index The position in the @a _pollfds array of the open connection to
 **				be removed.
 */
@@ -303,6 +310,7 @@ void	IRC_Server::remove_connection(int index)
 {
 	close_connection(_pfds[index].fd);
 	_pfds[index] = _pfds[_connections - 1];
+	_clients[index] = _clients[_connections - 1];
 	--_connections;
 }
 
