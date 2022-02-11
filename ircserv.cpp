@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 16:46:21 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 17:02:22 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,8 +100,8 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 
 	// -- SERVER INITIALIZATION -- //
 /*!
-** @brief	Attempts to open a TCP stream socket to standard IRC port 194 to
-** 			listen for incoming connections.
+** @brief	Attempts to open a TCP stream socket to the port number returned by
+**			::get_port() to listen for incoming connections.
 **
 ** @details The socket must be opened, bound to the IRC port, non-blocking and
 **			marked for listening. If any of these operations fails, a message
@@ -121,10 +121,8 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 */
 int	IRC_Server::get_listener_socket(void) const
 {
-	//char const *			service = this->get_port().data(); //"irc" lookup seems to be failing on Linux?
 	struct addrinfo			hints;
 	struct addrinfo *		res = NULL; //linked list
-	//struct addrinfo *		list_index;
 	int						gai_status;
 	int						ret = -1;
 
@@ -137,7 +135,7 @@ int	IRC_Server::get_listener_socket(void) const
 		std::cerr << "getaddrinfo error: " << gai_strerror(gai_status) << std::endl;
 	else //attempt to open socket and listen
 	{
-		//iterate results list for valid entry
+		//debug iterate results list for valid entry
 
 		int	connection_sockfd;
 
