@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
+#    By: miki <miki@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/10 04:06:40 by mrosario         ###   ########.fr        #
+#    Updated: 2022/02/11 16:48:05 by miki             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ RST = \e[0m
 
 CXX = clang++
 
-SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/server_setup.cpp $(SRCDIR)/utils.cpp $(SRCDIR)/ircserv.cpp
+SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/ircserv.cpp
 
 OBJS = $(SRCFILES:.cpp=.o)
 
