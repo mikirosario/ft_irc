@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 20:57:00 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 21:47:01 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <vector>
 #include <cstdio> //perror
 #include <algorithm>
+#include <set>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -33,16 +34,44 @@
 #define MAX_CONNECTIONS 1024
 #define MSG_BUF_SIZE 512 //maximum message length in IRC RFC including \r\n termination.
 
-// class User
-// {
-// 	private:
-// 		std::string	_nick; //maximum nick length 9 chars
-// 		std::string _pass; //super secure!! xD I guess this should be scrambled before storage?
-// 		User(void);
-// 	public:
-// 		User(std::string const & user_info);
-		
-// }
+class User
+{
+	private:
+		enum State
+		{
+			DISCONNECTED,
+			CONNECTED
+		}			_state;
+		std::string	_nick; //maximum nick length 9 chars
+		std::string _pass; //super secure!! xD I guess this should be scrambled before storage?
+		std::string	_IPaddr; //I AM KNOW WHERE U LIVE BISH I AM HAS YOURE IP I IS H@X000R
+				User(void);
+	public:
+				User(User const & src);
+				~User(void);
+				User(std::string const & user_info);
+		User &	operator=(User const & src);
+};
+
+//One option could be to have a set of registered Users, and an array of clients that just mirrors the _pfds array
+// and searches for an existing user_profile on instantiation.
+
+class Client
+{
+	private:
+		typedef std::set<User>::iterator t_user_ptr;
+		int			_pfds_pos;
+		t_user_ptr	_user_profile;
+	public:
+		Client(User const & src);
+		~Client(void);
+		Client(std::string const & user_info)
+		{
+			(void)user_info;
+			//search User set for existing profile; if exists, save address to User profile, or iterator, or whatever
+		}
+		Client &	operator=(User const & src);
+};
 
 // class Channel
 // {
@@ -60,7 +89,7 @@ enum Args
 class IRC_Server
 {
 	private:
-		enum		State
+		enum State
 		{
 			CONFIG_FAIL = -1,
 			OFFLINE,
