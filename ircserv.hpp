@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 23:23:31 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/11 23:29:57 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,15 +93,15 @@ class IRC_Server
 				void	find_nick(std::string const & nick, IRC_Server & server);
 		};
 		//friend Client;
-		std::string			_nethost; //no longer needed?? what??
-		std::string			_netport;
-		std::string			_netpass;
-		std::string			_servport; 
-		std::string			_servpass;
-		struct pollfd		_pfds[MAX_CONNECTIONS];
-		Client				_clients[MAX_CONNECTIONS];
-		std::map<std::string, User>		_reg_users;
-		int					_connections;
+		std::string						_nethost; //no longer needed?? what??
+		std::string						_netport;
+		std::string						_netpass;
+		std::string						_servport; 
+		std::string						_servpass;
+		struct pollfd					_pfds[MAX_CONNECTIONS];
+		Client							_clients[MAX_CONNECTIONS];
+		std::map<std::string, User>		_reg_users; //for saving data from registered users//all users (not sure yet, would have to delete unregged users from here on disconnect in latter case, do two nick searches per connection in former)
+		int								_connections;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
 						IRC_Server(void);						//Default constructor

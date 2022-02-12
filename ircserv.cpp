@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 23:23:10 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/12 11:58:18 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -397,6 +397,8 @@ void	IRC_Server::process_client_message(int i)
 	int nbytes = recv(_pfds[i].fd, msgbuf, sizeof msgbuf, 0);
 	switch (nbytes) //error cases and default successful data reception case
 	{
+		case 2 :
+			break ; //ignore empty messages
 		case 0 :
 			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
 			remove_connection(i);
