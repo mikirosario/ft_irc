@@ -6,11 +6,16 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/12 11:58:18 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/12 12:42:03 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
+
+//test
+void	test(void)
+{
+}
 
 	// ---- CONSTRUCTORS AND DESTRUCTOR ---- //
 /*!

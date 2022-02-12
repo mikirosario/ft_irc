@@ -6,20 +6,14 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/11 23:14:30 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/12 14:40:46 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
 
-IRC_Server::Client::Client(void)
+IRC_Server::Client::Client(void) : _state(IRC_Server::Client::State(UNREGISTERED))
 {}
-
-IRC_Server::Client::Client(std::string const & user_info)
-{
-	(void)user_info;
-	//search User set for existing profile; if exists, save address to User profile, or iterator, or whatever, if not create one (maybe)
-}
 
 IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 {
@@ -45,4 +39,18 @@ void	IRC_Server::Client::find_nick(std::string const & nick, IRC_Server & server
 	// if ((*user).first != nick)
 	// 	user = server._reg_users.insert(user, std::make_pair(nick, User(nick)));
 	// this->_user_profile = user;
+}
+
+/*!
+** @brief	Compares the client's password to the server's password.
+**
+** @details	Per the IRC standard, this should be called when registration ends,
+**			which is when we receive NICK and USER commands. We can use this to
+**			decide whether we accept the client or boot it. First step.
+** @param server_pass The server's password.
+** @return true if equal, otherwise false.
+*/
+bool	IRC_Server::Client::confirm_pass(std::string const & server_pass)
+{
+	return (this->_pass == server_pass);
 }

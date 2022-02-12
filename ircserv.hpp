@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/11 23:29:57 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/12 13:15:18 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@
 #include <poll.h>
 #include <iostream>
 #include <cstring> //for memset
+
+#include "irc_numerics.hpp"
 
 #define MAX_CONNECTIONS 1024
 #define MSG_BUF_SIZE 512 //maximum message length in IRC RFC including \r\n termination.
@@ -82,15 +84,21 @@ class IRC_Server
 		{
 			private:
 				typedef std::map<std::string, User>::iterator t_user_ptr;
+				enum State
+				{
+					UNREGISTERED,
+					REGISTERED
+				}			_state;
+				std::string _pass;
 				std::string	_nick;
 				t_user_ptr	_user_profile;
 			public:
 				Client(void);
 				Client(User const & src);
 				~Client(void);
-				Client(std::string const & user_info);
 				Client &	operator=(Client const & src);
 				void	find_nick(std::string const & nick, IRC_Server & server);
+				bool	confirm_pass(std::string const & server_pass);
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??
@@ -132,6 +140,9 @@ class IRC_Server
 		bool	poll_client(int i) const;
 		void	process_client_message(int i);
 		
+		//Command interpreting modules
+		#include "ircserv_modules.hpp"
+
 	public:
 		/* CONSTRUCTORS AND DESTRUCTOR */
 			IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo = std::string());	//Argument constructor
