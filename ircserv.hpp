@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/12 13:15:18 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/12 16:52:31 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,14 +91,20 @@ class IRC_Server
 				}			_state;
 				std::string _pass;
 				std::string	_nick;
+				char		_msg_buf[MSG_BUF_SIZE];
+				size_t		_msg_buf_char_count;
 				t_user_ptr	_user_profile;
 			public:
 				Client(void);
 				Client(User const & src);
 				~Client(void);
 				Client &	operator=(Client const & src);
+				static bool	is_endline(char const c);
 				void	find_nick(std::string const & nick, IRC_Server & server);
 				bool	confirm_pass(std::string const & server_pass);
+				void	flush_msg_buf(void);
+				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
+				bool	msg_buf_is_crlf_terminated(void);
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??
@@ -140,6 +146,9 @@ class IRC_Server
 		bool	poll_client(int i) const;
 		void	process_client_message(int i);
 		
+		//Utils
+		bool	is_endline(char const c);
+
 		//Command interpreting modules
 		#include "ircserv_modules.hpp"
 

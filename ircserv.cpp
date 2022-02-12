@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/12 12:42:03 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/12 16:55:18 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -414,10 +414,16 @@ void	IRC_Server::process_client_message(int i)
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
+			//insert message in client's message buffer
+			_clients[i].append_to_msg_buf(msgbuf, nbytes);
+			//do stuff
 			for (int j = 1; j < _connections; ++j) //send to all clients (this is just test code, no RFC stuff yet)
 				if (j != i) //do not send to self
 					if (send(_pfds[j].fd, msgbuf, nbytes, 0) == -1)
 						std::cerr << "send error" << std::endl;
+			//if message in client buff has endline, flush after processing
+			if (_clients[i].msg_buf_is_crlf_terminated())
+				_clients[i].flush_msg_buf();
 	}
 }
 
