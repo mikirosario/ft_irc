@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/12 16:55:54 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/16 17:19:08 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,10 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 	int	bytes_remaining = MSG_BUF_SIZE - _msg_buf_char_count;
 	int ret;
 
+	// //debug
+	// std::cout << msg_register << std::endl;
+	// //debug
+
 	if (nbytes > bytes_remaining - 2) //if msg_register would fill or overflow the buffer
 	{
 		_msg_buf[MSG_BUF_SIZE - 1] = '\n';
@@ -112,5 +116,8 @@ bool	IRC_Server::Client::is_endline(char const c)
 
 bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void)
 {
+	// //debug
+	// _msg_buf[_msg_buf_char_count - 1] = '\n';
+	// //debug
 	return (is_endline(_msg_buf[_msg_buf_char_count - 1]));
 }

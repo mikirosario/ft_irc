@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/12 16:55:18 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/16 16:46:10 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -423,7 +423,18 @@ void	IRC_Server::process_client_message(int i)
 						std::cerr << "send error" << std::endl;
 			//if message in client buff has endline, flush after processing
 			if (_clients[i].msg_buf_is_crlf_terminated())
+			{
+				//debug
+				std::cout << "TEST 1:" << std::endl;
+				std::vector<std::string>	testing = get_params(std::string(msgbuf));
+				std::cout << "vector size: " << testing[1].size() << std::endl;
+				for (size_t i = 0; i < testing.size(); ++i)
+					std::cout << testing[i] << "\n";
+				std::cout << "TEST 2:" << std::endl;
+				std::cout << get_param_count(std::string(msgbuf)) << std::endl;
+				//debug
 				_clients[i].flush_msg_buf();
+			}
 	}
 }
 
