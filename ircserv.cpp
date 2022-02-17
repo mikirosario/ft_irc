@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/17 08:43:26 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/17 09:16:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -425,16 +425,16 @@ void	IRC_Server::process_client_message(int i)
 			//if message in client buff has endline, flush after processing
 			if (_clients[i].msg_buf_is_crlf_terminated())
 			{
-				//debug
-				std::cout << "TEST 1:" << std::endl;
-				//std::cerr << "size of stringified buf: " << _clients[i].get_msg_buf().size() << std::endl;
-				std::vector<std::string>	testing = _clients[i].get_params();
-				std::cout << "vector size: " << testing.size() << std::endl;
-				for (size_t i = 0; i < testing.size(); ++i)
-					std::cout << testing[i] << "\n";
-				std::cout << "TEST 2:" << std::endl;
-				std::cout << _clients[i].get_param_count() << std::endl;
-				//debug
+				// //debug
+				// std::cout << "TEST 1:" << std::endl;
+				// //std::cerr << "size of stringified buf: " << _clients[i].get_msg_buf().size() << std::endl;
+				// std::vector<std::string>	testing = _clients[i].get_params();
+				// std::cout << "vector size: " << testing.size() << std::endl;
+				// for (size_t i = 0; i < testing.size(); ++i)
+				// 	std::cout << testing[i] << "\n";
+				// std::cout << "TEST 2:" << std::endl;
+				// std::cout << _clients[i].get_param_count() << std::endl;
+				// //debug
 				_clients[i].flush_msg_buf();
 			}
 	}
