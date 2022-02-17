@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/17 15:53:05 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/17 16:31:15 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,6 +161,7 @@ std::string	IRC_Server::Client::get_cmd(void) const
 ** @details	All parameters are preceded by SPACE. A parameter preceded by SPACE
 **			and COLON is the last parameter, and all subsequent spaces are
 **			interpreted as part of the parameter proper.
+**
 ** @return	The number of parameters in the message.
 */
 size_t	IRC_Server::Client::get_param_count(void) const
@@ -168,8 +169,11 @@ size_t	IRC_Server::Client::get_param_count(void) const
 	size_t	end_pos;
 	size_t	i = 0;
 	size_t	p_count = 0;
+	std::string cmd = get_cmd();
 
-	end_pos = _msg_buf.find(" :");
+	if (cmd.empty() == false)
+		i = _msg_buf.find(cmd);
+	end_pos = _msg_buf.find(" :", i);
 	if (end_pos != std::string::npos)						//if there is " :", that is last param	
 		++end_pos;
 	else							 						//if no " :", first char from end that is neither '\r', '\n' nor ' ' is endpos

@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/17 13:52:18 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/17 16:30:20 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -425,8 +425,12 @@ void	IRC_Server::process_client_message(int i)
 			//if message in client buff has endline, flush after processing
 			if (_clients[i].msg_is_ready())
 			{
+
 				//debug
-				std::cout << "TEST:" << std::endl;
+				//MAKE get_param_count() PUBLIC TO TEST THIS
+				// std::cout	<< "TEST PARAM_COUNT: \n"
+				// 			<< _clients[i].get_param_count() << std::endl;
+				std::cout << "TEST GET_MESSAGE:" << std::endl;
 				//debug
 
 				std::vector<std::string>	argv = _clients[i].get_message();
