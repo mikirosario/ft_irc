@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/17 16:29:44 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/17 17:12:33 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,8 +100,9 @@ class IRC_Server
 				t_user_ptr	_user_profile;
 
 				/* PRIVATE UTILS */
-				size_t						get_param_count(void) const;
-				std::string					get_cmd(void) const;
+				size_t		get_param_count(void) const;
+				std::string	get_cmd(void) const;
+				bool		msg_buf_is_crlf_terminated(void) const;
 			public:
 				Client(void);
 				Client(User const & src);
@@ -112,7 +113,6 @@ class IRC_Server
 				static bool	is_endline(char const c);
 				void	find_nick(std::string const & nick, IRC_Server & server);
 				bool	confirm_pass(std::string const & server_pass);
-				bool	msg_buf_is_crlf_terminated(void) const;
 				bool	msg_is_ready(void) const;
 
 				/* SETTERS */
