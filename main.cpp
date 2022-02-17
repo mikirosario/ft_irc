@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/10 22:09:59 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/17 16:02:16 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ void	signal_handler(int sig)
 ** @param	arg_name Args(NETINFO), Args(PORT) or Args(PASSWORD).
 ** @return	A pointer to the argument indicated by arg_name in the argv array.
 */
-static char const *	get_arg(char const * const * argv, int const argc, enum Args const arg_name)
+static char const *	get_arg(char const * const * argv, int const argc, enum Args const & arg_name)
 {
 	return (*(argv + argc - arg_name));
 }
