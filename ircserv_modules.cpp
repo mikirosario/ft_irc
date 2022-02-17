@@ -6,27 +6,12 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/17 08:39:19 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/17 09:18:34 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
 #include <vector>
-// //utils
-
-
-//get_cmd_params? maybe return a list?
-/*!
-** @brief	Extract command from message containing command.
-**
-** @param	msg Client message.
-** @return	A substring containing the command.
-*/
-// static std::string	get_cmd(std::string const & msg)
-// {
-// 	int	end_pos = msg.find_first_of(' ');
-// 	return(msg.substr(0, end_pos));
-// }
 
 //parsing
 /*!
