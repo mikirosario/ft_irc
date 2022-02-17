@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/17 14:32:03 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/17 15:53:05 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,8 +252,8 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 			size_t	end_pos;
 
 			ret.push_back(cmd);													//add command
-			start_pos = _msg_buf.find_first_not_of(' ', start_pos);				//tolerate leading spaces
-			start_pos = _msg_buf.find_first_of(" \r\n", start_pos);				//get first space or endline
+			start_pos = _msg_buf.find(cmd);										//set start_pos to beginning of cmd
+			start_pos = _msg_buf.find_first_of(" \r\n", start_pos);				//get first space or endline after cmd
 			start_pos = _msg_buf.find_first_not_of(' ', start_pos);				//tolerate leading spaces
 			while (_msg_buf[start_pos] != '\r' && _msg_buf[start_pos] != '\n')	//NOTHING not crlf terminated should get this far, if so fix at source!
 			{	
