@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/17 08:41:59 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/17 13:54:50 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,27 +89,38 @@ class IRC_Server
 					UNREGISTERED,
 					REGISTERED
 				}			_state;
+				enum Buffer_State
+				{
+					UNREADY,
+					READY
+				}			_buf_state;
 				std::string _pass;
 				std::string	_nick;
-				//char		_msg_buf[MSG_BUF_SIZE];
-				//size_t		_msg_buf_char_count;
 				std::string	_msg_buf;
 				t_user_ptr	_user_profile;
+
+				/* PRIVATE UTILS */
+				size_t						get_param_count(void) const;
 			public:
 				Client(void);
 				Client(User const & src);
 				~Client(void);
 				Client &	operator=(Client const & src);
+
+				/* UTILS */
 				static bool	is_endline(char const c);
 				void	find_nick(std::string const & nick, IRC_Server & server);
 				bool	confirm_pass(std::string const & server_pass);
+				bool	msg_buf_is_crlf_terminated(void) const;
+				bool	msg_is_ready(void) const;
+
+				/* SETTERS */
 				void	flush_msg_buf(void);
 				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
-				bool	msg_buf_is_crlf_terminated(void);
 
 				/* GETTERS */
-				std::vector<std::string>	get_params(void) const;
-				size_t						get_param_count(void) const;
+				std::string					get_cmd(void) const;
+				std::vector<std::string>	get_message(void);
 				std::string const &			get_msg_buf(void) const;
 		};
 		//friend Client;
