@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/16 16:46:10 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/17 08:43:26 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -415,6 +415,7 @@ void	IRC_Server::process_client_message(int i)
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
 			//insert message in client's message buffer
+			std::cerr << "nbytes: " << nbytes << std::endl;
 			_clients[i].append_to_msg_buf(msgbuf, nbytes);
 			//do stuff
 			for (int j = 1; j < _connections; ++j) //send to all clients (this is just test code, no RFC stuff yet)
@@ -426,12 +427,13 @@ void	IRC_Server::process_client_message(int i)
 			{
 				//debug
 				std::cout << "TEST 1:" << std::endl;
-				std::vector<std::string>	testing = get_params(std::string(msgbuf));
-				std::cout << "vector size: " << testing[1].size() << std::endl;
+				//std::cerr << "size of stringified buf: " << _clients[i].get_msg_buf().size() << std::endl;
+				std::vector<std::string>	testing = _clients[i].get_params();
+				std::cout << "vector size: " << testing.size() << std::endl;
 				for (size_t i = 0; i < testing.size(); ++i)
 					std::cout << testing[i] << "\n";
 				std::cout << "TEST 2:" << std::endl;
-				std::cout << get_param_count(std::string(msgbuf)) << std::endl;
+				std::cout << _clients[i].get_param_count() << std::endl;
 				//debug
 				_clients[i].flush_msg_buf();
 			}

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/16 16:26:41 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/17 08:38:06 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 typedef std::string::const_iterator	string_it;
 
 //parsing
-std::vector<std::string>	get_params(std::string const & msg);
-size_t						get_param_count(std::string const & msg);
+// std::vector<std::string>	get_params(std::string const & msg);
+// size_t						get_param_count(std::string const & msg);
 bool						is_cmd_PASS(std::string const & cmd);
 bool						is_cmd_NICK(std::string const & cmd);
 

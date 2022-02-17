@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/12 16:52:31 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/17 08:41:59 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,8 +91,9 @@ class IRC_Server
 				}			_state;
 				std::string _pass;
 				std::string	_nick;
-				char		_msg_buf[MSG_BUF_SIZE];
-				size_t		_msg_buf_char_count;
+				//char		_msg_buf[MSG_BUF_SIZE];
+				//size_t		_msg_buf_char_count;
+				std::string	_msg_buf;
 				t_user_ptr	_user_profile;
 			public:
 				Client(void);
@@ -105,6 +106,11 @@ class IRC_Server
 				void	flush_msg_buf(void);
 				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
 				bool	msg_buf_is_crlf_terminated(void);
+
+				/* GETTERS */
+				std::vector<std::string>	get_params(void) const;
+				size_t						get_param_count(void) const;
+				std::string const &			get_msg_buf(void) const;
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??
