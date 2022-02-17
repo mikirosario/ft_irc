@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/17 16:31:15 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/17 17:05:22 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,19 @@ void	IRC_Server::Client::flush_msg_buf(void)
 
 /*!
 ** @brief	Appends up to MSG_BUF_SIZE characters to message buffer, truncating
-**			any extra bytes.
+**			any extra bytes, if the message buffer is UNREADY to be reaped.
+**
+** @details	This function is used to add to the buffer, while get_message is
+**			used to empty the buffer. A buffer can be emptied when
+**			crlf-terminated. If a buffer is filled to MSG_BUF_SIZE, it will
+**			automatically be crlf-terminated and any extra bytes will be
+**			truncated. If calling this function leads to crlf-termination of the
+**			message buffer, the @a _buf_state changes to READY.
 **
 ** @param	msg_register	Incoming message data.
 ** @param	nbytes			Number of bytes in incoming message data.
 ** @return	true if the entire message was appended, false if it was truncated
-**			or not copied due to existing unreaped buffer.
+**			or not copied due to existing buffer that is READY to be reaped.
 */
 bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
 {
@@ -100,7 +107,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 		_msg_buf.append(msg_register, nbytes);
 		ret = true;
 	}
-	if (this->msg_buf_is_crlf_terminated())
+	if (msg_buf_is_crlf_terminated())
 		_buf_state = IRC_Server::Client::Buffer_State(READY);
 	return (ret);
 }
@@ -118,6 +125,14 @@ bool	IRC_Server::Client::is_endline(char const c)
 	return (c == '\r' || c == '\n');
 }
 
+/*!
+** @brief	Determines whether the message buffer is crlf-terminated. We are
+**			fault-tolerant so we accept either '\r' or '\n' as a valid
+**			termination. Messages cannot be reaped until this function returns
+**			true.
+**
+** @return	true if message buffer is crlf-terminated, otherwise false.
+*/
 bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 {
 	return(_msg_buf.find_first_of("\r\n") != std::string::npos);
@@ -127,8 +142,8 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 ** @brief	Determines whether or not a message is ready to be reaped.
 **
 ** @details	In practice, this is an alias for msg_buf_is_crlf_terminated, as
-**			that is what determines readiness, but I included it for clarity's
-**			sake.
+**			that is what determines readiness, but I make this one available in
+**			the public methods to improve clarity.
 ** @return	true if Client's message is ready to be reaped, otherwise false.
 **/
 bool	IRC_Server::Client::msg_is_ready(void) const
@@ -145,6 +160,9 @@ std::string const &	IRC_Server::Client::get_msg_buf(void) const
 /*!
 ** @brief	Retrieves the command from the Client's message.
 **
+** @details NOTE: Assumes crlf termination. Behaviour undefined if used on
+**			non-crlf-terminated string.
+**
 ** @return	A string containing the command, or an empty string if no command
 **			exists in the message.
 */
@@ -160,7 +178,12 @@ std::string	IRC_Server::Client::get_cmd(void) const
 **
 ** @details	All parameters are preceded by SPACE. A parameter preceded by SPACE
 **			and COLON is the last parameter, and all subsequent spaces are
-**			interpreted as part of the parameter proper.
+**			interpreted as part of the parameter proper. Parameters are only
+**			counted after the command. A buffer with only spaces does not count
+**			as a parameter.
+**
+**			NOTE: Assumes crlf termination. Behaviour undefined if used on
+**			non-crlf-terminated string.
 **
 ** @return	The number of parameters in the message.
 */
