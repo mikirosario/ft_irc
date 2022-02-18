@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/17 16:30:20 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/18 11:16:04 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,6 +158,28 @@ int	IRC_Server::get_listener_socket(void) const
 			{
 				ret = connection_sockfd;
 				std::cout << "Got connection socket!" << std::endl;
+				//inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN)
+
+				//returns 0.0.0.0 why????
+				// if (res->ai_family == AF_INET)
+				// {
+				// 	std::cout << "I AM GROOT: " << inet_ntoa(((struct sockaddr_in *)res->ai_addr)->sin_addr) << std::endl;
+				// }
+				
+				//there has to be a way to get this out of getaddrinfo???????
+				char	hostname[1024];
+				gethostname(hostname, 1024);
+
+				struct hostent *self;
+				
+				if ((self = gethostbyname(hostname)) == NULL)
+					std::cerr << "I AM NOT GROOT." << std::endl;
+				else
+				{
+					struct in_addr **	addr_lst = reinterpret_cast<struct in_addr **>(self->h_addr_list);
+					std::cout << "I AM GROOT: " << inet_ntoa(*addr_lst[0]) << std::endl;
+				}
+				
 			}
 			if (ret == -1)
 				if ((close(connection_sockfd)) == -1)
@@ -232,6 +254,9 @@ bool	IRC_Server::init(std::string const & netinfo)
 	{
 		_state = State(ONLINE);
 		add_connection(listener_fd);
+		// //debug
+		// std::cout << "IRC Server " << 
+		// //debug
 		ret = true;
 		server_loop();
 	}
