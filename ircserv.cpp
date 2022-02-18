@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 15:34:13 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 17:14:11 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -476,7 +476,8 @@ void	IRC_Server::process_client_message(int i)
 			{
 
 				//debug send_err_UNKNOWNCOMMAND test
-				send_err_UNKNOWNCOMMAND(_clients[i], "Test message");
+				std::vector<std::string>	argv = _clients[i].get_message();
+				send_err_UNKNOWNCOMMAND(_clients[i], argv[0], "Test message");
 				//debug
 
 				// //debug get_param_count and get_message tests
