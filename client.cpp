@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 18:03:24 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 18:34:48 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,18 @@ IRC_Server::Client::Client(void) : _state(IRC_Server::Client::State(UNREGISTERED
 	// 	flush_msg_buf();
 }
 
+
 IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 {
+	_state = src._state;
+	_buf_state = src._buf_state;
+	_servername = src._servername;
+	_sockfd = src._sockfd;
+	_pass = src._pass;
 	_nick = src._nick;
+	_msg_buf = src._msg_buf;
 	_user_profile = src._user_profile;
+	
 	return (*this);
 }
 

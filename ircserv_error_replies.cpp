@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 18:04:32 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 18:14:04 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,8 @@ std::string	IRC_Server::err_reply_start(Client const & client, char const * nume
 **
 ** @details	This function will automatically append a @a description to an error
 **			reply as the final parameter and properly crlf-terminate it. The
-**			@a description is optional and an empty parameter will appended in
-**			lieu of one. If including @a description would make @a error_reply
+**			@a description is optional and an empty parameter will be appended
+**			in lieu of it. If including @a description would make @a error_reply
 **			longer than MSG_BUF_SIZE, @a description will be truncated as needed
 **			to fit.
 **
