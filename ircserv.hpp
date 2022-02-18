@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 13:53:57 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 14:47:00 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,7 @@ class IRC_Server
 		std::string						_netpass;
 		std::string						_servport; 
 		std::string						_servpass;
-		std::string						_localhost;
+		std::string						_servername;
 		struct pollfd					_pfds[MAX_CONNECTIONS];
 		Client							_clients[MAX_CONNECTIONS];
 		std::map<std::string, User>		_reg_users; //for saving data from registered users//all users (not sure yet, would have to delete unregged users from here on disconnect in latter case, do two nick searches per connection in former)
@@ -151,8 +151,10 @@ class IRC_Server
 
 		//Server initialization
 		bool			init(std::string const & netinfo);
+		bool			set_servername(void);
 		static void *	get_in_addr(struct sockaddr * sa);
 		int				get_listener_socket(void) const;
+		
 
 		//Closing
 		void	close_server(int const exit_type, std::string const & close_event);
@@ -182,6 +184,8 @@ class IRC_Server
 		
 		/* GETTERS */
 		std::string const &	get_port(void) const;
+		std::string const & get_servername(void) const;
+		std::string	get_source(void) const;
 
 };
 

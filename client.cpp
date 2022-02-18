@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 13:54:52 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 14:28:54 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,6 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 
 	_sockfd = sockfd;
 	if (getsockname(sockfd, &serverIP, &addrlen) == -1)
-		//debug, in this case we should reject the connection and send some kind of appropriate ERR numeric to client; we need the servername to talk to the Client properly
 		perror("getsockname() failed in set_sockfd");
 	else
 		//debug inet_ntoa in_addr must be IPv4, but rereading the subject requirements inet_ntop is not officially allowed... :/

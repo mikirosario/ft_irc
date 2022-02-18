@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 14:02:04 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 14:51:07 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,32 +157,7 @@ int	IRC_Server::get_listener_socket(void) const
 			else
 			{
 				ret = connection_sockfd;
-				std::cout << "Got connection socket!" << std::endl;
-				//inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN)
-
-				//returns 0.0.0.0 why????
-				// if (res->ai_family == AF_INET)
-				// {
-				// 	std::cout << "I AM GROOT: " << inet_ntoa(((struct sockaddr_in *)res->ai_addr)->sin_addr) << std::endl;
-				// }
-				
-				// //there has to be a way to get this out of getaddrinfo???????
-				// char	hostname[1024];
-				// gethostname(hostname, 1024);
-
-				// struct hostent *self;
-				
-				// if ((self = gethostbyname(hostname)) == NULL)
-				// 	std::cerr << "I AM NOT GROOT." << std::endl;
-				// else
-				// {
-				// 	struct in_addr **	addr_lst = reinterpret_cast<struct in_addr **>(self->h_addr_list);
-				// 	std::cout << "I AM GROOT: " << inet_ntoa(*addr_lst[0]) << std::endl;
-				// }
-
-				
-
-				
+				std::cout << "Got connection socket!" << std::endl;			
 			}
 			if (ret == -1)
 				if ((close(connection_sockfd)) == -1)
@@ -248,20 +223,34 @@ bool	IRC_Server::init(std::string const & netinfo)
 
 	//server setup
 	listener_fd = get_listener_socket();
-	if (listener_fd == -1)			//setup failed; abort
-	{
+	if (listener_fd == -1)				//setup failed; abort
 		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON GET_LISTENER_SOCKET CALL FAILED."));
-		return (false);
-	}
-	else 							//setup succeeded; server initialization
+	else if (set_servername() == false)	//setup failed; we need servername to use as prefix in communications with clients
+		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON SET_SERVERNAME CALL FAILED."));
+	else 								//setup succeeded; server initialization
 	{
 		_state = State(ONLINE);
 		add_connection(listener_fd);
-		// //debug
-		// std::cout << "IRC Server " << 
-		// //debug
+		//debug
+		std::cout << "IRC Server: " << _servername << std::endl;
+		//debug
 		ret = true;
 		server_loop();
+	}
+	return (ret);
+}
+
+bool	IRC_Server::set_servername(void)
+{
+	struct hostent	*self;
+	bool			ret = false;
+	
+	if ((self = gethostbyname("localhost")) == NULL)
+		hstrerror(h_errno); //debug; this isn't explicitly allowed by subject either :p but will keep it here until evaluation for debugging purposes
+	else
+	{
+		_servername = inet_ntoa(*(reinterpret_cast<struct in_addr *>(self->h_addr)));
+		ret = true;
 	}
 	return (ret);
 }
@@ -364,6 +353,29 @@ void	IRC_Server::remove_connection(int index)
 std::string const &	IRC_Server::get_port(void) const
 {
 	return (_servport);
+}
+
+/*!
+** @brief	Returns the true server address.
+**
+** @return	The true server address.
+*/
+std::string const &	IRC_Server::get_servername(void) const
+{
+	return (_servername);
+}
+
+/*!
+** @brief	Returns a string that can be used as the <prefix> or <source> in
+**			messages sent to clients.
+**
+** @return	A string containing the server <prefix> or <source>.
+*/
+std::string	IRC_Server::get_source(void) const
+{
+	std::string	source = ":" + _servername;
+
+	return (source);
 }
 
 	// -- RUNNING -- //
