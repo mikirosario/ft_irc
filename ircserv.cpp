@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 11:16:04 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 14:02:04 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,19 +166,22 @@ int	IRC_Server::get_listener_socket(void) const
 				// 	std::cout << "I AM GROOT: " << inet_ntoa(((struct sockaddr_in *)res->ai_addr)->sin_addr) << std::endl;
 				// }
 				
-				//there has to be a way to get this out of getaddrinfo???????
-				char	hostname[1024];
-				gethostname(hostname, 1024);
+				// //there has to be a way to get this out of getaddrinfo???????
+				// char	hostname[1024];
+				// gethostname(hostname, 1024);
 
-				struct hostent *self;
+				// struct hostent *self;
 				
-				if ((self = gethostbyname(hostname)) == NULL)
-					std::cerr << "I AM NOT GROOT." << std::endl;
-				else
-				{
-					struct in_addr **	addr_lst = reinterpret_cast<struct in_addr **>(self->h_addr_list);
-					std::cout << "I AM GROOT: " << inet_ntoa(*addr_lst[0]) << std::endl;
-				}
+				// if ((self = gethostbyname(hostname)) == NULL)
+				// 	std::cerr << "I AM NOT GROOT." << std::endl;
+				// else
+				// {
+				// 	struct in_addr **	addr_lst = reinterpret_cast<struct in_addr **>(self->h_addr_list);
+				// 	std::cout << "I AM GROOT: " << inet_ntoa(*addr_lst[0]) << std::endl;
+				// }
+
+				
+
 				
 			}
 			if (ret == -1)
@@ -201,7 +204,7 @@ int	IRC_Server::get_listener_socket(void) const
 ** @param sa	A pointer to a filled-in sockaddr.
 ** @return		A void pointer to the socket's IPv4 or IPv6 address.
 */
-void *	IRC_Server::get_in_addr(struct sockaddr * sa) const
+void *	IRC_Server::get_in_addr(struct sockaddr * sa)
 {
     if (sa->sa_family == AF_INET)
 		return (&(reinterpret_cast<struct sockaddr_in *>(sa)->sin_addr));
@@ -302,8 +305,14 @@ void	IRC_Server::close_connection(int const fd)
 }
 
 	// -- CONNECTION HANDLING -- //
+
+// /*! @brief	Retrieves the current address to which the Client passed as @a client
+// **			is connected.
+// */
+// std::string	
+
 /*!
-** @brief	Adds an open connection to the @a _pollfds array.
+** @brief	Adds an open connection to the @a _pollfds and @a _clents arrays.
 **
 ** @details Each pollfd struct in the array contains the socket file descriptor
 **			for the open connection in @a fd and the type of event to poll this
@@ -311,9 +320,9 @@ void	IRC_Server::close_connection(int const fd)
 **			socket file descriptor should be a valid fd returned by the
 **			@a accept() function. @see accept()
 **
-**			While the @a _clients array mirrors the @a _pollfds array, the data
-**			can't be filled in until sent by the user, so it is done from an RFC
-**			module.
+**			The @a _clients array mirrors the @a _pollfds array. Some Client
+**			data can't be filled in until sent by the user, which is done from
+**			an RFC module (register client).
 **
 ** @param	fd The new socket file descriptor to add.
 */
@@ -321,6 +330,7 @@ void	IRC_Server::add_connection(int fd)
 {
 	_pfds[_connections].fd = fd;
 	_pfds[_connections].events = POLLIN; //report ready to read on incoming connection
+	_clients[_connections].set_sockfd(fd);
 	++_connections;
 }
 
@@ -382,8 +392,10 @@ void		IRC_Server::accept_connection(void)
 	{
 		add_connection(new_connection);
 		std::cout << "pollserver: new connection from "
-		<< inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN)
-		<< " on socket " << new_connection << std::endl;
+		<< inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) //debug; ntop not allowed?
+		<< " on socket " << new_connection
+		<< " to server " << _clients[_connections - 1].get_servername()
+		<< std::endl;
 	}
 }
 

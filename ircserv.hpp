@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 08:32:02 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 13:53:57 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,8 @@ class IRC_Server
 					UNREADY,
 					READY
 				}			_buf_state;
+				std::string	_servername;	//Server to which the Client is connected; can be used in replies requiring <servername>
+				std::string	_sockfd;		//Client's sockfd
 				std::string _pass;
 				std::string	_nick;
 				std::string	_msg_buf;
@@ -118,10 +120,13 @@ class IRC_Server
 				/* SETTERS */
 				void	flush_msg_buf(void);
 				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
+				void	set_sockfd(int sockfd);
+				void	clear(void);
 
 				/* GETTERS */
 				std::vector<std::string>	get_message(void);
 				std::string const &			get_msg_buf(void) const;
+				std::string const &			get_servername(void) const;
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??
@@ -145,9 +150,9 @@ class IRC_Server
 		bool	get_network_info(std::string const & arg);
 
 		//Server initialization
-		bool	init(std::string const & netinfo);
-		void *	get_in_addr(struct sockaddr * sa) const;
-		int		get_listener_socket(void) const;
+		bool			init(std::string const & netinfo);
+		static void *	get_in_addr(struct sockaddr * sa);
+		int				get_listener_socket(void) const;
 
 		//Closing
 		void	close_server(int const exit_type, std::string const & close_event);

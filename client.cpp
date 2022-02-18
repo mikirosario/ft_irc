@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/17 17:05:22 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/18 13:54:52 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,36 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 	if (msg_buf_is_crlf_terminated())
 		_buf_state = IRC_Server::Client::Buffer_State(READY);
 	return (ret);
+}
+
+/*!
+** @brief	Sets Client's @a _sockfd to the value passed as an argument and
+**			sets the Client's @a _servername to the current address to which the
+**			@a _sockfd is bound.
+**
+** @param	sockfd The Client's sockfd.
+*/
+void	IRC_Server::Client::set_sockfd(int sockfd)
+{
+	struct sockaddr	serverIP;
+	socklen_t		addrlen(sizeof(sockaddr));
+	std::string		servername;
+
+	_sockfd = sockfd;
+	if (getsockname(sockfd, &serverIP, &addrlen) == -1)
+		//debug, in this case we should reject the connection and send some kind of appropriate ERR numeric to client; we need the servername to talk to the Client properly
+		perror("getsockname() failed in set_sockfd");
+	else
+		//debug inet_ntoa in_addr must be IPv4, but rereading the subject requirements inet_ntop is not officially allowed... :/
+		_servername = inet_ntoa(*(reinterpret_cast<struct in_addr *>(IRC_Server::get_in_addr(&serverIP))));	
+}
+
+/*!
+** @brief	Clear's all Client data.
+*/
+void	IRC_Server::Client::clear(void)
+{
+	std::memset(this, 0, sizeof(IRC_Server::Client));
 }
 
 /*!
@@ -301,4 +331,9 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 		flush_msg_buf(); //buffer is always flushed with get_message when READY, even if there is no command
 	}
 	return  (ret);
+}
+
+std::string const &			IRC_Server::Client::get_servername(void) const
+{
+	return(_servername);
 }
