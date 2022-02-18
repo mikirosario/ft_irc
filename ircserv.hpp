@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 14:47:00 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 15:24:14 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,9 +113,10 @@ class IRC_Server
 
 				/* UTILS */
 				static bool	is_endline(char const c);
-				void	find_nick(std::string const & nick, IRC_Server & server);
-				bool	confirm_pass(std::string const & server_pass);
-				bool	msg_is_ready(void) const;
+				void		find_nick(std::string const & nick, IRC_Server & server);
+				bool		confirm_pass(std::string const & server_pass);
+				bool		msg_is_ready(void) const;
+				bool		is_registered(void) const;
 
 				/* SETTERS */
 				void	flush_msg_buf(void);
@@ -127,6 +128,7 @@ class IRC_Server
 				std::vector<std::string>	get_message(void);
 				std::string const &			get_msg_buf(void) const;
 				std::string const &			get_servername(void) const;
+				std::string const &			get_nick(void) const;
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??

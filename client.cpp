@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 14:28:54 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 15:24:51 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,6 +180,18 @@ bool	IRC_Server::Client::msg_is_ready(void) const
 	return (_buf_state == IRC_Server::Client::Buffer_State(READY));
 }
 
+/*!
+** @brief	Determines whether or not a client has been registered. A registered
+**			client is guaranteed to have an associated nick and username. An
+**			unregistered client is not.
+**
+** @return	true if the client is registered, otherwise false
+*/
+bool		IRC_Server::Client::is_registered(void) const
+{
+	return (_state == IRC_Server::Client::State(REGISTERED));
+}
+
 /* GETTERS */
 std::string const &	IRC_Server::Client::get_msg_buf(void) const
 {
@@ -335,4 +347,9 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 std::string const &			IRC_Server::Client::get_servername(void) const
 {
 	return(_servername);
+}
+
+std::string const &			IRC_Server::Client::get_nick(void) const
+{
+	return(_nick);
 }

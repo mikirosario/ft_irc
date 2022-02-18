@@ -6,7 +6,7 @@
 #    By: miki <miki@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/12 14:41:36 by miki             ###   ########.fr        #
+#    Updated: 2022/02/18 15:14:13 by miki             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,8 @@ RST = \e[0m
 
 CXX = clang++
 
-SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/ircserv.cpp $(SRCDIR)/ircserv_modules.cpp \
+SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/ircserv.cpp \
+			$(SRCDIR)/ircserv_interpreters.cpp $(SRCDIR)/ircserv_error_replies.cpp \
 			$(SRCDIR)/client.cpp
 
 OBJS = $(SRCFILES:.cpp=.o)
