@@ -6,16 +6,11 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 17:14:11 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 18:03:48 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
-
-//test
-void	test(void)
-{
-}
 
 	// ---- CONSTRUCTORS AND DESTRUCTOR ---- //
 /*!
@@ -475,9 +470,8 @@ void	IRC_Server::process_client_message(int i)
 			if (_clients[i].msg_is_ready())
 			{
 
-				//debug send_err_UNKNOWNCOMMAND test
-				std::vector<std::string>	argv = _clients[i].get_message();
-				send_err_UNKNOWNCOMMAND(_clients[i], argv[0], "Test message");
+				//debug exec_cmd test
+				exec_cmd(_clients[i]);
 				//debug
 
 				// //debug get_param_count and get_message tests

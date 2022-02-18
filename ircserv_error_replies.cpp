@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 17:17:24 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 18:04:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ void		IRC_Server::err_reply_end(std::string & error_reply, std::string const & d
 ** @brief	Sends an UNKNOWNCOMMAND error reply to the @a client.
 **
 ** @details	An error reply will be sent to @a client indicating that @a command
-**			received from @a client is unknown and cannot be interpreter. The
+**			received from @a client is unknown and cannot be interpreted. The
 **			@a description argument is optional. If @a description is not
 **			provided an empty description will be sent. If including
 **			@a description would cause the message to be over 512 bytes long, it
@@ -99,8 +99,8 @@ void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & client, std::string cons
 	msg += command;
 	err_reply_end(msg, description);
 	
-	//debug
-	std::cout << msg.data() << std::endl;
-	//debug
-	//send()
+	// //debug
+	// std::cout << msg.data() << std::endl;
+	// //debug
+	client.send_msg(msg);
 }

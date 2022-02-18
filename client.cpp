@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 15:24:51 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 18:03:24 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,6 +192,11 @@ bool		IRC_Server::Client::is_registered(void) const
 	return (_state == IRC_Server::Client::State(REGISTERED));
 }
 
+void		IRC_Server::Client::send_msg(std::string const & msg) const
+{
+	send(_sockfd, msg.data(), msg.size(), 0);
+}
+
 /* GETTERS */
 std::string const &	IRC_Server::Client::get_msg_buf(void) const
 {
@@ -352,4 +357,9 @@ std::string const &			IRC_Server::Client::get_servername(void) const
 std::string const &			IRC_Server::Client::get_nick(void) const
 {
 	return(_nick);
+}
+
+int							IRC_Server::Client::get_sockfd(void) const
+{
+	return(_sockfd);
 }

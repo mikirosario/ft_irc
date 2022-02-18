@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 15:13:33 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 18:00:25 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,3 +44,14 @@ bool	IRC_Server::is_cmd_NICK(std::string const & cmd)
 
 // 	return(true);
 // }
+
+void	IRC_Server::exec_cmd(Client & client)
+{
+	std::vector<std::string>	argv = client.get_message();
+	std::string &				cmd = argv[0];
+
+	if (cmd == "BAILA")
+		std::cout << "El servidor baila el chotis" << std::endl;
+	else
+		send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
+}

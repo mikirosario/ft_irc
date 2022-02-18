@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 15:24:14 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/18 18:02:37 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ class IRC_Server
 					READY
 				}			_buf_state;
 				std::string	_servername;	//Server to which the Client is connected; can be used in replies requiring <servername>
-				std::string	_sockfd;		//Client's sockfd
+				int			_sockfd;		//Client's sockfd
 				std::string _pass;
 				std::string	_nick;
 				std::string	_msg_buf;
@@ -117,6 +117,7 @@ class IRC_Server
 				bool		confirm_pass(std::string const & server_pass);
 				bool		msg_is_ready(void) const;
 				bool		is_registered(void) const;
+				void		send_msg(std::string const & msg) const;
 
 				/* SETTERS */
 				void	flush_msg_buf(void);
@@ -129,6 +130,8 @@ class IRC_Server
 				std::string const &			get_msg_buf(void) const;
 				std::string const &			get_servername(void) const;
 				std::string const &			get_nick(void) const;
+				int							get_sockfd(void) const;
+
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??
