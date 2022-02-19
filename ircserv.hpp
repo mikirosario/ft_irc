@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/19 15:06:17 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 17:59:12 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,9 @@
 
 #include "irc_numerics.hpp"
 
-#define MAX_CONNECTIONS 1024
-#define MSG_BUF_SIZE 512 //maximum message length in IRC RFC including \r\n termination.
+#define MAX_CONNECTIONS 1024	//maximum number of simultaneous connections
+#define MSG_BUF_SIZE 512		//maximum message length in IRC RFC including \r\n termination.
+#define MAX_NICK_SIZE 9 		//maximum nickname length
 
 // class Channel
 // {

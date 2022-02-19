@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 13:01:17 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 18:02:28 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 IRC_Server::Client::Client(void) : _state(IRC_Server::Client::State(UNREGISTERED)), _buf_state(IRC_Server::Client::Buffer_State(UNREADY))
 {
-	// 	flush_msg_buf();
+	_msg_buf.reserve(MSG_BUF_SIZE);	//pre-reserve MSG_BUF_SIZE bytes
 }
 
 
@@ -177,9 +177,9 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 void	IRC_Server::Client::set_pass(std::string const & pass)
 {
 	_pass = pass;
-	//debug
-	std::cout << _pass << std::endl;
-	//debug
+	// //debug
+	// std::cout << _pass << std::endl;
+	// //debug
 }
 
 /*!
