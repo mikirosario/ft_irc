@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/17 16:02:16 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/19 15:49:17 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,6 +152,7 @@ int	main(int argc, char ** argv)
 	std::string	port;
 	std::string	pass;
 
+	std::setlocale(LC_ALL, "C"); //explicitly set locale
 	signal(SIGINT, signal_handler);
 	switch (argc)
 	{
