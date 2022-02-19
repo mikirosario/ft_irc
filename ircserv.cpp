@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/19 16:06:50 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 19:18:34 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 ** @param	str2	Second string to compare.
 ** @return			true if both strings compare equal, otherwise false
 */
-bool	IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const
+bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const
 {
 	if (str1.size() == str2.size())
 	{
@@ -122,6 +122,24 @@ bool	IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::s
 		return (true);
 	}
 	return (false);
+}
+
+/*!
+** @brief	Returns a pointer to the client with nickname @a nick or a NULL
+**			pointer if none exists. Search is case-insensitive.
+**
+** @details	Performs a case-insensitive search for the client with nickname
+**			@a nick ("C" locale, US-ASCII case system) in the _clients array.
+** @param	nick	The nick to search for.
+** @return	A pointer to the client with the nickname @a nick if one exists,
+**			otherwise a NULL pointer.
+*/
+IRC_Server::Client *	IRC_Server::find_client_by_nick(std::string const & nick)
+{
+	for (int i = 0; i < _connections; ++i)
+		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
+			return (&_clients[i]);
+	return (NULL);
 }
 
 	// -- SERVER INITIALIZATION -- //

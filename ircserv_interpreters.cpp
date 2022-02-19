@@ -6,14 +6,39 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 13:02:47 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 20:16:27 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
 #include <vector>
 
-//parsing
+/* ---- PARSING ---- */
+
+/*!
+** @brief	Determines validity of @a nick as a nickname.
+**
+** @details	A nickname may contain any US-ASCII letter (A-Z, a-z) number (0-9),
+**			as well as `|^_-{}[]\. A nickname may not start with a number or -.
+**			A nickname must be from 1 to 9 characters long.
+**
+**			NOTE: Assumes "C" locale.
+** @param	nick	A string proposed as a nickname.
+** @return	true if @a nick is a valid nickname, otherwise false
+*/
+bool	IRC_Server::nick_is_valid(std::string const & nick) const
+{
+	if (nick.size() < 1
+		|| nick.size() > 9
+		|| std::isdigit(static_cast<unsigned char>(nick[0])) != 0
+		|| nick[0] == '-')
+			return (false);
+	else
+		for (std::string::size_type i = 1, end = nick.size(); i < end; ++i)
+			if (std::isalnum(static_cast<unsigned char>(nick[i])) == 0 && std::strchr("`|^_-{}[]\\", static_cast<unsigned char>(nick[i])) == NULL)
+				return (false);
+	return (true);
+}
 
 // bool	IRC_Server::register_client(int fd, std::string const & msg)
 // {
@@ -51,6 +76,41 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 }
 
 /*!
+** @brief	Executes a NICK command originating from @a sender.
+**
+** @details	Attempts to retrieve a nickname sent by @a sender in the @a argv
+**			argument vector as the first parameter, for use in registration or
+**			to change an existing nickname. If there is no first parameter, an
+**			ERR_NONICKNAMEGIVEN error reply is returned to @a sender. If the
+**			nickname is invalid, an ERR_ERRONEOUSNICKNAME error reply is
+**			returned to @a sender. If the nickname is already in use on the
+**			server as determined by a case-insensitive lookup, an
+**			ERR_NICKNAMEINUSE is returned to @a sender. Otherwise, the new
+**			sender's nick is set to the new nickname.
+**
+**			If @a sender is already registered and the new nickname is accepted,
+**			a confirmation reply is	returned to @a sender.
+*/
+void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv)
+{
+	if (argv.size() < 2)
+		send_err_NONICKNAMEGIVEN(sender, "No nickname given");
+	else if (nick_is_valid(argv[1]) == false)
+		send_err_ERRONEOUSNICKNAME(sender, argv[1], "Erroneous nickname");
+	else if (find_client_by_nick(argv[1]) != NULL)
+		send_err_NICKNAMEINUSE(sender, argv[1], "Nickname is already in use");
+	else
+	{
+		// if (sender.is_registered() == true) //if client is already registered, this is a nickname change, we send a reply as confirmation
+		// //The NICK message may be sent from the server to clients to acknowledge their NICK command was successful,
+		// //and to inform other clients about the change of nickname. In these cases, the <source> of the message will
+		// //be the old nickname [ [ "!" user ] "@" host ] of the user who is changing their nickname.
+		sender.set_nick(argv[1]);
+	}	
+}
+
+
+/*!
 ** @brief	Takes the message from the Client as an argument vector, identifies
 **			the command portion (argument at position 0) and sends the message
 **			to the appropriate interpreter. If the command is unrecognized,
@@ -72,6 +132,8 @@ void	IRC_Server::interpret_msg(Client & client)
 		std::cout << "El servidor baila el chotis" << std::endl;
 	else if (cmd == "PASS")
 		exec_cmd_PASS(client, argv);
+	else if (cmd == "NICK")
+		exec_cmd_NICK(client, argv);
 	else
 		send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 }

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/19 17:59:12 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 19:52:43 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,6 @@ class IRC_Server
 
 				/* UTILS */
 				static bool	is_endline(char const c);
-				void		find_nick(std::string const & nick, IRC_Server & server);
 				bool		confirm_pass(std::string const & server_pass);
 				bool		msg_is_ready(void) const;
 				bool		is_registered(void) const;
@@ -128,6 +127,7 @@ class IRC_Server
 				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
 				void	set_sockfd(int sockfd);
 				void	set_pass(std::string const & pass);
+				void	set_nick(std::string const & nick);
 				void	clear(void);
 
 				/* GETTERS */
@@ -156,8 +156,9 @@ class IRC_Server
 
 		/* PRIVATE MEMBER FUNCTIONS */
 		//Parsing
-		bool	get_network_info(std::string const & arg);
-		bool	case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const;
+		bool		get_network_info(std::string const & arg);
+		bool		case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const;
+		Client *	find_client_by_nick(std::string const & nick);
 
 		//Server initialization
 		bool			init(std::string const & netinfo);

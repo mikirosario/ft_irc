@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 13:09:27 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 19:45:49 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,6 +151,32 @@ void	IRC_Server::send_err_NEEDMOREPARAMS(Client const & recipient, std::string c
 	std::string msg = err_reply_start(recipient, ERR_NEEDMOREPARAMS);
 
 	msg += command;
+	err_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NONICKNAMEGIVEN(Client const & recipient, std::string const & description) const
+{
+	std::string msg = err_reply_start(recipient, ERR_NONICKNAMEGIVEN);
+
+	err_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NICKNAMEINUSE(Client const & recipient, std::string const & nick, std::string const & description) const
+{
+	std::string msg = err_reply_start(recipient, ERR_NICKNAMEINUSE);
+	
+	msg += nick;
+	err_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_ERRONEOUSNICKNAME(Client const & recipient, std::string const & nick, std::string const & description) const
+{
+	std::string	msg = err_reply_start(recipient, ERR_ERRONEOUSNICKNAME);
+
+	msg += nick;
 	err_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
