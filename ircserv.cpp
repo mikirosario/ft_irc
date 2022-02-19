@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 18:03:48 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 09:00:01 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -327,6 +327,9 @@ void	IRC_Server::add_connection(int fd)
 **			The @a _clients array must always have the same sequence as the
 **			@a _pollfds array, as every indexed client must remain associated
 **			with the pollfd at the same index, so we mirror this action.
+**
+**			This method now uses the client move method to make this O(1)
+**			constant time.
 ** @param index The position in the @a _pollfds array of the open connection to
 **				be removed.
 */
@@ -334,7 +337,8 @@ void	IRC_Server::remove_connection(int index)
 {
 	close_connection(_pfds[index].fd);
 	_pfds[index] = _pfds[_connections - 1];
-	_clients[index] = _clients[_connections - 1];
+	//_clients[index] = _clients[_connections - 1];
+	_clients[index].move(_clients[_connections - 1]); //move references of last client to this position
 	--_connections;
 }
 

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/18 18:32:43 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 08:51:06 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ class IRC_Server
 				}			_buf_state;
 				std::string	_servername;	//Server to which the Client is connected; can be used in replies requiring <servername>
 				int			_sockfd;		//Client's sockfd
-				std::string _pass;
+				std::string _pass;			//debug; flush user-provided pass after registration to improve security
 				std::string	_nick;
 				std::string	_msg_buf;
 				t_user_ptr	_user_profile;
@@ -110,6 +110,9 @@ class IRC_Server
 				Client(User const & src);
 				~Client(void);
 				Client &	operator=(Client const & src);
+
+				/* MOVE */
+				void		move(Client & src);
 
 				/* UTILS */
 				static bool	is_endline(char const c);
@@ -131,7 +134,6 @@ class IRC_Server
 				std::string const &			get_servername(void) const;
 				std::string const &			get_nick(void) const;
 				int							get_sockfd(void) const;
-
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??

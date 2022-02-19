@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 18:34:48 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 08:55:42 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,34 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 
 IRC_Server::Client::~Client(void)
 {}
+
+/*!
+** @brief	Moves all string references and copies all other variables from src
+**			to this instance using std::swap and then clears src.
+**
+** @details	This method is just a basic imitation of std::move functionality.
+**			I'm not allowed to use std::move because 42 syllabus requires us to
+**			use only C++98, so I use std::swap() and clear() as a workaround.
+**
+**			It is just meant to make the unordered clients array more efficient
+**			during the removal operation than it would be with assignments by
+**			passing references instead of copying all the strings character by
+**			character. The enums and int are still just copied.
+**
+** @param	src The Client to be moved.
+*/
+void		IRC_Server::Client::move(Client & src)
+{
+	_state = src._state;
+	_buf_state = src._buf_state;
+	std::swap(this->_servername, src._servername);
+	_sockfd = src._sockfd;
+	std::swap(this->_pass, src._pass);
+	std::swap(this->_nick, src._nick);
+	std::swap(this->_msg_buf, src._msg_buf);
+	_user_profile = src._user_profile;
+	src.clear();
+}
 
 /*!
 ** @brief	Searches the registered user map of the @a server for the @a nick and
