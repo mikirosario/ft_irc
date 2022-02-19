@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 12:33:49 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 13:09:27 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,15 +40,15 @@ std::string	IRC_Server::err_reply_start(Client const & recipient, char const * n
 
 /*!
 ** @brief	The @a error_reply will be properly ended with the @a description,
-**			or with an empty argument if no @a description is provided, and
-**			crlf-termination.
+**			or with an empty argument if an empty @a description is provided,
+**			and crlf-termination.
 **
 ** @details	This function will automatically append a @a description to an error
 **			reply as the final parameter and properly crlf-terminate it. The
-**			@a description is optional and an empty parameter will be appended
-**			in lieu of it. If including @a description would make @a error_reply
-**			longer than MSG_BUF_SIZE, @a description will be truncated as needed
-**			to fit.
+**			@a description is optional and an empty string may be sent in lieu
+**			of one. If including @a description would make @a error_reply longer
+**			than MSG_BUF_SIZE, @a description will be truncated as needed to
+**			fit.
 **
 **			This function will correctly terminate @a error_reply leaving it
 **			ready to be sent to the client **IF** the calling function correctly
@@ -80,11 +80,10 @@ void		IRC_Server::err_reply_end(std::string & error_reply, std::string const & d
 **
 ** @details	An error reply will be sent to @a client indicating that @a command
 **			received from @a client is unknown and cannot be interpreted. The
-**			@a description argument is optional. The @a description argument is required,
-**			but will admit an empty string if no description is desired. If
-**			@a description is not provided an empty description will be sent. If
-**			including @a description would cause the message to be over 512
-**			bytes long, it will be truncated to fit.
+**			@a description argument is optional. The @a description argument is
+**			required, but will admit an empty string if no description is
+**			desired. If including @a description would cause the message to be
+**			over 512 bytes long, it will be truncated to fit.
 **
 **			The UNKNOWNCOMMAND error follows this format:
 **
@@ -113,7 +112,6 @@ void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string c
 **			they sent cannot be executed as it would affect data that can only
 **			set during registration. The @a description argument is required,
 **			but will admit an empty string if no description is desired. If
-**			@a description is not provided an empty description will be sent. If
 **			including @a description would cause the message to be over 512
 **			bytes long, it will be truncated to fit.
 **
@@ -138,7 +136,6 @@ void	IRC_Server::send_err_ALREADYREGISTERED(Client const & recipient, std::strin
 **			received from @a client cannot be executed because it was missing
 **			some required parameter(s). The @a description argument is required,
 **			but will admit an empty string if no description is desired. If
-**			@a description is not provided an empty description will be sent. If
 **			including @a description would cause the message to be over 512
 **			bytes long, it will be truncated to fit.
 **
