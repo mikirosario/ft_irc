@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 09:08:27 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 09:12:50 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,7 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 }
 
 /*!
-** @brief	Clear's all Client data.
+** @brief	Clears all Client data.
 */
 void	IRC_Server::Client::clear(void)
 {

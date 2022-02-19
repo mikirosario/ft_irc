@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/19 09:00:01 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 10:24:03 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -475,7 +475,7 @@ void	IRC_Server::process_client_message(int i)
 			{
 
 				//debug exec_cmd test
-				exec_cmd(_clients[i]);
+				interpret_msg(_clients[i]);
 				//debug
 
 				// //debug get_param_count and get_message tests

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 18:00:31 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 10:23:33 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ bool						is_cmd_NICK(std::string const & cmd);
 //interpreting
 bool	exec_cmd_NICK(void);
 bool	register_client(int fd, std::string const & msg);
-void	exec_cmd(Client & client);
+void	interpret_msg(Client & client);
 
 //error replies
 std::string	err_reply_start(Client const & client, char const * numeric) const;
