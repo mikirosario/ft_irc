@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 12:40:23 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 13:02:47 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,10 @@
 */
 void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv)
 {
-	std::string const & cmd = argv.size() > 0 ? argv[0] : std::string(); //never can be too careful... xD
-
 	if (sender.is_registered() == true)
 		send_err_ALREADYREGISTERED(sender, "You may not reregister");
 	else if (argv.size() < 2) //Only command argument exists
-		send_err_NEEDMOREPARAMS(sender, cmd, "Not enough parameters");
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else
 		sender.set_pass(argv[1]);
 }

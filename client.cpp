@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 11:44:26 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 13:01:17 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -364,12 +364,15 @@ size_t	IRC_Server::Client::get_param_count(void) const
 **			to reap the message from the buffer, though there is a redundant
 **			check to prevent unready message buffers from being reaped.
 **
-**			If there is no command in the buffer OR if the buffer is not READY
-**			(hasn't yet been crlf-terminated), an empty vector is returned.
+**			If there is no command in the buffer, a vector with an empty string
+**			in position 0 is returned. If the buffer is not READY (hasn't yet
+**			been crlf-terminated), an empty vector is returned.
 **
 **			If the message is READY the buffer will ALWAYS be flushed and the
-**			buffer state changed to UNREADY to make way for new incoming data,
-**			EVEN IF an empty vector is returned.
+**			buffer state changed to UNREADY to make way for new incoming data.
+**
+**			If the message is UNREADY (empty vector returned), the buffer will
+**			NOT be flushed.
 **
 **			NOTE:	Once get_message() is called to reap the Client's message,
 **					the Client's message buffer is cleared and, unless a prior
@@ -379,8 +382,9 @@ size_t	IRC_Server::Client::get_param_count(void) const
 **					To check the Client's message buffer WITHOUT reaping the
 **					message, use the get_msg_buf() method instead.
 ** @return	A string vector in which the first string is the command and the
-**			rest are parameters. If the message lacks a command or the buffer
-**			state is not READY, an empty vector is returned.
+**			rest are parameters. If the message lacks a command, an empty string
+**			will be provided in place of the command. If the buffer state is not
+**			READY, an empty vector is returned.
 */
 std::vector<std::string>	IRC_Server::Client::get_message(void)
 {
@@ -414,6 +418,8 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 				start_pos = _msg_buf.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
 			}
 		}
+		else
+			ret[0] = cmd;														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
 		flush_msg_buf(); //buffer is always flushed with get_message when READY, even if there is no command
 	}
 	return  (ret);
