@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 09:12:50 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 11:44:26 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,6 +170,19 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 }
 
 /*!
+** @brief	Sets Client's @a _pass to the value passed as an argument.
+**
+** @param	pass	The string containing the Client's password.
+*/
+void	IRC_Server::Client::set_pass(std::string const & pass)
+{
+	_pass = pass;
+	//debug
+	std::cout << _pass << std::endl;
+	//debug
+}
+
+/*!
 ** @brief	Clears all Client data.
 */
 void	IRC_Server::Client::clear(void)
@@ -241,6 +254,13 @@ void		IRC_Server::Client::send_msg(std::string const & msg) const
 }
 
 /* GETTERS */
+
+/*!
+** @brief	Returns a read-only reference to the Client's message buffer. The
+**			buffer and client state remain unchanged.
+**
+** @return	A read-only reference to the Client's message buffer.
+*/
 std::string const &	IRC_Server::Client::get_msg_buf(void) const
 {
 	return(_msg_buf);
@@ -351,6 +371,13 @@ size_t	IRC_Server::Client::get_param_count(void) const
 **			buffer state changed to UNREADY to make way for new incoming data,
 **			EVEN IF an empty vector is returned.
 **
+**			NOTE:	Once get_message() is called to reap the Client's message,
+**					the Client's message buffer is cleared and, unless a prior
+**					copy was made, the return value of get_message() is the
+**					ONLY remaining copy of the message!
+**
+**					To check the Client's message buffer WITHOUT reaping the
+**					message, use the get_msg_buf() method instead.
 ** @return	A string vector in which the first string is the command and the
 **			rest are parameters. If the message lacks a command or the buffer
 **			state is not READY, an empty vector is returned.

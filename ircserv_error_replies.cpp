@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/18 18:14:04 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 12:33:49 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@
 ** @brief	Builds the initial, invariant part of an error reply, consisting of
 **			COLON<prefix>SPACE<numeric>SPACE<client>SPACE.
 **
-** @param	client A reference to the client to whom the reply will be sent.
+** @param	recipient A reference to the client to whom the reply will be sent.
 ** @param	numeric	The error numeric. ( see @a irc_numerics.hpp ).
 ** @return	A string containing the initial, invariant part of an error reply.
 */
-std::string	IRC_Server::err_reply_start(Client const & client, char const * numeric) const
+std::string	IRC_Server::err_reply_start(Client const & recipient, char const * numeric) const
 {
 	std::string	error;
 
@@ -33,8 +33,8 @@ std::string	IRC_Server::err_reply_start(Client const & client, char const * nume
 	error += get_source() + " " ;
 	error += numeric;
 	error += " ";
-	if (client.is_registered() == true) //first parameter should be client name, but if client is unregistered this hasn't yet been recorded
-		error += client.get_nick() + " "; //will have a get_client() for formatted replies: nick!user@userIP
+	if (recipient.is_registered() == true) //first parameter should be client name, but if client is unregistered this hasn't yet been recorded
+		error += recipient.get_nick() + " "; //debug //will have a get_client() for formatted replies: nick!user@userIP
 	return (error);
 }
 
@@ -80,21 +80,22 @@ void		IRC_Server::err_reply_end(std::string & error_reply, std::string const & d
 **
 ** @details	An error reply will be sent to @a client indicating that @a command
 **			received from @a client is unknown and cannot be interpreted. The
-**			@a description argument is optional. If @a description is not
-**			provided an empty description will be sent. If including
-**			@a description would cause the message to be over 512 bytes long, it
-**			will be truncated to fit.
+**			@a description argument is optional. The @a description argument is required,
+**			but will admit an empty string if no description is desired. If
+**			@a description is not provided an empty description will be sent. If
+**			including @a description would cause the message to be over 512
+**			bytes long, it will be truncated to fit.
 **
 **			The UNKNOWNCOMMAND error follows this format:
 **
 **			 ":prefix numeric client command :description"
-** @param	client A reference to the client to whom the reply will be sent.
+** @param	recipient A reference to the client to whom the reply will be sent.
 ** @param	command The command from the client that was not recognized.
 ** @param	description Optional additional description of the problem.
 */
-void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & client, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string const & command, std::string const & description) const
 {
-	std::string msg = err_reply_start(client, ERR_UNKNOWNCOMMAND);
+	std::string msg = err_reply_start(recipient, ERR_UNKNOWNCOMMAND);
 
 	msg += command;
 	err_reply_end(msg, description);
@@ -102,5 +103,57 @@ void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & client, std::string cons
 	// //debug
 	// std::cout << msg.data() << std::endl;
 	// //debug
-	client.send_msg(msg);
+	recipient.send_msg(msg);
+}
+
+/*!
+** @brief	Sends an ALREADYREGISTERED error reply to the @a client.
+**
+** @details	An error reply will be sent to @a client indicating that the command
+**			they sent cannot be executed as it would affect data that can only
+**			set during registration. The @a description argument is required,
+**			but will admit an empty string if no description is desired. If
+**			@a description is not provided an empty description will be sent. If
+**			including @a description would cause the message to be over 512
+**			bytes long, it will be truncated to fit.
+**
+**			The ALREADYREGISTERED error follows this format:
+**
+**			 ":prefix numeric client :description"
+** @param	recipient A reference to the client to whom the reply will be sent.
+** @param	description Optional additional description of the problem.
+*/
+void	IRC_Server::send_err_ALREADYREGISTERED(Client const & recipient, std::string const & description) const
+{
+	std::string msg = err_reply_start(recipient, ERR_ALREADYREGISTERED);
+
+	err_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+/*!
+** @brief	Sends a NEEDMOREPARAMS error reply to the @a client.
+**
+** @details	An error reply will be sent to @a client indicating that @a command
+**			received from @a client cannot be executed because it was missing
+**			some required parameter(s). The @a description argument is required,
+**			but will admit an empty string if no description is desired. If
+**			@a description is not provided an empty description will be sent. If
+**			including @a description would cause the message to be over 512
+**			bytes long, it will be truncated to fit.
+**
+**			The NEEDMOREPARAMS error follows this format:
+**
+**			 ":prefix numeric client command :description"
+** @param	recipient A reference to the client to whom the reply will be sent.
+** @param	command The command from the client that could not be executed.
+** @param	description Optional additional description of the problem.
+*/
+void	IRC_Server::send_err_NEEDMOREPARAMS(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string msg = err_reply_start(recipient, ERR_NEEDMOREPARAMS);
+
+	msg += command;
+	err_reply_end(msg, description);
+	recipient.send_msg(msg);
 }
