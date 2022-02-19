@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 08:55:42 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/19 09:08:27 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,14 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 */
 void	IRC_Server::Client::clear(void)
 {
-	std::memset(this, 0, sizeof(IRC_Server::Client));
+	_state = Client::State(UNREADY);
+	_buf_state = Client::Buffer_State(UNREGISTERED);
+	_servername.clear();
+	_sockfd = 0;
+	_pass.clear();
+	_nick.clear();
+	_msg_buf.clear();
+	_user_profile = t_user_ptr();
 }
 
 /*!
