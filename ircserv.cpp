@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 21:16:51 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 22:12:25 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@
 */
 IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) : _servport(port), _servpass(pass), _connections(0)
 {
+	for (size_t i = 0; i < MAX_CONNECTIONS; ++i)
+		const_cast<size_t &>(_clients[i].pos) = i;
 	init(netinfo);
 }
 
@@ -124,42 +126,22 @@ bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::
 	return (false);
 }
 
-//DEPRECATED
 /*!
-// ** @brief	Returns a pointer to the client with nickname @a nick or a NULL
-// **			pointer if none exists. Search is case-insensitive.
-// **
-// ** @details	Performs a case-insensitive search for the client with nickname
-// **			@a nick ("C" locale, US-ASCII case system) in the _clients array.
-// ** @param	nick	The nick to search for.
-// ** @return	A pointer to the client with the nickname @a nick if one exists,
-// **			otherwise a NULL pointer.
-// */
-// IRC_Server::Client *	IRC_Server::find_client_by_nick(std::string const & nick)
-// {
-// 	for (int i = 0; i < _connections; ++i)
-// 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
-// 			return (&_clients[i]);
-// 	return (NULL);
-// }
-
-/*!
-** @brief	Returns the position of the client with nickname @a nick in the
-**			@a _clients array and the @a _pfds array, or -1 if no such nick
-**			exists. Search is case-insensitive.
+** @brief	Returns a pointer to the client with nickname @a nick or a NULL
+**			pointer if none exists. Search is case-insensitive.
 **
 ** @details	Performs a case-insensitive search for the client with nickname
 **			@a nick ("C" locale, US-ASCII case system) in the _clients array.
 ** @param	nick	The nick to search for.
-** @return	The position in the @a _clients array and @a _pfds array of the
-**			client with the nickname @a nick, if one exists, otherwise -1.
+** @return	A pointer to the client with the nickname @a nick if one exists,
+**			otherwise a NULL pointer.
 */
-int			IRC_Server::find_client_pos_by_nick(std::string const & nick)
+IRC_Server::Client *	IRC_Server::find_client_by_nick(std::string const & nick)
 {
-	for (int i = 1; i < _connections; ++i)
+	for (int i = 0; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
-			return (i);
-	return (-1);
+			return (&_clients[i]);
+	return (NULL);
 }
 
 	// -- SERVER INITIALIZATION -- //
@@ -425,6 +407,9 @@ void	IRC_Server::add_connection(int fd, char const * remoteIP)
 **			@a _pollfds array, as every indexed client must remain associated
 **			with the pollfd at the same index, so we mirror this action.
 **
+**			The @a _remove_list keeps track of clients flagged for removal and
+**			likewise mirrors the @a _pollfds array.
+**
 **			This method now uses the client move method to make this O(1)
 **			constant time.
 **
@@ -440,7 +425,8 @@ void	IRC_Server::remove_connection(int index)
 {
 	close_connection(_pfds[index].fd);
 	_pfds[index] = _pfds[_connections - 1];
-	_clients[index].move(_clients[_connections - 1]); //move references of last client to this position
+	_clients[index].move(_clients[_connections - 1]);		//move references of last client to this position
+	_remove_list[index] = _remove_list[_connections - 1];	//move corresponding remove_list bit to this position
 	--_connections;
 }
 
@@ -613,9 +599,9 @@ void	IRC_Server::process_client_message(int i)
 **			for removal.
 **
 ** @details	The Client at position @a pos will be marked for removal at the next
-**			available opportunity. Use with find_client_pos_by_nick() ANYWHERE
-**			and AT ANY TIME to remove a Client from the server, for example, to
-**			execute KICK or similar commands.
+**			available opportunity. Use with find_client_pos_by_nick() or
+**			client.get_pos() ANYWHERE and AT ANY TIME to remove a Client from
+**			the server, for example, to execute KICK or similar commands.
 **
 **			If @a pos is out of bounds of the _remove_list, or corresponds to
 **			the server's position, nothing will be done.

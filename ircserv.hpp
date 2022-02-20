@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 21:10:28 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 21:55:47 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,8 @@ class IRC_Server
 				~Client(void);
 				Client &	operator=(Client const & src);
 
+				size_t const	pos; //Client's position in server's _clients array and _pfds array. Invariant.
+
 				/* MOVE */
 				void		move(Client & src);
 
@@ -153,6 +155,7 @@ class IRC_Server
 				std::string const &			get_hostname(void) const;
 				std::string const &			get_clientaddr(void) const;
 				int							get_sockfd(void) const;
+				size_t						get_pos(void) const;
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??

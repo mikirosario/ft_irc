@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 20:34:47 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 21:45:05 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 		send_err_NONICKNAMEGIVEN(sender, "No nickname given");
 	else if (nick_is_valid(argv[1]) == false)
 		send_err_ERRONEOUSNICKNAME(sender, argv[1], "Erroneous nickname");
-	else if (find_client_pos_by_nick(argv[1]) != -1)
+	else if (find_client_by_nick(argv[1]) != NULL)
 		send_err_NICKNAMEINUSE(sender, argv[1], "Nickname is already in use");
 	else if (sender.is_registered() == true)
 	{
@@ -148,7 +148,8 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 			send_err_UNKNOWNERROR(sender, argv[0], "You've sent more than one NICK command during registration");
 		else										//it's the first nick command from an unregistered client
 			sender.set_nick(argv[1]);
-	}	
+	}
+	std::cout << "sender pos: " << sender.pos << std::endl;
 }
 
 /*!

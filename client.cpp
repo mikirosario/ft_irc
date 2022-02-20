@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 20:39:12 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 21:56:24 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 
 IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED)),
 									_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),
-									_pass_attempts(0)
+									_pass_attempts(0),
+									pos(0)
 {
 	//pre-reserve some appropriate memory
 	_serveraddr.reserve(INET6_ADDRSTRLEN);
@@ -568,4 +569,9 @@ std::string const &			IRC_Server::Client::get_clientaddr(void) const
 int							IRC_Server::Client::get_sockfd(void) const
 {
 	return(_sockfd);
+}
+
+size_t						IRC_Server::Client::get_pos(void) const
+{
+	return (pos);
 }
