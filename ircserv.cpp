@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 20:13:52 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 20:36:35 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,22 +124,42 @@ bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::
 	return (false);
 }
 
+//DEPRECATED
 /*!
-** @brief	Returns a pointer to the client with nickname @a nick or a NULL
-**			pointer if none exists. Search is case-insensitive.
+// ** @brief	Returns a pointer to the client with nickname @a nick or a NULL
+// **			pointer if none exists. Search is case-insensitive.
+// **
+// ** @details	Performs a case-insensitive search for the client with nickname
+// **			@a nick ("C" locale, US-ASCII case system) in the _clients array.
+// ** @param	nick	The nick to search for.
+// ** @return	A pointer to the client with the nickname @a nick if one exists,
+// **			otherwise a NULL pointer.
+// */
+// IRC_Server::Client *	IRC_Server::find_client_by_nick(std::string const & nick)
+// {
+// 	for (int i = 0; i < _connections; ++i)
+// 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
+// 			return (&_clients[i]);
+// 	return (NULL);
+// }
+
+/*!
+** @brief	Returns the position of the client with nickname @a nick in the
+**			@a _clients array and the @a _pfds array, or -1 if no such nick
+**			exists. Search is case-insensitive.
 **
 ** @details	Performs a case-insensitive search for the client with nickname
 **			@a nick ("C" locale, US-ASCII case system) in the _clients array.
 ** @param	nick	The nick to search for.
-** @return	A pointer to the client with the nickname @a nick if one exists,
-**			otherwise a NULL pointer.
+** @return	The position in the @a _clients array and @a _pfds array of the
+**			client with the nickname @a nick, if one exists, otherwise -1.
 */
-IRC_Server::Client *	IRC_Server::find_client_by_nick(std::string const & nick)
+int			IRC_Server::find_client_pos_by_nick(std::string const & nick)
 {
-	for (int i = 0; i < _connections; ++i)
+	for (int i = 1; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
-			return (&_clients[i]);
-	return (NULL);
+			return (i);
+	return (-1);
 }
 
 	// -- SERVER INITIALIZATION -- //
@@ -558,6 +578,7 @@ void	IRC_Server::process_client_message(int i)
 				//debug
 
 				interpret_msg(_clients[i]);
+
 				
 				//debug
 				//debug

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 20:01:02 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 20:27:47 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,6 +180,7 @@ class IRC_Server
 		bool		get_network_info(std::string const & arg);
 		bool		case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const;
 		Client *	find_client_by_nick(std::string const & nick);
+		int			find_client_pos_by_nick(std::string const & nick);
 
 		//Server initialization
 		bool			init(std::string const & netinfo);
