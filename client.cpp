@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 18:43:31 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 20:39:12 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -284,14 +284,6 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 void	IRC_Server::Client::set_state_registered(void)
 {
 	_state = IRC_Server::Client::State(REGISTERED);
-}
-
-/*!
-** @brief	Flags Client for removal from server.
-*/
-void	IRC_Server::Client::set_state_remove(void)
-{
-	_state = IRC_Server::Client::State(REMOVE);
 }
 
 /*!

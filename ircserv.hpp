@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 20:27:47 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 21:10:28 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,8 +91,7 @@ class IRC_Server
 				enum State
 				{
 					UNREGISTERED,
-					REGISTERED,
-					REMOVE
+					REGISTERED
 				}			_state;
 				enum Buffer_State
 				{
@@ -141,7 +140,6 @@ class IRC_Server
 				bool	set_clientaddr(char const * remoteIP);
 				void	set_hostname(std::string const & hostname);
 				void	set_state_registered(void);
-				void	set_state_remove(void);
 
 				void	clear(void);
 
@@ -203,6 +201,7 @@ class IRC_Server
 		bool	poll_listener(void) const;
 		bool	poll_client(int i) const;
 		void	process_client_message(int i);
+		void	remove_client(size_t pos);
 		void	remove_flagged_clients(void);
 		
 		//Utils

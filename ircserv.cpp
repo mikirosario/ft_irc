@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 20:36:35 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 21:16:51 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -415,7 +415,8 @@ void	IRC_Server::add_connection(int fd, char const * remoteIP)
 }
 
 /*!
-** @brief	Removes an open connection from the @a _pollfds array.
+** @brief	Removes an open connection from the @a _pollfds array. DO NOT USE IN
+**			INTERPRETING MODULES TO REMOVE CLIENTS!!!!
 **
 ** @details	The @a _pollfds array is unordered, so deletion merely consists of
 **			overwriting the deleted connection with the data of the last
@@ -426,6 +427,12 @@ void	IRC_Server::add_connection(int fd, char const * remoteIP)
 **
 **			This method now uses the client move method to make this O(1)
 **			constant time.
+**
+**			NOTE: DO NOT use this DANGEROUS function to kick clients!! This can
+**			ONLY be called at a VERY specific part of the server_loop(),
+**			otherwise TOTAL AND UTTER DESTRUCTION will be the result. To safely
+**			remove clients at any time or place in the server_loop(), use
+**			remove_client() instead!
 ** @param index The position in the @a _pollfds array of the open connection to
 **				be removed.
 */
@@ -554,11 +561,11 @@ void	IRC_Server::process_client_message(int i)
 			break ; //ignore empty messages
 		case 0 :
 			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
-			_remove_list.set(i);
+			remove_client(i);
 			break ;
 		case -1 :
 			std::cerr << "recv error" << std::endl;
-			_remove_list.set(i);
+			remove_client(i);
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
@@ -599,6 +606,26 @@ void	IRC_Server::process_client_message(int i)
 				// //debug
 			}
 	}
+}
+
+/*!
+** @brief	Safely flags the Client at position @a pos in the @a _clients array
+**			for removal.
+**
+** @details	The Client at position @a pos will be marked for removal at the next
+**			available opportunity. Use with find_client_pos_by_nick() ANYWHERE
+**			and AT ANY TIME to remove a Client from the server, for example, to
+**			execute KICK or similar commands.
+**
+**			If @a pos is out of bounds of the _remove_list, or corresponds to
+**			the server's position, nothing will be done.
+** @param	pos	The position of the Client to be removed in the @a _clients
+**			array.
+*/
+void	IRC_Server::remove_client(size_t pos)
+{
+	if (_remove_list.size() > pos && pos > 0)
+		_remove_list.set(pos, true);
 }
 
 /*!
