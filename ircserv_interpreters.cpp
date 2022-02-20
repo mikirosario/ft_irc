@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 17:18:38 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 17:35:45 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 	else
 	{
 		sender.set_nick(argv[1]);
-		if (sender.is_registered() == false) //if client is not reigstered, we'll check to see if we have a username; if we do, we try to register
+		//if (sender.is_registered() == false) //if client is not reigstered, we'll check to see if we have a username; if we do, we try to register
 		
 		// else
 		//if client is already registered, this is a nickname change, we send a reply as confirmation

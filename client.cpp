@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 17:30:00 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 17:36:34 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_pass = src._pass;
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
-	_user_profile = src._user_profile;
 	_username = src._username;
 	_realname = src._realname;
 	_hostname = src._hostname;
@@ -69,7 +68,6 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_realname, src._realname);
 	std::swap(this->_msg_buf, src._msg_buf);
 	std::swap(this->_hostname, src._hostname);
-	_user_profile = src._user_profile;
 	src.clear();
 }
 
@@ -281,7 +279,6 @@ void	IRC_Server::Client::clear(void)
 	_pass.clear();
 	_nick.clear();
 	_msg_buf.clear();
-	_user_profile = t_user_ptr();
 }
 
 /*!

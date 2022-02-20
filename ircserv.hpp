@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 17:33:24 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 17:34:58 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,6 @@ class IRC_Server
 				std::string _username;		//Client's username
 				std::string _realname;		//Client's "real" name (sure it is, Gandalf Baggins)
 				std::string	_msg_buf;
-				t_user_ptr	_user_profile;
 
 				/* PRIVATE UTILS */
 				size_t		get_param_count(void) const;
