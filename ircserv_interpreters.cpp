@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 18:06:04 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 18:38:24 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,10 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 	else if (argv.size() < 2) //Only command argument exists
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else if (sender.set_pass(argv[1]) == false)
+	{
 		send_err_UNKNOWNERROR(sender, argv[0], "You've sent too many PASS commands");
+		
+	}
 }
 
 /*!
@@ -110,6 +113,13 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 **
 **			If @a sender is already registered and the new nickname is accepted,
 **			a confirmation reply is	returned to @a sender.
+**
+**			If @a sender is unregistered and has sent a username before sending
+**			the nickname, we will try to register @a sender after setting the
+**			nickname.
+**
+**			If @a sender is unregistered and has already sent a nickname, we
+**			will boot @a sender as our patience is not unlimited.
 */
 void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv)
 {
@@ -119,22 +129,25 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 		send_err_ERRONEOUSNICKNAME(sender, argv[1], "Erroneous nickname");
 	else if (find_client_by_nick(argv[1]) != NULL)
 		send_err_NICKNAMEINUSE(sender, argv[1], "Nickname is already in use");
-	else
+	else if (sender.is_registered() == true)
 	{
 		sender.set_nick(argv[1]);
-		// if (sender.is_registered() == false) //if client is not reigstered, we'll check to see if we have a username; if we do, we try to register
-		// {
-		// 	if (sender.get_username().empty() == false)	//we have both nick and user, try to register
-		// 		//try to register
-		// 	else if (sender.get_nick().empty() == false) //if we already have a nick and the client is just bombing us with multiple NICK commands, send them to hell
-
-		// }
-		
-		// else
 		//if client is already registered, this is a nickname change, we send a reply as confirmation
 		//The NICK message may be sent from the server to clients to acknowledge their NICK command was successful,
 		//and to inform other clients about the change of nickname. In these cases, the <source> of the message will
 		//be the old nickname [ [ "!" user ] "@" host ] of the user who is changing their nickname.
+	}
+	else //if client is not registered, we'll check to see if we have a username; if we do, we try to register
+	{
+		if (sender.get_username().empty() == false)	//we have both nick and user, try to register
+		{
+			sender.set_nick(argv[1]);
+			//try to register
+		}
+		else if (sender.get_nick().empty() == false) //if we already have a nick and the client is just bombing us with multiple NICK commands, send them to hell
+			send_err_UNKNOWNERROR(sender, argv[0], "You've sent more than one NICK command during registration");
+		else										//it's the first nick command from an unregistered client
+			sender.set_nick(argv[1]);
 	}	
 }
 

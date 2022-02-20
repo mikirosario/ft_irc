@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 17:45:26 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 19:36:36 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <cstdio> //perror
 #include <algorithm>
 #include <map>
+#include <bitset>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -90,7 +91,8 @@ class IRC_Server
 				enum State
 				{
 					UNREGISTERED,
-					REGISTERED
+					REGISTERED,
+					REMOVE
 				}			_state;
 				enum Buffer_State
 				{
@@ -138,6 +140,8 @@ class IRC_Server
 				void	set_realname(std::string const & realname);
 				bool	set_clientaddr(char const * remoteIP);
 				void	set_hostname(std::string const & hostname);
+				void	set_state_registered(void);
+				void	set_state_remove(void);
 
 				void	clear(void);
 
@@ -162,6 +166,7 @@ class IRC_Server
 		std::string						_serveraddr;
 		struct pollfd					_pfds[MAX_CONNECTIONS];
 		Client							_clients[MAX_CONNECTIONS];
+		std::bitset<MAX_CONNECTIONS>	_remove_list;
 		std::map<std::string, User>		_reg_users; //for saving data from registered users//all users (not sure yet, would have to delete unregged users from here on disconnect in latter case, do two nick searches per connection in former)
 		int								_connections;
 		
@@ -196,7 +201,7 @@ class IRC_Server
 		void	accept_connection(void);
 		bool	poll_listener(void) const;
 		bool	poll_client(int i) const;
-		void	process_client_message(int i);
+		void	process_client_message(int i, bool & remove);
 		
 		//Utils
 		bool	is_endline(char const c);

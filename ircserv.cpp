@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 15:13:41 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 19:40:21 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -413,7 +413,6 @@ void	IRC_Server::remove_connection(int index)
 {
 	close_connection(_pfds[index].fd);
 	_pfds[index] = _pfds[_connections - 1];
-	//_clients[index] = _clients[_connections - 1];
 	_clients[index].move(_clients[_connections - 1]); //move references of last client to this position
 	--_connections;
 }
@@ -525,7 +524,7 @@ bool	IRC_Server::poll_listener(void) const
 **			submodules for different RFC functionalities.
 ** @param	i The position in the @a _pfds array of the client with a message.
 */
-void	IRC_Server::process_client_message(int i)
+void	IRC_Server::process_client_message(int i, bool & remove)
 {
 	char						msgbuf[MSG_BUF_SIZE];
 
@@ -537,10 +536,12 @@ void	IRC_Server::process_client_message(int i)
 		case 0 :
 			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
 			remove_connection(i);
+			remove = true;
 			break ;
 		case -1 :
 			std::cerr << "recv error" << std::endl;
 			remove_connection(i);
+			remove = true;
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
@@ -658,14 +659,20 @@ void	IRC_Server::server_loop(void)
 			}
 
 			//Poll clients
-			for (int i = 1, polled = 0; polled < poll_count; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
+			for (int i = 1; poll_count > 0; ) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
 			{
 				if (poll_client(i) == true)
 				{
-					process_client_message(i);
-					++polled;
+					bool	remove = 0;
+					process_client_message(i, remove);
+					if (remove == false)
+						++i;
+					--poll_count;
 				}
+				else
+					++i;
 			}
+
 		}
 	}
 }
