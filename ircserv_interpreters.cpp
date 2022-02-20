@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 22:40:58 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 22:53:53 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,7 +148,7 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 		{
 			send_err_UNKNOWNERROR(sender, argv[0], "You've sent more than one NICK command during registration");
 			remove_client_from_server(sender);
-			std::cerr << "pollserver: socket " << sender.get_sockfd() << " kicked from server." << std::endl;
+			std::cout << "pollserver: socket " << sender.get_sockfd() << " kicked from server." << std::endl;
 		}
 		else										//it's the first nick command from an unregistered client
 			sender.set_nick(argv[1]);
@@ -191,10 +191,18 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else if (username_is_valid(argv[1]) == false)
 		send_err_UNKNOWNERROR(sender, argv[0], "Username contains invalid characters (NUL, SPACE, CR, LF or @)");
+	else if (sender.get_username().empty() == false) //The client is spamming us with USER commands without trying to register. The Queen is not amused. ¬¬
+	{
+		send_err_UNKNOWNERROR(sender, argv[0], "You've sent more than one USER command during registration");
+		remove_client_from_server(sender);
+		std::cout << "pollserver: socket " << sender.get_sockfd() << " kicked from server." << std::endl;
+	}
 	else
 	{
 		sender.set_username(argv[1]);
 		sender.set_realname(argv[4]);
+		// if (sender.get_nick().empty() == false) //The client already sent a nick, so we can FINALLY try to register
+			//try to register!
 	}
 }
 
