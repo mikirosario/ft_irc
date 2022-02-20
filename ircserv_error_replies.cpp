@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 19:45:49 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 16:50:23 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,21 +76,48 @@ void		IRC_Server::err_reply_end(std::string & error_reply, std::string const & d
 }
 
 /*!
-** @brief	Sends an UNKNOWNCOMMAND error reply to the @a client.
+** @brief	Sends an UNKNOWNERROR error reply to the @a recipient.
 **
-** @details	An error reply will be sent to @a client indicating that @a command
-**			received from @a client is unknown and cannot be interpreted. The
-**			@a description argument is optional. The @a description argument is
-**			required, but will admit an empty string if no description is
-**			desired. If including @a description would cause the message to be
-**			over 512 bytes long, it will be truncated to fit.
+** @details This is a generic error reply that can be sent to a client when a
+**			command is rejected for any reason not explicitly covered by another
+**			numeric. The error reply will indicate that @a command could not be
+**			processed for the reason outlined in @a description.
+**
+**			A description of the problem should be provided in this case. If
+**			including @a description would cause the message to be over 512
+**			bytes long, it will be truncated to fit.
+**
+**			The UNKNOWNERROR error follows this format:
+**
+**			:prefix numeric recipient command :description
+** @param	recipient	The client to whom the reply will be sent.
+** @param	command		The command from the recipient that was not recognized.
+** @param	description	Description of the problem.
+*/
+void		IRC_Server::send_err_UNKNOWNERROR(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string	msg = err_reply_start(recipient, ERR_UNKNOWNERROR);
+
+	msg += command;
+	err_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+/*!
+** @brief	Sends an UNKNOWNCOMMAND error reply to the @a recipient.
+**
+** @details	An error reply will be sent to @a recipient indicating that
+**			@a command received from @a recipient is unknown and cannot be
+**			interpreted. The @a description argument can be an empty string if
+**			no description is desired. If including @a description would cause
+**			the message to be over 512 bytes long, it will be truncated to fit.
 **
 **			The UNKNOWNCOMMAND error follows this format:
 **
-**			 ":prefix numeric client command :description"
-** @param	recipient A reference to the client to whom the reply will be sent.
-** @param	command The command from the client that was not recognized.
-** @param	description Optional additional description of the problem.
+**			 ":prefix numeric recipient command :description"
+** @param	recipient	The client to whom the reply will be sent.
+** @param	command		The command from the recipient that was not recognized.
+** @param	description	Optional additional description of the problem.
 */
 void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string const & command, std::string const & description) const
 {
@@ -98,28 +125,24 @@ void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string c
 
 	msg += command;
 	err_reply_end(msg, description);
-	
-	// //debug
-	// std::cout << msg.data() << std::endl;
-	// //debug
 	recipient.send_msg(msg);
 }
 
 /*!
-** @brief	Sends an ALREADYREGISTERED error reply to the @a client.
+** @brief	Sends an ALREADYREGISTERED error reply to the @a recipient.
 **
-** @details	An error reply will be sent to @a client indicating that the command
-**			they sent cannot be executed as it would affect data that can only
-**			set during registration. The @a description argument is required,
-**			but will admit an empty string if no description is desired. If
-**			including @a description would cause the message to be over 512
-**			bytes long, it will be truncated to fit.
+** @details	An error reply will be sent to @a recipient indicating that the
+**			command they sent cannot be executed as it would affect data that
+**			can only be set during registration. The @a description argument is
+**			can be an empty string if no description is desired. If including
+**			@a description would cause the message to be over 512 bytes long, it
+**			will be truncated to fit.
 **
 **			The ALREADYREGISTERED error follows this format:
 **
-**			 ":prefix numeric client :description"
-** @param	recipient A reference to the client to whom the reply will be sent.
-** @param	description Optional additional description of the problem.
+**			 ":prefix numeric recipient :description"
+** @param	recipient	The client to whom the reply will be sent.
+** @param	description	Optional additional description of the problem.
 */
 void	IRC_Server::send_err_ALREADYREGISTERED(Client const & recipient, std::string const & description) const
 {
@@ -130,21 +153,21 @@ void	IRC_Server::send_err_ALREADYREGISTERED(Client const & recipient, std::strin
 }
 
 /*!
-** @brief	Sends a NEEDMOREPARAMS error reply to the @a client.
+** @brief	Sends a NEEDMOREPARAMS error reply to the @a recipient.
 **
-** @details	An error reply will be sent to @a client indicating that @a command
-**			received from @a client cannot be executed because it was missing
-**			some required parameter(s). The @a description argument is required,
-**			but will admit an empty string if no description is desired. If
-**			including @a description would cause the message to be over 512
-**			bytes long, it will be truncated to fit.
+** @details	An error reply will be sent to @a recipient indicating that the
+**			@a command received from @a recipient was not executed because it
+**			was missing some required parameter(s). The @a description argument
+**			can be an empty string if no description is desired. If including
+**			@a description would cause the message to be over 512 bytes long, it
+**			will be truncated to fit.
 **
 **			The NEEDMOREPARAMS error follows this format:
 **
-**			 ":prefix numeric client command :description"
-** @param	recipient A reference to the client to whom the reply will be sent.
-** @param	command The command from the client that could not be executed.
-** @param	description Optional additional description of the problem.
+**			 ":prefix numeric recipient command :description"
+** @param	recipient	The client to whom the reply will be sent.
+** @param	command		The command from @a recipient that was not executed.
+** @param	description	Optional additional description of the problem.
 */
 void	IRC_Server::send_err_NEEDMOREPARAMS(Client const & recipient, std::string const & command, std::string const & description) const
 {

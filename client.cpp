@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 15:08:52 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 16:06:10 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,6 +192,34 @@ void	IRC_Server::Client::set_nick(std::string const & nick)
 }
 
 /*!
+** @brief	Sets Client's @a _username to no more than MAX_USERNAME_SIZE bytes
+**			of the value passed as a parameter, truncating if needed.
+**
+** @param	username	The string containing the Client's username.
+*/
+void	IRC_Server::Client::set_username(std::string const & username)
+{
+	_username.assign(username, 0, MAX_USERNAME_SIZE);
+	//debug
+	std::cout << _username << std::endl;
+	//debug
+}
+
+/*!
+** @brief	Sets Client's @a _realname to no more than MAX_REALNAME_SIZE bytes
+**			of the value passed as a parameter, truncating if needed.
+**
+** @param	username	The string containing the Client's real name.
+*/
+void	IRC_Server::Client::set_realname(std::string const & realname)
+{
+	_realname.assign(realname, 0, MAX_REALNAME_SIZE);
+	//debug
+	std::cout << _realname << std::endl;
+	//debug
+}
+
+/*!
 ** @brief	Sets Client's @a _clientaddr as the canonical hostname determined by
 **			getaddrinfo() for the remote IP/hostname @a clientaddr passed as a
 **			parameter.
@@ -209,8 +237,7 @@ void	IRC_Server::Client::set_nick(std::string const & nick)
 **			as the @a _clientaddr.
 **
 **			If a NULL pointer is passed, no clientaddr will be set.
-** @param	clientaddr	The string containing the remote IP address as
-**			reported by connect().
+** @param	clientaddr	The string containing the remote IP address.
 ** @return	true if a clientaddr was set, otherwise false.
 */
 bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
@@ -493,6 +520,16 @@ std::string const &			IRC_Server::Client::get_serveraddr(void) const
 std::string const &			IRC_Server::Client::get_nick(void) const
 {
 	return(_nick);
+}
+
+std::string const &			IRC_Server::Client::get_username(void) const
+{
+	return (_username);
+}
+
+std::string const &			IRC_Server::Client::get_realname(void) const
+{
+	return (_realname);
 }
 
 std::string const &			IRC_Server::Client::get_hostname(void) const

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 08:23:13 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 17:08:30 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,25 @@ bool	IRC_Server::nick_is_valid(std::string const & nick) const
 	else
 		for (std::string::size_type i = 1, end = nick.size(); i < end; ++i)
 			if (!std::isalnum(static_cast<unsigned char>(nick[i])) && std::strchr("`|^_-{}[]\\", static_cast<unsigned char>(nick[i])) == NULL)
+				return (false);
+	return (true);
+}
+
+/*!
+** @brief	Determines validity of @a username as a username.
+**
+** @details	A username may contain any octet except NUL CR LF SPACE and @ and
+**			between 1 and MAX_USERNAME_SIZE bytes.
+** @param	user	A string proposed as a username.
+** @return	true if @a user is a valid username, otherwise false
+*/
+bool	IRC_Server::username_is_valid(std::string const & username) const
+{
+	if (username.size() < 1 || username.size() > MAX_USERNAME_SIZE)
+			return (false);
+	else
+		for (std::string::size_type i = 1, end = username.size(); i < end; ++i)
+			if (std::strchr("\r\n @\0", username[i]) != NULL)
 				return (false);
 	return (true);
 }
@@ -108,6 +127,48 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 	}	
 }
 
+/*!
+** @brief	Executes a USER command originating from @a sender.
+**
+** @details	Attempts to retrieve the username and real name parameters of the
+**			USER command for use in registration.
+**
+**			The USER command has four parameters:
+**			<username> <hostname> <servername> :<realname>
+**
+**			The middle two are only used in server-to-server connections and
+**			seem to have some semi-unstandardized uses too, such as using the
+**			hostname filed to set a USER mode. They are ignored in direct
+**			client-server connections, so they are ignored in this project.
+**
+**			The realname parameter must be last parameter as it may contain
+**			spaces.
+**
+**			If @a sender is already registered, an ERR_ALREADYREGISTERED error
+**			reply is returned to @a sender. If there are not four parameters
+**			(five arguments in the argument vector, including the command
+**			argument), an ERR_NEEDMOREPARAMS error reply is returned to
+**			@a sender. If the username does not comply with RFC 2812 (section
+**			2.3.1) regarding the user parameter, an ERR_UNKNOWNERROR error reply
+**			is returned to @a sender explaining the problem.
+** @param	sender	A reference to the client who who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[...]) in a string vector.
+*/
+void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const & argv)
+{
+	if (sender.is_registered() == true)
+		send_err_ALREADYREGISTERED(sender, "You may not reregister");
+	else if (argv.size() < 5 || argv[1].size() < 1) //Need four params, although middle two are ignored from directly connected client; if username is empty string, this error message is also sent
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (username_is_valid(argv[1]) == false)
+		send_err_UNKNOWNERROR(sender, argv[0], "Username contains invalid characters (NUL, SPACE, CR, LF or @)");
+	else
+	{
+		sender.set_username(argv[1]);
+		sender.set_realname(argv[4]);
+	}
+}
 
 /*!
 ** @brief	Takes the message from the Client as an argument vector, identifies
@@ -133,6 +194,8 @@ void	IRC_Server::interpret_msg(Client & client)
 		exec_cmd_PASS(client, argv);
 	else if (cmd == "NICK")
 		exec_cmd_NICK(client, argv);
+	else if (cmd == "USER")
+		exec_cmd_USER(client, argv);
 	else
 		send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 }

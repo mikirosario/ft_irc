@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 15:11:06 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 15:28:29 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,6 +146,8 @@ class IRC_Server
 				std::string const &			get_msg_buf(void) const;
 				std::string const &			get_serveraddr(void) const;
 				std::string const &			get_nick(void) const;
+				std::string const &			get_username(void) const;
+				std::string const &			get_realname(void) const;
 				std::string const &			get_hostname(void) const;
 				std::string const &			get_clientaddr(void) const;
 				int							get_sockfd(void) const;
