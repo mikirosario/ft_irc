@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 19:58:22 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 20:13:52 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -581,6 +581,43 @@ void	IRC_Server::process_client_message(int i)
 }
 
 /*!
+** @brief	Removes all Clients flagged for removal from the server.
+**
+** @details	Clients may be flagged for removal at any time, for any number of
+**			reasons. Maybe accept() failed, maybe they didn't ping us, maybe
+**			blasted our server with a thousand PASS requests and still haven't
+**			tried to register, maybe some operator kicked them.
+**
+**			Whatever the reasons, removal is handled here, and carefully. We
+**			have to be careful, since upon removal our arrays copy one over from
+**			the end, every removal invalidates any external references and may
+**			screw up a for loop.
+**
+**			To avoid such a catastrophe, we use a bitset called @a _remove_list.
+**			Every time anyone wants to remove a Client, they set the bit
+**			corresponding to the Client's position in the @a _clients and
+**			@a _pfds arrays in the @a _remove_list. After all messages are
+**			processed, we execute this loop, which will not increment the index
+**			if a client is removed because it knows the client at that index has
+**			been removed, and another client (formerly the last one) has
+**			replaced it and will also need to be checked for removal. Whew.
+*/
+void	IRC_Server::remove_flagged_clients(void)
+{
+	for (size_t i = 1, remove_count = _remove_list.count(); remove_count > 0; )
+	{
+		if (_remove_list[i] == true)
+		{
+			remove_connection(i);
+			--remove_count;
+		}
+		else
+			++i;
+	}
+	_remove_list.reset();
+}
+
+/*!
 ** @brief	This is the server routine. Anything you want the server to do goes
 **			here somewhere. ;)
 **
@@ -664,18 +701,9 @@ void	IRC_Server::server_loop(void)
 					--poll_count;
 				}
 			}
-			//Remove clients in sane manner
-			for (size_t i = 1, remove_count = _remove_list.count(); remove_count > 0; )
-			{
-				if (_remove_list[i] == true)
-				{
-					remove_connection(i);
-					--remove_count;
-				}
-				else
-					++i;
-			}
-			_remove_list.reset();
+
+			//Remove clients flagged for removal
+			remove_flagged_clients();
 		}
 	}
 }

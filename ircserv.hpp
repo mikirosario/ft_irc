@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 19:55:05 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 20:01:02 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,7 @@ class IRC_Server
 		bool	poll_listener(void) const;
 		bool	poll_client(int i) const;
 		void	process_client_message(int i);
+		void	remove_flagged_clients(void);
 		
 		//Utils
 		bool	is_endline(char const c);
