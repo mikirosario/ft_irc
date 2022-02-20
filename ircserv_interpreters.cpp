@@ -6,12 +6,11 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 20:16:27 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 08:23:13 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
-#include <vector>
 
 /* ---- PARSING ---- */
 
@@ -30,12 +29,12 @@ bool	IRC_Server::nick_is_valid(std::string const & nick) const
 {
 	if (nick.size() < 1
 		|| nick.size() > 9
-		|| std::isdigit(static_cast<unsigned char>(nick[0])) != 0
+		|| std::isdigit(static_cast<unsigned char>(nick[0]))
 		|| nick[0] == '-')
 			return (false);
 	else
 		for (std::string::size_type i = 1, end = nick.size(); i < end; ++i)
-			if (std::isalnum(static_cast<unsigned char>(nick[i])) == 0 && std::strchr("`|^_-{}[]\\", static_cast<unsigned char>(nick[i])) == NULL)
+			if (!std::isalnum(static_cast<unsigned char>(nick[i])) && std::strchr("`|^_-{}[]\\", static_cast<unsigned char>(nick[i])) == NULL)
 				return (false);
 	return (true);
 }

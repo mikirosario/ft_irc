@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/19 19:52:43 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 15:11:06 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@
 #define MAX_CONNECTIONS 1024	//maximum number of simultaneous connections
 #define MSG_BUF_SIZE 512		//maximum message length in IRC RFC including \r\n termination.
 #define MAX_NICK_SIZE 9 		//maximum nickname length
+#define MAX_USERNAME_SIZE 25	//maximum username size
+#define MAX_REALNAME_SIZE 35	//maximum real name size
 
 // class Channel
 // {
@@ -95,10 +97,14 @@ class IRC_Server
 					UNREADY,
 					READY
 				}			_buf_state;
-				std::string	_servername;	//Server to which the Client is connected; can be used in replies requiring <servername>
+				std::string	_serveraddr;	//Server to which the Client is connected; can be used in replies requiring <servername>
 				int			_sockfd;		//Client's sockfd
 				std::string _pass;			//debug; flush user-provided pass after registration to improve security
-				std::string	_nick;
+				std::string	_nick;			//Client's nick
+				std::string _clientaddr;	//Client's IP or canonical hostname, done by getaddrinfo() lookup
+				std::string _hostname;		//Client's self-reported hostname
+				std::string _username;		//Client's username
+				std::string _realname;		//Client's "real" name (sure it is, Gandalf Baggins)
 				std::string	_msg_buf;
 				t_user_ptr	_user_profile;
 
@@ -128,13 +134,20 @@ class IRC_Server
 				void	set_sockfd(int sockfd);
 				void	set_pass(std::string const & pass);
 				void	set_nick(std::string const & nick);
+				void	set_username(std::string const & username);
+				void	set_realname(std::string const & realname);
+				bool	set_clientaddr(char const * remoteIP);
+				void	set_hostname(std::string const & hostname);
+
 				void	clear(void);
 
 				/* GETTERS */
 				std::vector<std::string>	get_message(void);
 				std::string const &			get_msg_buf(void) const;
-				std::string const &			get_servername(void) const;
+				std::string const &			get_serveraddr(void) const;
 				std::string const &			get_nick(void) const;
+				std::string const &			get_hostname(void) const;
+				std::string const &			get_clientaddr(void) const;
 				int							get_sockfd(void) const;
 		};
 		//friend Client;
@@ -144,6 +157,7 @@ class IRC_Server
 		std::string						_servport; 
 		std::string						_servpass;
 		std::string						_servername;
+		std::string						_serveraddr;
 		struct pollfd					_pfds[MAX_CONNECTIONS];
 		Client							_clients[MAX_CONNECTIONS];
 		std::map<std::string, User>		_reg_users; //for saving data from registered users//all users (not sure yet, would have to delete unregged users from here on disconnect in latter case, do two nick searches per connection in former)
@@ -162,7 +176,7 @@ class IRC_Server
 
 		//Server initialization
 		bool			init(std::string const & netinfo);
-		bool			set_servername(void);
+		bool			set_serveraddr(void);
 		static void *	get_in_addr(struct sockaddr * sa);
 		int				get_listener_socket(void) const;
 		
@@ -173,7 +187,7 @@ class IRC_Server
 
 		//Connection handling
 		void	remove_connection(int fd);
-		void	add_connection(int fd);
+		void	add_connection(int fd, char const * remoteIP);
 
 		//Running
 		void	server_loop(void);
@@ -195,7 +209,7 @@ class IRC_Server
 		
 		/* GETTERS */
 		std::string const &	get_port(void) const;
-		std::string const & get_servername(void) const;
+		std::string const & get_serveraddr(void) const;
 		std::string	get_source(void) const;
 
 };

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/19 20:02:21 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 15:08:52 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,12 @@
 
 IRC_Server::Client::Client(void) : _state(IRC_Server::Client::State(UNREGISTERED)), _buf_state(IRC_Server::Client::Buffer_State(UNREADY))
 {
-	_msg_buf.reserve(MSG_BUF_SIZE);	//pre-reserve MSG_BUF_SIZE bytes
+	//pre-reserve some appropriate memory
+	_serveraddr.reserve(INET6_ADDRSTRLEN);
+	_nick.reserve(MAX_NICK_SIZE);
+	_username.reserve(MAX_USERNAME_SIZE);
+	_realname.reserve(MAX_REALNAME_SIZE);
+	_msg_buf.reserve(MSG_BUF_SIZE);
 }
 
 
@@ -22,13 +27,15 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 {
 	_state = src._state;
 	_buf_state = src._buf_state;
-	_servername = src._servername;
+	_serveraddr = src._serveraddr;
 	_sockfd = src._sockfd;
 	_pass = src._pass;
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
 	_user_profile = src._user_profile;
-	
+	_username = src._username;
+	_realname = src._realname;
+	_hostname = src._hostname;
 	return (*this);
 }
 
@@ -54,11 +61,14 @@ void		IRC_Server::Client::move(Client & src)
 {
 	_state = src._state;
 	_buf_state = src._buf_state;
-	std::swap(this->_servername, src._servername);
+	std::swap(this->_serveraddr, src._serveraddr);
 	_sockfd = src._sockfd;
 	std::swap(this->_pass, src._pass);
 	std::swap(this->_nick, src._nick);
+	std::swap(this->_username, src._username);
+	std::swap(this->_realname, src._realname);
 	std::swap(this->_msg_buf, src._msg_buf);
+	std::swap(this->_hostname, src._hostname);
 	_user_profile = src._user_profile;
 	src.clear();
 }
@@ -76,6 +86,8 @@ bool	IRC_Server::Client::confirm_pass(std::string const & server_pass)
 {
 	return (this->_pass == server_pass);
 }
+
+/* ---- SETTERS ---- */
 
 /*!
 ** @brief	Flushes the message buffer for this Client and sets its buffer state
@@ -134,7 +146,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 
 /*!
 ** @brief	Sets Client's @a _sockfd to the value passed as an argument and
-**			sets the Client's @a _servername to the current address to which the
+**			sets the Client's @a _serveraddr to the current address to which the
 **			@a _sockfd is bound.
 **
 ** @param	sockfd The Client's sockfd.
@@ -150,7 +162,7 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 		perror("getsockname() failed in set_sockfd");
 	else
 		//debug inet_ntoa in_addr must be IPv4, but rereading the subject requirements inet_ntop is not officially allowed... :/
-		_servername = inet_ntoa(*(reinterpret_cast<struct in_addr *>(IRC_Server::get_in_addr(&serverIP))));	
+		_serveraddr = inet_ntoa(*(reinterpret_cast<struct in_addr *>(IRC_Server::get_in_addr(&serverIP))));	
 }
 
 /*!
@@ -174,9 +186,60 @@ void	IRC_Server::Client::set_pass(std::string const & pass)
 void	IRC_Server::Client::set_nick(std::string const & nick)
 {
 	_nick = nick;
+	// //debug
+	// std::cout << _nick << std::endl;
+	// //debug
+}
+
+/*!
+** @brief	Sets Client's @a _clientaddr as the canonical hostname determined by
+**			getaddrinfo() for the remote IP/hostname @a clientaddr passed as a
+**			parameter.
+**
+** @details This lookup attempts to retrieve the canonical hostname for a given
+**			remote IP address or hostname @a clientaddr. The canonical hostname
+**			may or may not be the same as @a clientaddr.
+**
+**			Despite the parameter name, this lookup can be done on either an IP
+**			OR a valid hostname. (i.e. "localhost" will return the local
+**			canonical hostname, "www.google.com" will return the google.com
+**			canonical hostname, etc.).
+**
+**			If this lookup fails, no the IP passed as a parameter will be set
+**			as the @a _clientaddr.
+**
+**			If a NULL pointer is passed, no clientaddr will be set.
+** @param	clientaddr	The string containing the remote IP address as
+**			reported by connect().
+** @return	true if a clientaddr was set, otherwise false.
+*/
+bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
+{	
+	//attempt canonical name lookup
+	struct addrinfo		hints;
+	struct addrinfo *	remoteaddrinfo;
+	
+	std::memset(&hints, 0, sizeof(addrinfo));
+	hints.ai_family = AF_UNSPEC;	//IPv4 or IPv6 OK
+	hints.ai_flags = AI_CANONNAME;	//this flag requests canonical name lookup
+	hints.ai_socktype = SOCK_STREAM;//type of connection
+
+	if (clientaddr == NULL)
+		return (false);
+	else if (getaddrinfo(clientaddr, NULL, &hints, &remoteaddrinfo) != 0)
+	{
+		_clientaddr = remoteaddrinfo->ai_canonname;
+		//debug
+		std::cout << "My canonical name is? " << remoteaddrinfo->ai_canonname << std::endl; //debug
+		//debug	
+		freeaddrinfo(remoteaddrinfo);
+	}
+	else
+		_clientaddr = clientaddr;
 	//debug
-	std::cout << _nick << std::endl;
+	std::cout << "My name is: " << _hostname << std::endl;
 	//debug
+	return (true);
 }
 
 /*!
@@ -186,7 +249,7 @@ void	IRC_Server::Client::clear(void)
 {
 	_state = Client::State(UNREADY);
 	_buf_state = Client::Buffer_State(UNREGISTERED);
-	_servername.clear();
+	_serveraddr.clear();
 	_sockfd = 0;
 	_pass.clear();
 	_nick.clear();
@@ -422,14 +485,24 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 	return  (ret);
 }
 
-std::string const &			IRC_Server::Client::get_servername(void) const
+std::string const &			IRC_Server::Client::get_serveraddr(void) const
 {
-	return(_servername);
+	return(_serveraddr);
 }
 
 std::string const &			IRC_Server::Client::get_nick(void) const
 {
 	return(_nick);
+}
+
+std::string const &			IRC_Server::Client::get_hostname(void) const
+{
+	return (_hostname);
+}
+
+std::string const &			IRC_Server::Client::get_clientaddr(void) const
+{
+	return (_clientaddr);
 }
 
 int							IRC_Server::Client::get_sockfd(void) const

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/19 19:18:34 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 15:13:41 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,14 +264,14 @@ bool	IRC_Server::init(std::string const & netinfo)
 	listener_fd = get_listener_socket();
 	if (listener_fd == -1)				//setup failed; abort
 		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON GET_LISTENER_SOCKET CALL FAILED."));
-	else if (set_servername() == false)	//setup failed; we need servername to use as prefix in communications with clients
-		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON SET_SERVERNAME CALL FAILED."));
+	else if (set_serveraddr() == false)	//setup failed;
+		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON SET_SERVERADDR CALL FAILED."));
 	else 								//setup succeeded; server initialization
 	{
 		_state = State(ONLINE);
-		add_connection(listener_fd);
+		add_connection(listener_fd, _serveraddr.data());
 		//debug
-		std::cout << "IRC Server: " << _servername << std::endl;
+		std::cout << "IRC Server: " << _serveraddr << std::endl;
 		//debug
 		ret = true;
 		server_loop();
@@ -279,7 +279,33 @@ bool	IRC_Server::init(std::string const & netinfo)
 	return (ret);
 }
 
-bool	IRC_Server::set_servername(void)
+// bool	IRC_Server::init(std::string const & netinfo)
+// {
+// 	bool	ret = false;
+// 	int		listener_fd;
+// 	if (get_network_info(netinfo))	//we don't use it
+// 		std::cout << "Has network info"	<< std::endl;
+
+// 	//server setup
+// 	listener_fd = get_listener_socket();
+// 	if (listener_fd == -1)				//setup failed; abort
+// 		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON GET_LISTENER_SOCKET CALL FAILED."));
+// 	else if (add_connection(listener_fd, ) == false)	//setup failed; we need servername to use as prefix in communications with clients
+// 		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON ADD_CONNECTION CALL FAILED."));
+// 	else 								//setup succeeded; server initialization
+// 	{
+// 		_serveraddr = _clients[0].get_hostname();
+// 		_state = State(ONLINE);
+// 		//debug
+// 		std::cout << "IRC Server: " << _serveraddr << std::endl;
+// 		//debug
+// 		ret = true;
+// 		server_loop();
+// 	}
+// 	return (ret);
+// }
+
+bool	IRC_Server::set_serveraddr(void)
 {
 	struct hostent	*self;
 	bool			ret = false;
@@ -288,7 +314,7 @@ bool	IRC_Server::set_servername(void)
 		hstrerror(h_errno); //debug; this isn't explicitly allowed by subject either :p but will keep it here until evaluation for debugging purposes
 	else
 	{
-		_servername = inet_ntoa(*(reinterpret_cast<struct in_addr *>(self->h_addr)));
+		_serveraddr = inet_ntoa(*(reinterpret_cast<struct in_addr *>(self->h_addr)));
 		ret = true;
 	}
 	return (ret);
@@ -340,7 +366,8 @@ void	IRC_Server::close_connection(int const fd)
 // std::string	
 
 /*!
-** @brief	Adds an open connection to the @a _pollfds and @a _clents arrays.
+** @brief	Adds an open connection to the IRC_Server's @a _pollfds and
+**			@a _clents arrays.
 **
 ** @details Each pollfd struct in the array contains the socket file descriptor
 **			for the open connection in @a fd and the type of event to poll this
@@ -352,12 +379,17 @@ void	IRC_Server::close_connection(int const fd)
 **			data can't be filled in until sent by the user, which is done from
 **			an RFC module (register client).
 **
-** @param	fd The new socket file descriptor to add.
+**			If remoteIP is NULL, no remoteIP will be recorded for the Client.
+** @param	fd			The new socket file descriptor to add.
+** @param	remoteIP	The IP address or hostname of @a fd.
+** @return	true if successful, otherwise false
 */
-void	IRC_Server::add_connection(int fd)
+void	IRC_Server::add_connection(int fd, char const * remoteIP)
 {
+	
 	_pfds[_connections].fd = fd;
 	_pfds[_connections].events = POLLIN; //report ready to read on incoming connection
+	_clients[_connections].set_clientaddr(remoteIP);
 	_clients[_connections].set_sockfd(fd);
 	++_connections;
 }
@@ -403,9 +435,9 @@ std::string const &	IRC_Server::get_port(void) const
 **
 ** @return	The true server address.
 */
-std::string const &	IRC_Server::get_servername(void) const
+std::string const &	IRC_Server::get_serveraddr(void) const
 {
-	return (_servername);
+	return (_serveraddr);
 }
 
 /*!
@@ -416,7 +448,7 @@ std::string const &	IRC_Server::get_servername(void) const
 */
 std::string	IRC_Server::get_source(void) const
 {
-	std::string	source = ":" + _servername;
+	std::string	source = ":" + _serveraddr;
 
 	return (source);
 }
@@ -432,6 +464,10 @@ std::string	IRC_Server::get_source(void) const
 **			the @a _pfds array and a confirmation message indicating the socket
 **			file descriptor and the remote IP of the client will be output to
 **			standard output.
+**
+**			The remote IP will be recorded in the Client's clientaddr variable.
+**			If a remote IP could not be resolved, the connection will not be
+**			accepted.
 */
 void		IRC_Server::accept_connection(void)
 {
@@ -443,13 +479,15 @@ void		IRC_Server::accept_connection(void)
 	new_connection = accept(_pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
 	if (new_connection == -1)
 		perror("poll_listener could not accept connection");
+	else if (inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) == NULL) //debug; ntop not allowed? //require remote IP identification
+		perror("accept_connection unable to resolve remote IP");
 	else
 	{
-		add_connection(new_connection);
+		add_connection(new_connection, remoteIP);
 		std::cout << "pollserver: new connection from "
-		<< inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) //debug; ntop not allowed?
+		<< _clients[_connections - 1].get_clientaddr()
 		<< " on socket " << new_connection
-		<< " to server " << _clients[_connections - 1].get_servername()
+		<< " to server " << _serveraddr //_clients[_connections - 1].get_clientaddr()
 		<< std::endl;
 	}
 }
