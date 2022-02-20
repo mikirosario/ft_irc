@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 22:53:53 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 23:19:50 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,13 +74,19 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 **
 ** @details	Attempts to retrieve a password sent by @a sender in the @a argv
 **			argument vector as the first parameter, for use in registration.
+**
 **			If there is no first parameter, an ERR_NEEDMOREPARAMS error reply is
-**			returned to @a sender. If @a sender is already registered, an
-**			ERR_ALREADYREGISTERED error reply is returned to @a sender. If both
-**			errors are simultaneously present, only the ERR_ALREADYREGISTERED
-**			error reply is returned to @a sender. If more than MAX_PASS_ATTEMPTS
-**			calls are made to set_pass, an ERR_UNKNOWNERROR error reply is
-**			returned to @a sender reprimanding them.
+**			returned to @a sender.
+**
+**			If @a sender is already registered, an ERR_ALREADYREGISTERED error
+**			reply is returned to @a sender.
+**
+**			If both aforementioned errors are simultaneously present, only the
+**			ERR_ALREADYREGISTERED error reply is returned to @a sender.
+**
+**			If more than MAX_PASS_ATTEMPTS calls are made to set_pass, an
+**			ERR_UNKNOWNERROR error reply is returned to @a sender reprimanding
+**			them and they are banished from the Realm.
 ** @param	sender	A reference to the client who who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
 **					and its arguments (argv[...]) in a string vector.
@@ -94,7 +100,8 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 	else if (sender.set_pass(argv[1]) == false)
 	{
 		send_err_UNKNOWNERROR(sender, argv[0], "You've sent too many PASS commands");
-		
+		remove_client_from_server(sender);
+		std::cout << "pollserver: socket " << sender.get_sockfd() << " kicked from server." << std::endl;
 	}
 }
 
@@ -103,13 +110,17 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 **
 ** @details	Attempts to retrieve a nickname sent by @a sender in the @a argv
 **			argument vector as the first parameter, for use in registration or
-**			to change an existing nickname. If there is no first parameter, an
-**			ERR_NONICKNAMEGIVEN error reply is returned to @a sender. If the
-**			nickname is invalid, an ERR_ERRONEOUSNICKNAME error reply is
-**			returned to @a sender. If the nickname is already in use on the
-**			server as determined by a case-insensitive lookup, an
-**			ERR_NICKNAMEINUSE is returned to @a sender. Otherwise, the new
-**			sender's nick is set to the new nickname.
+**			to change an existing nickname.
+**
+**			If there is no first parameter, an ERR_NONICKNAMEGIVEN error reply
+**			is returned to @a sender.
+**
+**			If the nickname is invalid, an ERR_ERRONEOUSNICKNAME error reply is
+**			returned to @a sender.
+**
+**			If the nickname is already in use on the server as determined by a
+**			case-insensitive lookup, an ERR_NICKNAMEINUSE error reply is
+**			returned to @a sender.
 **
 **			If @a sender is already registered and the new nickname is accepted,
 **			a confirmation reply is	returned to @a sender.
@@ -166,20 +177,31 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 **
 **			The middle two are only used in server-to-server connections and
 **			seem to have some semi-unstandardized uses too, such as using the
-**			hostname filed to set a USER mode. They are ignored in direct
+**			hostname field to set a USER mode. They are ignored in direct
 **			client-server connections, so they are ignored in this project.
 **
 **			The realname parameter must be last parameter as it may contain
 **			spaces.
 **
 **			If @a sender is already registered, an ERR_ALREADYREGISTERED error
-**			reply is returned to @a sender. If there are not four parameters
-**			(five arguments in the argument vector, including the command
-**			argument), an ERR_NEEDMOREPARAMS error reply is returned to
-**			@a sender. If the username does not comply with RFC 2812 (section
-**			2.3.1) regarding the user parameter, an ERR_UNKNOWNERROR error reply
-**			is returned to @a sender explaining the problem.
-** @param	sender	A reference to the client who who sent the command.
+**			reply is returned to @a sender.
+**
+**			If there are not four parameters (five arguments in the argument
+**			vector, including the command argument), an ERR_NEEDMOREPARAMS error
+**			reply is returned to @a sender.
+**
+**			If the username does not comply with RFC 2812 (section 2.3.1)
+**			regarding the user parameter, an ERR_UNKNOWNERROR error reply is
+**			returned to @a sender explaining the problem.
+**
+**			If @a sender is unregistered but has already provided a username
+**			before, @a sender will be booted from the server and an
+**			ERR_UNKNOWNERROR error reply is returned to @a sender explaining
+**			that spamming the server is rude.
+**
+**			If @a sender is unregistered and provided a nickname before, we will
+**			try to register @a sender.
+** @param	sender	A reference to the client who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
 **					and its arguments (argv[...]) in a string vector.
 */

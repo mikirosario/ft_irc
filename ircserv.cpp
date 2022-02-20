@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 22:37:32 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 23:00:37 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -621,8 +621,8 @@ void	IRC_Server::remove_client_from_server(size_t pos)
 **			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
 **			Client from the server.
 **
-**			This overload retrieves queries @a client for its position in the
-**			@a _clients array and uses remove_client_from_server(size_t pos).
+**			This overload queries @a client for its position in the	@a _clients
+**			array and uses remove_client_from_server(size_t pos).
 ** @param	pos	The Client to be removed from the server.
 */
 void	IRC_Server::remove_client_from_server(Client const & client)
