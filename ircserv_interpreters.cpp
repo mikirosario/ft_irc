@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 17:35:45 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 18:06:04 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,9 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 **			returned to @a sender. If @a sender is already registered, an
 **			ERR_ALREADYREGISTERED error reply is returned to @a sender. If both
 **			errors are simultaneously present, only the ERR_ALREADYREGISTERED
-**			error reply is returned to @a sender.
+**			error reply is returned to @a sender. If more than MAX_PASS_ATTEMPTS
+**			calls are made to set_pass, an ERR_UNKNOWNERROR error reply is
+**			returned to @a sender reprimanding them.
 ** @param	sender	A reference to the client who who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
 **					and its arguments (argv[...]) in a string vector.
@@ -89,8 +91,8 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 		send_err_ALREADYREGISTERED(sender, "You may not reregister");
 	else if (argv.size() < 2) //Only command argument exists
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else
-		sender.set_pass(argv[1]);
+	else if (sender.set_pass(argv[1]) == false)
+		send_err_UNKNOWNERROR(sender, argv[0], "You've sent too many PASS commands");
 }
 
 /*!
@@ -120,7 +122,13 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 	else
 	{
 		sender.set_nick(argv[1]);
-		//if (sender.is_registered() == false) //if client is not reigstered, we'll check to see if we have a username; if we do, we try to register
+		// if (sender.is_registered() == false) //if client is not reigstered, we'll check to see if we have a username; if we do, we try to register
+		// {
+		// 	if (sender.get_username().empty() == false)	//we have both nick and user, try to register
+		// 		//try to register
+		// 	else if (sender.get_nick().empty() == false) //if we already have a nick and the client is just bombing us with multiple NICK commands, send them to hell
+
+		// }
 		
 		// else
 		//if client is already registered, this is a nickname change, we send a reply as confirmation

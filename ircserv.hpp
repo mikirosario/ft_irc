@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 17:34:58 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 17:45:26 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@
 #define MAX_NICK_SIZE 9 		//maximum nickname length
 #define MAX_USERNAME_SIZE 25	//maximum username size
 #define MAX_REALNAME_SIZE 35	//maximum real name size
-
+#define MAX_PASS_ATTEMPTS 10	//maximum number of PASS commands allowed during registration before we reject connection
 // class Channel
 // {
 // 	private:
@@ -99,6 +99,7 @@ class IRC_Server
 				}			_buf_state;
 				std::string	_serveraddr;	//Server to which the Client is connected; can be used in replies requiring <servername>
 				int			_sockfd;		//Client's sockfd
+				int			_pass_attempts;	//Number of PASS commands sent by client on registration; limiting this to 10
 				std::string _pass;			//debug; flush user-provided pass after registration to improve security
 				std::string	_nick;			//Client's nick
 				std::string _clientaddr;	//Client's IP or canonical hostname, done by getaddrinfo() lookup
@@ -131,7 +132,7 @@ class IRC_Server
 				void	flush_msg_buf(void);
 				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
 				void	set_sockfd(int sockfd);
-				void	set_pass(std::string const & pass);
+				bool	set_pass(std::string const & pass);
 				void	set_nick(std::string const & nick);
 				void	set_username(std::string const & username);
 				void	set_realname(std::string const & realname);

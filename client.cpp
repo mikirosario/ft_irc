@@ -6,13 +6,15 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 17:36:34 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 17:48:58 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
 
-IRC_Server::Client::Client(void) : _state(IRC_Server::Client::State(UNREGISTERED)), _buf_state(IRC_Server::Client::Buffer_State(UNREADY))
+IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED)),
+									_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),
+									_pass_attempts(0)
 {
 	//pre-reserve some appropriate memory
 	_serveraddr.reserve(INET6_ADDRSTRLEN);
@@ -29,6 +31,7 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_buf_state = src._buf_state;
 	_serveraddr = src._serveraddr;
 	_sockfd = src._sockfd;
+	_pass_attempts = src._pass_attempts;
 	_pass = src._pass;
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
@@ -62,6 +65,7 @@ void		IRC_Server::Client::move(Client & src)
 	_buf_state = src._buf_state;
 	std::swap(this->_serveraddr, src._serveraddr);
 	_sockfd = src._sockfd;
+	_pass_attempts = src._pass_attempts;
 	std::swap(this->_pass, src._pass);
 	std::swap(this->_nick, src._nick);
 	std::swap(this->_username, src._username);
@@ -166,14 +170,21 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 /*!
 ** @brief	Sets Client's @a _pass to the value passed as an argument.
 **
+** @details	Each Client instance will accept resetting the password up to
+**			MAX_PASS_ATTEMPTS times before registration, after which further
+**			the method will return false and the client's connection should be
+**			rejected with a very stern reprimand.
 ** @param	pass	The string containing the Client's password.
+** @return	true if _pass has been set fewer than MAX_PASS_ATTEMPTS times,
+**			otherwise false.
 */
-void	IRC_Server::Client::set_pass(std::string const & pass)
+bool	IRC_Server::Client::set_pass(std::string const & pass)
 {
+	if (_pass_attempts > MAX_PASS_ATTEMPTS)
+		return (false);
 	_pass = pass;
-	// //debug
-	// std::cout << _pass << std::endl;
-	// //debug
+	++_pass_attempts;
+	return (true);
 }
 
 /*!
@@ -276,8 +287,13 @@ void	IRC_Server::Client::clear(void)
 	_buf_state = Client::Buffer_State(UNREGISTERED);
 	_serveraddr.clear();
 	_sockfd = 0;
+	_pass_attempts = 0;
 	_pass.clear();
 	_nick.clear();
+	_clientaddr.clear();
+	_hostname.clear();
+	_username.clear();
+	_realname.clear();
 	_msg_buf.clear();
 }
 
