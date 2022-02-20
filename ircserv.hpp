@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 15:28:29 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 17:33:24 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ class IRC_Server
 				std::string _pass;			//debug; flush user-provided pass after registration to improve security
 				std::string	_nick;			//Client's nick
 				std::string _clientaddr;	//Client's IP or canonical hostname, done by getaddrinfo() lookup
-				std::string _hostname;		//Client's self-reported hostname
+				std::string _hostname;		//Client's self-reported hostname?
 				std::string _username;		//Client's username
 				std::string _realname;		//Client's "real" name (sure it is, Gandalf Baggins)
 				std::string	_msg_buf;
