@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 22:12:25 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 22:37:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -398,7 +398,7 @@ void	IRC_Server::add_connection(int fd, char const * remoteIP)
 
 /*!
 ** @brief	Removes an open connection from the @a _pollfds array. DO NOT USE IN
-**			INTERPRETING MODULES TO REMOVE CLIENTS!!!!
+**			INTERPRETING MODULES TO REMOVE CLIENTS FROM THE SERVER!!!!
 **
 ** @details	The @a _pollfds array is unordered, so deletion merely consists of
 **			overwriting the deleted connection with the data of the last
@@ -417,7 +417,7 @@ void	IRC_Server::add_connection(int fd, char const * remoteIP)
 **			ONLY be called at a VERY specific part of the server_loop(),
 **			otherwise TOTAL AND UTTER DESTRUCTION will be the result. To safely
 **			remove clients at any time or place in the server_loop(), use
-**			remove_client() instead!
+**			remove_client_from_server() instead!
 ** @param index The position in the @a _pollfds array of the open connection to
 **				be removed.
 */
@@ -547,11 +547,11 @@ void	IRC_Server::process_client_message(int i)
 			break ; //ignore empty messages
 		case 0 :
 			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
-			remove_client(i);
+			remove_client_from_server(i);
 			break ;
 		case -1 :
 			std::cerr << "recv error" << std::endl;
-			remove_client(i);
+			remove_client_from_server(i);
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
@@ -596,22 +596,38 @@ void	IRC_Server::process_client_message(int i)
 
 /*!
 ** @brief	Safely flags the Client at position @a pos in the @a _clients array
-**			for removal.
+**			for removal from the server.
 **
 ** @details	The Client at position @a pos will be marked for removal at the next
 **			available opportunity. Use with find_client_pos_by_nick() or
 **			client.get_pos() ANYWHERE and AT ANY TIME to remove a Client from
-**			the server, for example, to execute KICK or similar commands.
+**			the server.
 **
 **			If @a pos is out of bounds of the _remove_list, or corresponds to
 **			the server's position, nothing will be done.
 ** @param	pos	The position of the Client to be removed in the @a _clients
 **			array.
 */
-void	IRC_Server::remove_client(size_t pos)
+void	IRC_Server::remove_client_from_server(size_t pos)
 {
 	if (_remove_list.size() > pos && pos > 0)
 		_remove_list.set(pos, true);
+}
+
+/*!
+** @brief	Safely flags the Client @a client for removal from the server.
+**
+** @details	The Client @a client will be marked for removal at the next
+**			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
+**			Client from the server.
+**
+**			This overload retrieves queries @a client for its position in the
+**			@a _clients array and uses remove_client_from_server(size_t pos).
+** @param	pos	The Client to be removed from the server.
+*/
+void	IRC_Server::remove_client_from_server(Client const & client)
+{
+	remove_client_from_server(client.get_pos());
 }
 
 /*!
@@ -634,7 +650,9 @@ void	IRC_Server::remove_client(size_t pos)
 **			processed, we execute this loop, which will not increment the index
 **			if a client is removed because it knows the client at that index has
 **			been removed, and another client (formerly the last one) has
-**			replaced it and will also need to be checked for removal. Whew.
+**			replaced it and will also need to be checked for removal. Finally,
+**			the remove_connection() function makes damn sure the @a _remove_list
+**			bitset mirrors any changes to the @a _clients array. Whew.
 */
 void	IRC_Server::remove_flagged_clients(void)
 {

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 21:45:05 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 22:40:58 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,11 +145,14 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 			//try to register
 		}
 		else if (sender.get_nick().empty() == false) //if we already have a nick and the client is just bombing us with multiple NICK commands, send them to hell
+		{
 			send_err_UNKNOWNERROR(sender, argv[0], "You've sent more than one NICK command during registration");
+			remove_client_from_server(sender);
+			std::cerr << "pollserver: socket " << sender.get_sockfd() << " kicked from server." << std::endl;
+		}
 		else										//it's the first nick command from an unregistered client
 			sender.set_nick(argv[1]);
 	}
-	std::cout << "sender pos: " << sender.pos << std::endl;
 }
 
 /*!
