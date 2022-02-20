@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 19:40:21 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/20 19:58:22 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -524,10 +524,9 @@ bool	IRC_Server::poll_listener(void) const
 **			submodules for different RFC functionalities.
 ** @param	i The position in the @a _pfds array of the client with a message.
 */
-void	IRC_Server::process_client_message(int i, bool & remove)
+void	IRC_Server::process_client_message(int i)
 {
 	char						msgbuf[MSG_BUF_SIZE];
-
 	int nbytes = recv(_pfds[i].fd, msgbuf, sizeof msgbuf, 0);
 	switch (nbytes) //error cases and default successful data reception case
 	{
@@ -535,13 +534,11 @@ void	IRC_Server::process_client_message(int i, bool & remove)
 			break ; //ignore empty messages
 		case 0 :
 			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
-			remove_connection(i);
-			remove = true;
+			_remove_list.set(i);
 			break ;
 		case -1 :
 			std::cerr << "recv error" << std::endl;
-			remove_connection(i);
-			remove = true;
+			_remove_list.set(i);
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
@@ -659,20 +656,26 @@ void	IRC_Server::server_loop(void)
 			}
 
 			//Poll clients
-			for (int i = 1; poll_count > 0; ) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
+			for (int i = 1; poll_count > 0; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
 			{
 				if (poll_client(i) == true)
 				{
-					bool	remove = 0;
-					process_client_message(i, remove);
-					if (remove == false)
-						++i;
+					process_client_message(i);
 					--poll_count;
+				}
+			}
+			//Remove clients in sane manner
+			for (size_t i = 1, remove_count = _remove_list.count(); remove_count > 0; )
+			{
+				if (_remove_list[i] == true)
+				{
+					remove_connection(i);
+					--remove_count;
 				}
 				else
 					++i;
 			}
-
+			_remove_list.reset();
 		}
 	}
 }
