@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 16:09:29 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 21:05:10 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,9 @@ std::string	IRC_Server::numeric_reply_start(Client const & recipient, char const
 **			This function will correctly terminate @a reply leaving it ready to
 **			be sent to the client **IF** the calling function correctly filled
 **			in the parameters for the given numeric. It does NOT guarantee
-**			correctness of the string PRECEDING the final parameter.
+**			correctness of the string PRECEDING the final parameter, though it
+**			WILL eliminate trailing spaces, NUL characters or premature
+**			crlf-termination.
 **
 **			If @a reply was already crlf-terminated or terminated with a space
 **			or space and colon, or null-terminated, all such existing
@@ -67,7 +69,7 @@ void		IRC_Server::numeric_reply_end(std::string & reply, std::string const & des
 	size_t	bytes_remaining;
 	size_t	pos;
 
-	if ((pos = reply.find_last_not_of(" :\r\n\0")) != std::string::npos)
+	if ((pos = reply.find_last_not_of(" \r\n\0")) != std::string::npos)
 		reply.erase(pos + 1, std::string::npos);
 	reply += " :";
 	bytes_remaining = MSG_BUF_SIZE - reply.size() - 2;
@@ -84,7 +86,7 @@ void		IRC_Server::send_rpl_WELCOME(Client const & recipient)
 	welcome_msg += "Welcome to the ";
 	welcome_msg += _networkname;
 	welcome_msg += " Network, ";
-	welcome_msg += recipient.get_nick();
+	welcome_msg += recipient.get_nick(); //debug //might put this longname/mask into static memory
 	welcome_msg += "!";
 	welcome_msg += recipient.get_username();
 	welcome_msg += "@";

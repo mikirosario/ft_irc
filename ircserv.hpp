@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 16:02:39 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 19:33:34 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ class IRC_Server
 				std::string _hostname;		//Client's self-reported hostname?
 				std::string _username;		//Client's username
 				std::string _realname;		//Client's "real" name (sure it is, Gandalf Baggins)
+				//std::string	_longname;		//Client's name in format nickname!username@hostname. maybe replace build_source with this
 				std::string	_msg_buf;
 
 				/* PRIVATE UTILS */
@@ -147,6 +148,7 @@ class IRC_Server
 
 				/* GETTERS */
 				std::vector<std::string>	get_message(void);
+				std::string					get_source(void) const;
 				std::string const &			get_msg_buf(void) const;
 				std::string const &			get_serveraddr(void) const;
 				std::string const &			get_nick(void) const;

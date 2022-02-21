@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 15:54:27 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 20:37:56 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void	interpret_msg(Client & client);
 
 //numeric replies
 std::string	numeric_reply_start(Client const & client, char const * numeric) const;
-void		numeric_reply_end(std::string & message, std::string const & description) const;
+void		numeric_reply_end(std::string & reply, std::string const & description) const;
 	//standard numeric replies
 void		send_rpl_WELCOME(Client const & recipient);
 
@@ -42,4 +42,9 @@ void		send_err_NONICKNAMEGIVEN(Client const & recipient, std::string const & des
 void		send_err_NICKNAMEINUSE(Client const & recipient, std::string const & nick, std::string const & description) const;
 void		send_err_ERRONEOUSNICKNAME(Client const & recipient, std::string const & nick, std::string const & description) const;
 void		send_err_PASSWDMISMATCH(Client const & recipient, std::string const & description) const;
+
+//non-numeric replies
+void		non_numeric_reply_end(std::string & reply, std::string const & last_param) const;
+void		send_rpl_NICK(Client const & recipient, std::string const & old_source);
+
 #endif

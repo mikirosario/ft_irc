@@ -6,7 +6,7 @@
 #    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/21 15:56:57 by mrosario         ###   ########.fr        #
+#    Updated: 2022/02/21 19:01:14 by mrosario         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,6 +26,7 @@ SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/ircserv.cpp \
 			$(SRCDIR)/ircserv_interpreters.cpp \
 			$(SRCDIR)/ircserv_numeric_replies.cpp \
 			$(SRCDIR)/ircserv_numeric_error_replies.cpp \
+			$(SRCDIR)/ircserv_other_replies.cpp \
 			$(SRCDIR)/client.cpp
 
 OBJS = $(SRCFILES:.cpp=.o)

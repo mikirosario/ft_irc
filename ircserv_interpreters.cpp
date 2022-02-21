@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 16:11:56 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 20:42:48 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,15 +73,13 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 bool	IRC_Server::register_client(Client & client)
 {
 	//check if server has PASS; if not, ignore user PASS, if so, check if user PASS was correct
-	if (client.get_pass_validated() == false)
-	//um... we don't accept you, what do we do now?? just kick you?¿ xD
+	if (_servpass.empty() == false && client.get_pass_validated() == false) 	//um... we don't accept you, what do we do now?? just kick you?¿ xD
 	{
 		remove_client_from_server(client);
 		std::cout << "pollserver: socket " << client.get_sockfd() << " kicked from server." << std::endl;
 	}
-	else
+	else 										//if password was OK or there was no password requirement, we accept new client, send all the IRPLY here
 	{
-		//if password was OK or there was no password requirement, we accept new client, send all the IRPLY here
 		client.set_state_registered();	//set client state to registered
 		send_rpl_WELCOME(client);
 	}
@@ -175,11 +173,9 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 		send_err_NICKNAMEINUSE(sender, argv[1], "Nickname is already in use");
 	else if (sender.is_registered() == true)
 	{
+		std::string	old_source = sender.get_source();
 		sender.set_nick(argv[1]);
-		//if client is already registered, this is a nickname change, we send a reply as confirmation
-		//The NICK message may be sent from the server to clients to acknowledge their NICK command was successful,
-		//and to inform other clients about the change of nickname. In these cases, the <source> of the message will
-		//be the old nickname [ [ "!" user ] "@" host ] of the user who is changing their nickname.
+		send_rpl_NICK(sender, old_source);	//if client is already registered, this is a nickname change, we send a reply as confirmation
 	}
 	else //if client is not registered, we'll check to see if we have a username; if we do, we try to register
 	{

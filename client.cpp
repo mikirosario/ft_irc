@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 14:40:15 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 21:04:09 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -361,106 +361,6 @@ void		IRC_Server::Client::send_msg(std::string const & msg) const
 /* GETTERS */
 
 /*!
-** @brief	Returns a read-only reference to the Client's message buffer. The
-**			buffer and client state remain unchanged.
-**
-** @return	A read-only reference to the Client's message buffer.
-*/
-std::string const &	IRC_Server::Client::get_msg_buf(void) const
-{
-	return(_msg_buf);
-}
-
-/*!
-** @brief	Retrieves the command from the Client's message.
-**
-** @details NOTE: Assumes crlf termination. Behaviour undefined if used on
-**			non-crlf-terminated string.
-**
-** @return	A string containing the command, or an empty string if no command
-**			exists in the message.
-*/
-std::string	IRC_Server::Client::get_cmd(void) const
-{
-	int	start_pos = _msg_buf.find_first_not_of(' ');			//Tolerate leading spaces
-	int	end_pos = _msg_buf.find_first_of(" \r\n", start_pos);
-	return (_msg_buf.substr(start_pos, end_pos - start_pos));
-}
-
-/*!
-** @brief	Returns the number of parameters in the Client's message buffer.
-**
-** @details	All parameters are preceded by SPACE. A parameter preceded by SPACE
-**			and COLON is the last parameter, and all subsequent spaces are
-**			interpreted as part of the parameter proper. Parameters are only
-**			counted after the command. A buffer with only spaces does not count
-**			as a parameter.
-**
-**			NOTE: Assumes crlf termination. Behaviour undefined if used on
-**			non-crlf-terminated string.
-**
-** @return	The number of parameters in the message.
-*/
-size_t	IRC_Server::Client::get_param_count(void) const
-{
-	size_t	end_pos;
-	size_t	i = 0;
-	size_t	p_count = 0;
-	std::string cmd = get_cmd();
-
-	if (cmd.empty() == false)
-		i = _msg_buf.find(cmd);
-	end_pos = _msg_buf.find(" :", i);
-	if (end_pos != std::string::npos)						//if there is " :", that is last param	
-		++end_pos;
-	else							 						//if no " :", first char from end that is neither '\r', '\n' nor ' ' is endpos
-		end_pos = _msg_buf.find_last_not_of(" \r\n\0") + 1;	//last param cannot be empty unless preceded by ':', so " \r\n" doesn't count;
-															//the null terminator is just in case one gets in there
-	while (i < end_pos && (i = _msg_buf.find_first_of(" \r\n", i)) < end_pos)
-	{
-		++p_count;
-		i = _msg_buf.find_first_not_of(' ', i);				//tolerate trailing spaces
-	}
-	return (p_count);
-}
-
-//debug DEPRECATED
-// /*! @brief	Returns a vector containing all parameters in the Client's message
-// **			buffer STRIPPING crlf termination. Make sure to add crlf back in to
-// **			any messages you want to echo!
-// **
-// ** @return	A vector of strings containing the message parameters in the same
-// **			order as in the message. If there are no parameters, an empty vector
-// **			is returned.
-// */
-// std::vector<std::string>	IRC_Server::Client::get_params(void) const
-// {
-// 	std::vector<std::string>	ret;
-// 	size_t	start_pos = 0;
-// 	size_t	end_pos;
-
-// 	start_pos = _msg_buf.find_first_of(" \r\n", start_pos);				//get first space or endline
-// 	start_pos = _msg_buf.find_first_not_of(' ', start_pos);				//tolerate leading spaces
-// 	while (_msg_buf[start_pos] != '\r' && _msg_buf[start_pos] != '\n')	//NOTHING not crlf terminated should get this far, if so fix at source!
-// 	{	
-// 		if (_msg_buf[start_pos] == ':')									//last param colon case
-// 		{
-// 			++start_pos;
-// 			end_pos = _msg_buf.find_last_not_of("\r\n\0") + 1;			//strip crlf from last parameter
-// 		}
-// 		else															//general param case (if starting pos >= _msg_buf.size(), npos is returned, but this should NOT happen here as everything MUST be cr or lf terminated)
-// 			end_pos = _msg_buf.find_first_of(" \r\n", start_pos);		//strip crlf from last parameter
-// 		// //debug
-// 		// std::cerr << "START_POS: " << start_pos << " END_POS: " << end_pos << std::endl;
-// 		// //debug
-// 		ret.push_back(_msg_buf.substr(start_pos, end_pos - start_pos));	//add parameter to vector; 0 bytes == empty string
-// 		start_pos = _msg_buf.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
-// 	}
-// 	return (ret);
-// }
-//debug DEPRECATED
-
-/*!
 ** @brief	If the Client's message buffer is READY, attempts to retrieve the
 **			Client's message as a string vector in which the first string is the
 **			command and the rest are parameters, and FLUSHES THE BUFFER.
@@ -525,9 +425,94 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 		}
 		else
 			ret[0] = cmd;														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
-		flush_msg_buf(); //buffer is always flushed with get_message when READY, even if there is no command
+		flush_msg_buf(); //debug ONLY flush up to crlf! may have multiple commands in BUFFER! :p handle all commands!!! //buffer is always flushed with get_message when READY, even if there is no command
 	}
 	return  (ret);
+}
+
+/*!
+** @brief	Builds a source string for this Client instance in format:
+**			:nickname!username@hostname
+**
+** @details	I might replace this with a string variable that is updated whenever
+**			a new nick is set... depends how often I need this or variants.
+**
+*/
+std::string	IRC_Server::Client::get_source(void) const
+{
+	std::string	msg;
+
+	msg += ":";
+	msg += get_nick();
+	msg += "!";
+	msg += get_username();
+	msg += "@";
+	msg += get_hostname();
+	return (msg);
+}
+
+/*!
+** @brief	Returns a read-only reference to the Client's message buffer. The
+**			buffer and client state remain unchanged.
+**
+** @return	A read-only reference to the Client's message buffer.
+*/
+std::string const &	IRC_Server::Client::get_msg_buf(void) const
+{
+	return(_msg_buf);
+}
+
+/*!
+** @brief	Retrieves the command from the Client's message.
+**
+** @details NOTE: Assumes crlf termination. Behaviour undefined if used on
+**			non-crlf-terminated string.
+**
+** @return	A string containing the command, or an empty string if no command
+**			exists in the message.
+*/
+std::string	IRC_Server::Client::get_cmd(void) const
+{
+	int	start_pos = _msg_buf.find_first_not_of(' ');			//Tolerate leading spaces
+	int	end_pos = _msg_buf.find_first_of(" \r\n", start_pos);
+	return (_msg_buf.substr(start_pos, end_pos - start_pos));
+}
+
+/*!
+** @brief	Returns the number of parameters in the Client's message buffer.
+**
+** @details	All parameters are preceded by SPACE. A parameter preceded by SPACE
+**			and COLON is the last parameter, and all subsequent spaces are
+**			interpreted as part of the parameter proper. Parameters are only
+**			counted after the command. A buffer with only spaces does not count
+**			as a parameter.
+**
+**			NOTE: Assumes crlf termination. Behaviour undefined if used on
+**			non-crlf-terminated string.
+**
+** @return	The number of parameters in the message.
+*/
+size_t	IRC_Server::Client::get_param_count(void) const
+{
+	size_t	end_pos;
+	size_t	i = 0;
+	size_t	p_count = 0;
+	std::string cmd = get_cmd();
+
+	if (cmd.empty() == false)
+		i = _msg_buf.find(cmd);
+	end_pos = _msg_buf.find(" :", i);
+	if (end_pos != std::string::npos)						//if there is " :", that is last param	
+		++end_pos;
+	else							 						//if no " :", first char from end that is neither '\r', '\n' nor ' ' is endpos
+		end_pos = _msg_buf.find_last_not_of(" \r\n\0") + 1;	//last param cannot be empty unless preceded by ':', so " \r\n" doesn't count;
+															//the null terminator is just in case one gets in there
+	while (i < end_pos && (i = _msg_buf.find_first_of(" \r\n", i)) < end_pos)
+	{
+		++p_count;
+		i = _msg_buf.find_first_not_of(' ', i);				//tolerate trailing spaces
+	}
+	return (p_count);
 }
 
 std::string const &			IRC_Server::Client::get_serveraddr(void) const
