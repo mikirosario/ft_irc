@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 23:00:37 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/21 17:04:41 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 ** @param netinfo	(Optional) A string containing the host name, port number
 **					and password of the calling server. Currently unused.
 */
-IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) : _servport(port), _servpass(pass), _connections(0)
+IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) : _servport(port), _servpass(pass), _networkname("mikinet"), _connections(0)
 {
 	for (size_t i = 0; i < MAX_CONNECTIONS; ++i)
 		const_cast<size_t &>(_clients[i].pos) = i;
@@ -495,6 +495,9 @@ void		IRC_Server::accept_connection(void)
 		perror("accept_connection unable to resolve remote IP");
 	else
 	{
+		//Debug
+		std::cerr << "k cojones: " << remoteIP << std::endl;
+		//debug
 		add_connection(new_connection, remoteIP);
 		std::cout << "pollserver: new connection from "
 		<< _clients[_connections - 1].get_clientaddr()
@@ -667,6 +670,19 @@ void	IRC_Server::remove_flagged_clients(void)
 			++i;
 	}
 	_remove_list.reset();
+}
+
+/*!
+** @brief	Compares @a client_pass to the server's password.
+**
+** @details	Per the IRC standard. We can use this to decide whether we accept
+**			the client's registration attempt.
+** @param	client_pass	The password provided by the client during registration.
+** @return	true if equal, otherwise false.
+*/
+bool	IRC_Server::confirm_pass(std::string const & client_pass) const
+{
+	return (_servpass == client_pass);
 }
 
 /*!

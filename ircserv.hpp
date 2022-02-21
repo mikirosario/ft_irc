@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/20 22:28:29 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/21 16:02:39 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ class IRC_Server
 				std::string	_serveraddr;	//Server to which the Client is connected; can be used in replies requiring <servername>
 				int			_sockfd;		//Client's sockfd
 				int			_pass_attempts;	//Number of PASS commands sent by client on registration; limiting this to 10
-				std::string _pass;			//debug; flush user-provided pass after registration to improve security
+				bool		_pass_validated;
 				std::string	_nick;			//Client's nick
 				std::string _clientaddr;	//Client's IP or canonical hostname, done by getaddrinfo() lookup
 				std::string _hostname;		//Client's self-reported hostname?
@@ -126,21 +126,21 @@ class IRC_Server
 
 				/* UTILS */
 				static bool	is_endline(char const c);
-				bool		confirm_pass(std::string const & server_pass);
 				bool		msg_is_ready(void) const;
 				bool		is_registered(void) const;
+				bool		reg_pass_attempt(void);
 				void		send_msg(std::string const & msg) const;
 
 				/* SETTERS */
 				void	flush_msg_buf(void);
 				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
 				void	set_sockfd(int sockfd);
-				bool	set_pass(std::string const & pass);
 				void	set_nick(std::string const & nick);
 				void	set_username(std::string const & username);
 				void	set_realname(std::string const & realname);
 				bool	set_clientaddr(char const * remoteIP);
 				void	set_hostname(std::string const & hostname);
+				void	set_pass_validated(bool state);
 				void	set_state_registered(void);
 
 				void	clear(void);
@@ -155,7 +155,9 @@ class IRC_Server
 				std::string const &			get_hostname(void) const;
 				std::string const &			get_clientaddr(void) const;
 				int							get_sockfd(void) const;
+				int							get_pass_attempts(void) const;
 				size_t						get_pos(void) const;
+				bool						get_pass_validated(void) const;
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??
@@ -163,6 +165,7 @@ class IRC_Server
 		std::string						_netpass;
 		std::string						_servport; 
 		std::string						_servpass;
+		std::string						_networkname;
 		std::string						_servername;
 		std::string						_serveraddr;
 		struct pollfd					_pfds[MAX_CONNECTIONS];
@@ -210,6 +213,7 @@ class IRC_Server
 		
 		//Utils
 		bool	is_endline(char const c);
+		bool	confirm_pass(std::string const & client_pass) const;
 
 		//Command interpreting modules
 		#include "ircserv_modules.hpp"

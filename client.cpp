@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 21:56:24 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/21 14:40:15 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED)),
 									_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),
 									_pass_attempts(0),
+									_pass_validated(false),
 									pos(0)
 {
 	//pre-reserve some appropriate memory
@@ -33,7 +34,7 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_serveraddr = src._serveraddr;
 	_sockfd = src._sockfd;
 	_pass_attempts = src._pass_attempts;
-	_pass = src._pass;
+	_pass_validated = src._pass_validated;
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
 	_username = src._username;
@@ -67,27 +68,13 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_serveraddr, src._serveraddr);
 	_sockfd = src._sockfd;
 	_pass_attempts = src._pass_attempts;
-	std::swap(this->_pass, src._pass);
+	_pass_validated = src._pass_validated;
 	std::swap(this->_nick, src._nick);
 	std::swap(this->_username, src._username);
 	std::swap(this->_realname, src._realname);
 	std::swap(this->_msg_buf, src._msg_buf);
 	std::swap(this->_hostname, src._hostname);
 	src.clear();
-}
-
-/*!
-** @brief	Compares the client's password to the server's password.
-**
-** @details	Per the IRC standard, this should be called when registration ends,
-**			which is when we receive NICK and USER commands. We can use this to
-**			decide whether we accept the client or boot it. First step.
-** @param server_pass The server's password.
-** @return true if equal, otherwise false.
-*/
-bool	IRC_Server::Client::confirm_pass(std::string const & server_pass)
-{
-	return (this->_pass == server_pass);
 }
 
 /* ---- SETTERS ---- */
@@ -169,21 +156,19 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 }
 
 /*!
-** @brief	Sets Client's @a _pass to the value passed as an argument.
+** @brief	Registers Client's password validation attempt.
 **
-** @details	Each Client instance will accept resetting the password up to
-**			MAX_PASS_ATTEMPTS times before registration, after which further
-**			the method will return false and the client's connection should be
-**			rejected with a very stern reprimand.
-** @param	pass	The string containing the Client's password.
-** @return	true if _pass has been set fewer than MAX_PASS_ATTEMPTS times,
+** @details	Each Client instance will accept up to MAX_PASS_ATTEMPTS password
+**			validation attempts during registration, after which any further
+**			attempts will lead the method to return false and the client's
+**			connection should then be rejected with a very stern reprimand.
+** @return	true if PASS has been sent fewer than MAX_PASS_ATTEMPTS times,
 **			otherwise false.
 */
-bool	IRC_Server::Client::set_pass(std::string const & pass)
+bool	IRC_Server::Client::reg_pass_attempt(void)
 {
 	if (_pass_attempts > MAX_PASS_ATTEMPTS)
 		return (false);
-	_pass = pass;
 	++_pass_attempts;
 	return (true);
 }
@@ -280,6 +265,17 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 }
 
 /*!
+** @brief	Sets Client's @a _pass_validated flag to @a state.
+**
+** @param	state	State to which to set Client's @a _pass_validated flag (true
+**					or false).
+*/
+void	IRC_Server::Client::set_pass_validated(bool state)
+{
+	_pass_validated = state;
+}
+
+/*!
 ** @brief	Sets Client's state to REGISTERED.
 */
 void	IRC_Server::Client::set_state_registered(void)
@@ -297,7 +293,7 @@ void	IRC_Server::Client::clear(void)
 	_serveraddr.clear();
 	_sockfd = 0;
 	_pass_attempts = 0;
-	_pass.clear();
+	_pass_validated = false;
 	_nick.clear();
 	_clientaddr.clear();
 	_hostname.clear();
@@ -571,7 +567,17 @@ int							IRC_Server::Client::get_sockfd(void) const
 	return(_sockfd);
 }
 
+int							IRC_Server::Client::get_pass_attempts(void) const
+{
+	return (_pass_attempts);
+}
+
 size_t						IRC_Server::Client::get_pos(void) const
 {
 	return (pos);
+}
+
+bool						IRC_Server::Client::get_pass_validated(void) const
+{
+	return (_pass_validated);
 }

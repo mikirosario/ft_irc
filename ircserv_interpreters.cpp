@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/20 23:19:50 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/21 16:11:56 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,14 +58,36 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 	return (true);
 }
 
-// bool	IRC_Server::register_client(int fd, std::string const & msg)
-// {
-// 	//parse message for PASS command
-// 	//if no PASS command, do nothing
-// 	//if NICK command, register NICK and attempt to confirm password
+/*!
+** @brief	Attempts to register @a client on the server, sending the
+**			appropriate replies to the client depending on whether the attempt
+**			was or was not successful.
+**
+** @details	The client's password validation status is irrelevant if the server
+**			has no password; otherwise, it will determine whether or not
+**			registration goes ahead. Client passwords are not saved, only a bool
+**			indicating whether or not they were accepted. Only the last password
+**			sent by the client is relevant.
+** @param	client	The Client we will attempt to register.
+*/
+bool	IRC_Server::register_client(Client & client)
+{
+	//check if server has PASS; if not, ignore user PASS, if so, check if user PASS was correct
+	if (client.get_pass_validated() == false)
+	//um... we don't accept you, what do we do now?? just kick you?¿ xD
+	{
+		remove_client_from_server(client);
+		std::cout << "pollserver: socket " << client.get_sockfd() << " kicked from server." << std::endl;
+	}
+	else
+	{
+		//if password was OK or there was no password requirement, we accept new client, send all the IRPLY here
+		client.set_state_registered();	//set client state to registered
+		send_rpl_WELCOME(client);
+	}
 
-// 	return(true);
-// }
+	return(true);
+}
 
 /* ---- INTERPRETING ---- */
 
@@ -84,9 +106,9 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 **			If both aforementioned errors are simultaneously present, only the
 **			ERR_ALREADYREGISTERED error reply is returned to @a sender.
 **
-**			If more than MAX_PASS_ATTEMPTS calls are made to set_pass, an
-**			ERR_UNKNOWNERROR error reply is returned to @a sender reprimanding
-**			them and they are banished from the Realm.
+**			If more than MAX_PASS_ATTEMPTS calls are made to set_pass during
+**			registration, an ERR_UNKNOWNERROR error reply is returned to
+**			@a sender reprimanding them and they are banished from the Realm.
 ** @param	sender	A reference to the client who who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
 **					and its arguments (argv[...]) in a string vector.
@@ -95,13 +117,24 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 {
 	if (sender.is_registered() == true)
 		send_err_ALREADYREGISTERED(sender, "You may not reregister");
+	else if (sender.get_pass_attempts() == MAX_PASS_ATTEMPTS)
+	{
+			send_err_UNKNOWNERROR(sender, argv[0], "You've sent too many PASS commands");
+			remove_client_from_server(sender);
+			std::cout << "pollserver: socket " << sender.get_sockfd() << " kicked from server." << std::endl;
+	}
 	else if (argv.size() < 2) //Only command argument exists
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (sender.set_pass(argv[1]) == false)
+	else
 	{
-		send_err_UNKNOWNERROR(sender, argv[0], "You've sent too many PASS commands");
-		remove_client_from_server(sender);
-		std::cout << "pollserver: socket " << sender.get_sockfd() << " kicked from server." << std::endl;
+		sender.reg_pass_attempt();				//register password validation attempt
+		if (confirm_pass(argv[1]) == false)		//if password is incorrect send error reply PASSWD_MISMATCH
+		{
+			sender.set_pass_validated(false);
+			send_err_PASSWDMISMATCH(sender, "Password incorrect");
+		}
+		else
+			sender.set_pass_validated(true);
 	}
 }
 
@@ -153,7 +186,7 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 		if (sender.get_username().empty() == false)	//we have both nick and user, try to register
 		{
 			sender.set_nick(argv[1]);
-			//try to register
+			register_client(sender);
 		}
 		else if (sender.get_nick().empty() == false) //if we already have a nick and the client is just bombing us with multiple NICK commands, send them to hell
 		{
@@ -223,8 +256,8 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 	{
 		sender.set_username(argv[1]);
 		sender.set_realname(argv[4]);
-		// if (sender.get_nick().empty() == false) //The client already sent a nick, so we can FINALLY try to register
-			//try to register!
+		if (sender.get_nick().empty() == false) //The client already sent a nick, so we can FINALLY try to register
+			register_client(sender);
 	}
 }
 

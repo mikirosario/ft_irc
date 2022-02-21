@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: miki <miki@student.42.fr>                  +#+  +:+       +#+         #
+#    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/18 15:14:13 by miki             ###   ########.fr        #
+#    Updated: 2022/02/21 15:56:57 by mrosario         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,9 @@ RST = \e[0m
 CXX = clang++
 
 SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/ircserv.cpp \
-			$(SRCDIR)/ircserv_interpreters.cpp $(SRCDIR)/ircserv_error_replies.cpp \
+			$(SRCDIR)/ircserv_interpreters.cpp \
+			$(SRCDIR)/ircserv_numeric_replies.cpp \
+			$(SRCDIR)/ircserv_numeric_error_replies.cpp \
 			$(SRCDIR)/client.cpp
 
 OBJS = $(SRCFILES:.cpp=.o)

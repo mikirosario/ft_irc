@@ -3,16 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/19 17:51:59 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/21 13:33:06 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifdef __linux__
 # include <csignal> //for SIGNAL DEFINITIONS ON LINUX
 # include <cstdlib> //for EXIT definitions on LINUX
+#elif __APPLE__
+#include <clocale> //for std::setlocale on Mac
 #endif
 #include "ircserv.hpp"
 
