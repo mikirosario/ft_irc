@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 17:04:41 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 17:59:38 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,7 @@ int	IRC_Server::get_listener_socket(void) const
 	int						ret = -1;
 
 	std::memset(&hints, 0, sizeof(addrinfo));
-	hints.ai_family = AF_UNSPEC; // don't care IPv4 or IPv6
+	hints.ai_family = AF_INET; // IPv4
 	hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
 	hints.ai_flags = AI_PASSIVE; // fill in my IP for me
 	gai_status = getaddrinfo(NULL, this->get_port().data(), &hints, &res);
@@ -483,26 +483,24 @@ std::string	IRC_Server::get_source(void) const
 */
 void		IRC_Server::accept_connection(void)
 {
-	struct	sockaddr_storage	remoteaddr;
+	struct sockaddr_in			remoteaddr;
 	socklen_t					addrlen = sizeof(remoteaddr);
-	char						remoteIP[INET6_ADDRSTRLEN];
+	char *						remoteIP;
 	int							new_connection;
 	
 	new_connection = accept(_pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
 	if (new_connection == -1)
 		perror("poll_listener could not accept connection");
-	else if (inet_ntop(remoteaddr.ss_family, get_in_addr(reinterpret_cast<struct sockaddr *>(&remoteaddr)), remoteIP, INET6_ADDRSTRLEN) == NULL) //debug; ntop not allowed? //require remote IP identification
+	else if (remoteaddr.sin_family != AF_INET)
 		perror("accept_connection unable to resolve remote IP");
 	else
 	{
-		//Debug
-		std::cerr << "k cojones: " << remoteIP << std::endl;
-		//debug
+		remoteIP = inet_ntoa(remoteaddr.sin_addr);
 		add_connection(new_connection, remoteIP);
 		std::cout << "pollserver: new connection from "
 		<< _clients[_connections - 1].get_clientaddr()
 		<< " on socket " << new_connection
-		<< " to server " << _serveraddr //_clients[_connections - 1].get_clientaddr()
+		<< " to server " << _serveraddr
 		<< std::endl;
 	}
 }
