@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 21:04:09 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 22:58:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,19 +80,34 @@ void		IRC_Server::Client::move(Client & src)
 /* ---- SETTERS ---- */
 
 /*!
-** @brief	Flushes the message buffer for this Client and sets its buffer state
-**			to UNREADY.
+** @brief	Flushes the message buffer for this Client up to the @a stop
+**			positionand and sets its buffer state to UNREADY if the buffer
+**			contains no further crlf-terminated messages.
 **
 ** @details	This should be called whenever a full message is reaped for
 **			processing and I THINK whenever a new connection request is
 **			received... though there is something in the subject about
 **			recovering from lost connections so might need a timeout for
 **			removal...
+**
+**			When a message is reaped, the get_message() method will call this
+**			method to flush the buffer of the message until the start of the
+**			next message (the @a stop position). If the buffer was empty after
+**			the message was reaped, it will send string::npos to clear the whole
+**			buffer.
+**
+**			If the buffer is crlf-terminated after being flushed, its state will
+**			not change from READY and it will have to be read again. Otherwise
+**			its state will change to UNREADY to signify it will not be read
+**			again until it receives new data.
+** @param	stop	The position preceding which all data in the buffer will be
+**					cleared.
 */
-void	IRC_Server::Client::flush_msg_buf(void)
+void	IRC_Server::Client::flush_msg_buf(size_t stop)
 {
-	_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	
-	_msg_buf.clear();
+	_msg_buf.erase(0, stop);
+	if (msg_buf_is_crlf_terminated() == false)
+		_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	
 }
 
 /*!
@@ -398,10 +413,11 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
 	{
 		std::string	cmd = get_cmd();
+		size_t		start_pos = 0;
+		size_t		end_pos;
 		if (cmd.empty() == false)												//if there is a command, we retrieve command and parameters
 		{
-			size_t	start_pos = 0;
-			size_t	end_pos;
+			//size_t	end_pos;
 
 			ret.push_back(cmd);													//add command
 			start_pos = _msg_buf.find(cmd);										//set start_pos to beginning of cmd
@@ -412,7 +428,7 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 				if (_msg_buf[start_pos] == ':')									//last param colon case
 				{
 					++start_pos;
-					end_pos = _msg_buf.find_last_not_of("\r\n\0") + 1;			//strip crlf from last parameter
+					end_pos = _msg_buf.find_first_of("\r\n\0");					//strip crlf from last parameter
 				}
 				else															//general param case (if starting pos >= _msg_buf.size(), npos is returned, but this should NOT happen here as everything MUST be cr or lf terminated)
 					end_pos = _msg_buf.find_first_of(" \r\n", start_pos);		//strip crlf from last parameter
@@ -422,10 +438,15 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 				ret.push_back(_msg_buf.substr(start_pos, end_pos - start_pos));	//add parameter to vector; 0 bytes == empty string
 				start_pos = _msg_buf.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
 			}
+			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);				//get the character after crlf termination; npos is OK too if there is no such character
 		}
 		else
+		{
+			end_pos = _msg_buf.find_first_of("\r\n", start_pos);
+			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);
 			ret[0] = cmd;														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
-		flush_msg_buf(); //debug ONLY flush up to crlf! may have multiple commands in BUFFER! :p handle all commands!!! //buffer is always flushed with get_message when READY, even if there is no command
+		}
+		flush_msg_buf(end_pos); //buffer is always flushed with get_message when READY, even if there is no command
 	}
 	return  (ret);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 19:33:34 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 22:49:51 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ class IRC_Server
 				void		send_msg(std::string const & msg) const;
 
 				/* SETTERS */
-				void	flush_msg_buf(void);
+				void	flush_msg_buf(size_t stop);
 				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
 				void	set_sockfd(int sockfd);
 				void	set_nick(std::string const & nick);

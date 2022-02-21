@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 21:09:27 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 22:59:53 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -565,13 +565,12 @@ void	IRC_Server::process_client_message(int i)
 					if (send(_pfds[j].fd, msgbuf, nbytes, 0) == -1)
 						std::cerr << "send error" << std::endl;
 			//if message in client buff has endline, flush after processing
-			if (_clients[i].msg_is_ready())
-			{
 
 				//debug
 				//debug
 
-				//for loop here, CLIENT buffer not totally flushed, only until next crlf, keep interpreting client msg until UNREADY state :p
+			//for loop here, CLIENT buffer not totally flushed, only until next crlf, keep interpreting client msg until UNREADY state :p
+			while (_clients[i].msg_is_ready())
 				interpret_msg(_clients[i]);
 
 				
@@ -592,7 +591,6 @@ void	IRC_Server::process_client_message(int i)
 				// for (size_t i = 0; i < argv.size(); ++i)
 				// 	std::cout << argv[i] << "\n";
 				// //debug
-			}
 	}
 }
 
