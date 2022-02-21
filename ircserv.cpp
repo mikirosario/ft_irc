@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 17:59:38 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/21 21:09:27 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -571,6 +571,7 @@ void	IRC_Server::process_client_message(int i)
 				//debug
 				//debug
 
+				//for loop here, CLIENT buffer not totally flushed, only until next crlf, keep interpreting client msg until UNREADY state :p
 				interpret_msg(_clients[i]);
 
 				
