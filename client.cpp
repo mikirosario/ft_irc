@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/22 17:37:12 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 18:10:30 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,13 +123,14 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **			Client's buffer state to READY if a crlf-terminated message of no
 **			greater than MSG_BUF_SIZE bytes is present.
 **
-** @details	Yeah, it's actually much more complicated than that. ;)
+** @details	Yeah, it's actually MUCH more complicated than that. ;)
 **
-+*			We have three buffers.
++*			We use three buffers: @a incoming_data, @a _msg_buf and @a _message.
 **
-**			The @a incoming_data buffer is local to this function and simply
-**			contains all data received by recv(), which must be sent in a
-**			c-string of MSG_BUF_SIZE.
+**			The @a incoming_data buffer is a stringified raw copy of the
+**			512-byte server buffer and simply contains all data received from
+**			recv() for the client instance, which must be passed as a c-string
+**			of MSG_BUF_SIZE.
 **
 **			The Client's @a _msg_buf buffer, upon entry to this function, MUST
 **			either be empty or contain the first part of an UNTERMINATED message
@@ -141,18 +142,20 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **
 **			Consequently, you can think of @a _msg_buf and @a incoming_data as
 **			a single bisected buffer of MSG_BUF_SIZE * 2 size:
-**			@a [_msg_buf+incoming_data]
+**			@a [_msg_buf+incoming_data] wherein any data in @a _msg_buf is
+**			'waiting' to be terminated with data from @a incoming_data.
 **
 **			NOTE: ALL MESSAGES IN _MSG_BUF MUST BE REAPED BY GET_MESSAGE()
 **			BEFORE THIS METHOD IS CALLED. @see ::get_message().
 **
-**			The Client's @a _message buffer will be loaded with the first
-**			crlf-terminated message in @a [_msg_buf+incoming_data], which, again
-**			may have the first part in @a _msg_buf and the termination in
-**			@a incoming_data, or may be entirely contained in @a incoming_data
-**			(in which case @a _msg_buf is empty).
+**			The Client's @a _message string is loaded with a single
+**			crlf-terminated message ready for parsing. It will be loaded with
+**			the first crlf-terminated message in @a [_msg_buf+incoming_data],
+**			which may contain the first part of the message in @a _msg_buf and
+**			the termination in @a incoming_data, OR may be entirely contained in
+**			@a incoming_data (in which case @a _msg_buf is empty).
 **
-**			The message loaded into the @a _message buffer will then be flushed
+**			The message loaded into the @a _message string will then be flushed
 **			(erased) from the @a [_msg_buf+incoming_data] buffer. Any trailing
 **			data remaining in @a incoming_data will then be moved into
 **			@a _msg_buf. (Should be moved... it's c++98, so they are actually
@@ -172,9 +175,15 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **			If @a _msg_buf is empty, that is irrelevant, it just means that
 **			@a _incoming_data contains the entire message.
 **
+**			If there is no crlf-terminated message that is okay, so long as the
+**			accumulated bytes in @a _msg_buf are below the MSG_BUF_SIZE limit.
+**			We just append the @a incoming_data to @a msg_buf and continue to
+**			wait for a termination to be sent.
+**
 **			// MESSAGE SIZE RESTRICTION ENFORCEMENT //
-**			Messages above 512 bytes in length (including crlf-termination) are
-**			not allowed. We know we have a message above 512 bytes in length if:
+**			Messages above MSG_BUF_SIZE bytes in length (including
+**			crlf-termination) are not allowed. We know we have a message above
+**			MSG_BUF_SIZE bytes in length if:
 **
 **				A crlf-termination is present in @a incoming_data BUT the
 **				Client's @a _msg_buf size + the size of the remaining part of
@@ -185,14 +194,27 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **				Client's @a _msg_buf would overflow by appending all the
 **				@a incoming_data + 2 bytes (for the crlf).
 **
-**			In such a case we send the user the ERR_INPUTTOOLONG error reply and
-**			discard the message. If crlf-termination was not present in the
-**			discarded message and the remaining fragment of that message is
-**			received in subsequent recv() calls, it will be analysed
-**			independently, and likely throw an ERR_UNKNOWNCOMMAND error, but may
-**			be misinterpreted... Sorry. xD I might flag the Client and have it
-**			throw everything out until after their next crlf, I dunno. What's
-**			the done thing here? xD
+**			In such a case we send the user the ERR_INPUTTOOLONG error reply
+**			(this is done by the caller) and discard the message.
+**
+**			//debug
+**			If crlf-termination was not present in the discarded message and the
+**			remaining fragment of that message is received in subsequent recv()
+**			calls, it will be analysed independently, and likely throw an
+**			ERR_UNKNOWNCOMMAND error, but may also be misinterpreted. Sorry. xD
+**			I might flag the Client and have it throw everything out until after
+**			their next crlf, I dunno. What's the done thing here? xD
+**			//debug
+**
+**			// TRAILING CRLF AND EMPTY LINES //
+**			Trailing crlf-terminations and empty lines are ignored. A trailing
+**			crlf-termination or empty line is defined here as any sequence of
+**			" ", "\r" or "\n" at the beginning of the @a incoming_data buffer
+**			when there is no data in the @a _msg_buf buffer waiting to be
+**			terminated (that is, when @a _msg_buf is empty).
+**
+**			Trailing crlf-terminations and empty lines are deleted from the
+**			buffer without processing.
 **
 **			Anyway, FINALLY, if this odyssey ends with a message ready to be
 **			interpreted, we will set the client's buffer state to READY.
@@ -206,15 +228,13 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 	std::string	incoming_data(msg_register, nbytes);			 //incoming data register
 	size_t		msg_buf_bytes_available;
 	size_t		end_pos;
-	
-	//size_t		end_pos = incoming_data.find_first_not_of('\n'); //trailing newlines are skipped over, as we tolerate '\r'-termination, so we didn't wait for it.
 	bool		ret = true;
 
-	 if (_msg_buf.empty() == true)	//if we don't have anything in the buffer waiting for a crlf-termination
-	 {
-	 	end_pos = incoming_data.find_first_not_of("\r\n"); //ignore trailing crlf-termination/empty line
+	if (_msg_buf.empty() == true)	//if we don't have anything in the buffer waiting for a crlf-termination
+	{
+		end_pos = incoming_data.find_first_not_of(" \r\n"); //ignore trailing crlf-termination/empty line
 		incoming_data.erase(0, end_pos);
-	 }
+	}
 	end_pos = incoming_data.find_first_of("\r\n"); //first, determine if incoming data has crlf-terminated data
 	if (end_pos != std::string::npos && _msg_buf.size() + end_pos > MSG_BUF_SIZE - 2)	//found a crlf-terminated message, but input is too long
 	{
