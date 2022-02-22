@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/22 17:21:54 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 17:37:12 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,10 +205,17 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 {
 	std::string	incoming_data(msg_register, nbytes);			 //incoming data register
 	size_t		msg_buf_bytes_available;
-	size_t		end_pos = incoming_data.find_first_not_of('\n'); //trailing newlines are skipped over, as we tolerate '\r'-termination, so we didn't wait for it.
+	size_t		end_pos;
+	
+	//size_t		end_pos = incoming_data.find_first_not_of('\n'); //trailing newlines are skipped over, as we tolerate '\r'-termination, so we didn't wait for it.
 	bool		ret = true;
 
-	end_pos = incoming_data.find_first_of("\r\n", end_pos); //first, determine if incoming data has crlf-terminated data
+	 if (_msg_buf.empty() == true)	//if we don't have anything in the buffer waiting for a crlf-termination
+	 {
+	 	end_pos = incoming_data.find_first_not_of("\r\n"); //ignore trailing crlf-termination/empty line
+		incoming_data.erase(0, end_pos);
+	 }
+	end_pos = incoming_data.find_first_of("\r\n"); //first, determine if incoming data has crlf-terminated data
 	if (end_pos != std::string::npos && _msg_buf.size() + end_pos > MSG_BUF_SIZE - 2)	//found a crlf-terminated message, but input is too long
 	{
 		_msg_buf.clear();											//we discard the message, so clear first part of message, if any
