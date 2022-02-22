@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/22 15:04:35 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 17:21:54 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,14 +203,14 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 */
 bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
 {
-	std::string	incoming_data(msg_register, nbytes);						//incoming data register
+	std::string	incoming_data(msg_register, nbytes);			 //incoming data register
 	size_t		msg_buf_bytes_available;
-	size_t		end_pos = incoming_data.find_first_of("\r\n"); 	//first, determine if incoming data has crlf-terminated data
+	size_t		end_pos = incoming_data.find_first_not_of('\n'); //trailing newlines are skipped over, as we tolerate '\r'-termination, so we didn't wait for it.
 	bool		ret = true;
 
-	if (end_pos != std::string::npos && _msg_buf.size() + end_pos + 2 > MSG_BUF_SIZE)	//found a crlf-terminated message, but input is too long
+	end_pos = incoming_data.find_first_of("\r\n", end_pos); //first, determine if incoming data has crlf-terminated data
+	if (end_pos != std::string::npos && _msg_buf.size() + end_pos > MSG_BUF_SIZE - 2)	//found a crlf-terminated message, but input is too long
 	{
-		//send ERR_INPUTTOOLONG to sender
 		_msg_buf.clear();											//we discard the message, so clear first part of message, if any
 		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);	//find first character after crlf-termination, or npos if it's the end of the string
 		incoming_data.erase(0, end_pos);							//discard second part of message
@@ -223,6 +223,9 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 		if(msg_buf_bytes_available < incoming_data.size() + 2) 	//if it would fill the 512-byte buffer and there is still no crlf-termination, message is too long, this is MSGTOOLONG/truncate case
 		{
 			//send ERR_INPUTTOOLONG (417) to sender, and ignore
+			//debug
+			std::cerr << "entro aquí?" << std::endl;
+			//debug
 			_msg_buf.clear(); //empty message buffer
 			ret = false; //debug //we may want a flag that ignores the rest of the input from this Client until after next crlf
 		}

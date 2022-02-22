@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/22 00:11:29 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 16:43:20 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -558,7 +558,8 @@ void	IRC_Server::process_client_message(int i)
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
 			//insert message in client's message buffer
 			std::cerr << "nbytes: " << nbytes << std::endl;
-			_clients[i].append_to_msg_buf(msgbuf, nbytes);
+			if (_clients[i].append_to_msg_buf(msgbuf, nbytes) == false)
+				send_err_INPUTTOOLONG(_clients[i], "Input line was too long");
 			//do stuff
 			for (int j = 1; j < _connections; ++j) //send to all clients (this is just test code, no RFC stuff yet)
 				if (j != i) //do not send to self
@@ -567,8 +568,8 @@ void	IRC_Server::process_client_message(int i)
 			//if message in client buff has endline, flush after processing
 
 				//debug
+			std::cerr << "soy leñador" << std::endl;
 				//debug
-
 			//for loop here, CLIENT buffer not totally flushed, only until next crlf, keep interpreting client msg until UNREADY state :p
 			while (_clients[i].msg_is_ready())
 				interpret_msg(_clients[i]);

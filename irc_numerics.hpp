@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 15:59:30 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/22 16:23:54 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 /* -- ERR NUMERICS -- */
 #define ERR_UNKNOWNERROR "400"
+#define ERR_INPUTTOOLONG "417"
 #define ERR_UNKNOWNCOMMAND "421"
 #define ERR_NONICKNAMEGIVEN "431"
 #define ERR_ERRONEOUSNICKNAME "432"

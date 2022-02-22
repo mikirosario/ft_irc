@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 15:56:12 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/22 16:26:36 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,14 @@ void	IRC_Server::send_err_PASSWDMISMATCH(Client const & recipient, std::string c
 {
 	std::string msg = numeric_reply_start(recipient, ERR_PASSWDMISMATCH);
 	
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_INPUTTOOLONG(Client const & recipient, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_INPUTTOOLONG);
+
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
