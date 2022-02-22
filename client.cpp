@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/22 18:21:29 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 18:43:42 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -553,28 +553,41 @@ void		IRC_Server::Client::send_msg(std::string const & msg) const
 /* GETTERS */
 
 /*!
-** @brief	If the Client's message buffer is READY, attempts to retrieve the
-**			Client's message as a string vector in which the first string is the
-**			command and the rest are parameters, and FLUSHES THE BUFFER.
+** @brief	If the Client's buffer state is READY, reaps the Client's message as
+**			a string vector in which the first string is the command and the
+**			rest are parameters, changing the buffer state to UNREADY if the
+**			client has no more crlf-terminated strings to reap.
 **
 ** @details This method MUST be called when the @a _buf_state is READY in order
 **			to reap the message from the buffer, though there is a redundant
 **			check to prevent unready message buffers from being reaped.
 **
-**			If there is no command in the buffer, a vector with an empty string
+**			If there is no command in the message, a vector with an empty string
 **			in position 0 is returned. If the buffer is not READY (hasn't yet
 **			been crlf-terminated), an empty vector is returned.
 **
-**			If the message is READY the buffer will ALWAYS be flushed and the
-**			buffer state changed to UNREADY to make way for new incoming data.
+**			If a crlf-terminated message was reaped and there is another
+**			crlf-terminated message waiting in the Client's buffer, it will be
+**			loaded to the @a _message string and flushed from @a _msg_buf and
+**			the Client's buffer state will remain READY. This method should then
+**			be called repeatedly so long as the Client's buffer state remains
+**			READY.
 **
-**			If the message is UNREADY (empty vector returned), the buffer will
-**			NOT be flushed.
+**			If a crlf-terminated message was reaped and there is no
+**			crlf-terminated message remaining in the Client's buffer, the
+**			Client's buffer state will be changed to UNREADY to make way for new
+**			incoming data.
+**
+**			If a there is another crlf-terminated message in the buffer, the
+**			buffer will ALWAYS be flushed.
+**
+**			If there is NOT another crlf-terminated message in the buffer, the
+**			buffer will NOT be flushed.
 **
 **			NOTE:	Once get_message() is called to reap the Client's message,
-**					the Client's message buffer is cleared and, unless a prior
-**					copy was made, the return value of get_message() is the
-**					ONLY remaining copy of the message!
+**					the Client's message buffer is cleared of the message and,
+**					unless a prior copy was made, the return value of
+**					get_message() is the ONLY remaining copy of the message!
 **
 **					To check the Client's message buffer WITHOUT reaping the
 **					message, use the get_msg_buf() method instead.
@@ -631,11 +644,10 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 		else								//no, there is not another message
 			_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
 	}
-	//debug
-	
-	for (std::vector<std::string>::const_iterator it = ret.begin(), end = ret.end(); it != end; ++it)
-		std::cerr << *it << std::endl;
-	//debug
+	// //debug
+	// for (std::vector<std::string>::const_iterator it = ret.begin(), end = ret.end(); it != end; ++it)
+	// 	std::cerr << *it << std::endl;
+	// //debug
 
 	return  (ret);
 }
