@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 22:59:53 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 00:11:29 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -541,7 +541,7 @@ bool	IRC_Server::poll_listener(void) const
 void	IRC_Server::process_client_message(int i)
 {
 	char						msgbuf[MSG_BUF_SIZE];
-	int nbytes = recv(_pfds[i].fd, msgbuf, sizeof msgbuf, 0);
+	int nbytes = recv(_pfds[i].fd, msgbuf, MSG_BUF_SIZE, 0);
 	switch (nbytes) //error cases and default successful data reception case
 	{
 		case 2 :

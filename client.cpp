@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 22:58:32 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 15:04:35 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED
 	_username.reserve(MAX_USERNAME_SIZE);
 	_realname.reserve(MAX_REALNAME_SIZE);
 	_msg_buf.reserve(MSG_BUF_SIZE);
+	_message.reserve(MSG_BUF_SIZE);
 }
 
 
@@ -37,6 +38,7 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_pass_validated = src._pass_validated;
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
+	_message = src._message;
 	_username = src._username;
 	_realname = src._realname;
 	_hostname = src._hostname;
@@ -73,6 +75,7 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_username, src._username);
 	std::swap(this->_realname, src._realname);
 	std::swap(this->_msg_buf, src._msg_buf);
+	std::swap(this->_message, src._message);
 	std::swap(this->_hostname, src._hostname);
 	src.clear();
 }
@@ -81,8 +84,8 @@ void		IRC_Server::Client::move(Client & src)
 
 /*!
 ** @brief	Flushes the message buffer for this Client up to the @a stop
-**			positionand and sets its buffer state to UNREADY if the buffer
-**			contains no further crlf-terminated messages.
+**			position and sets its buffer state to UNREADY if the buffer contains
+**			no further crlf-terminated messages.
 **
 ** @details	This should be called whenever a full message is reaped for
 **			processing and I THINK whenever a new connection request is
@@ -91,9 +94,10 @@ void		IRC_Server::Client::move(Client & src)
 **			removal...
 **
 **			When a message is reaped, the get_message() method will call this
-**			method to flush the buffer of the message until the start of the
-**			next message (the @a stop position). If the buffer was empty after
-**			the message was reaped, it will send string::npos to clear the whole
+**			method to flush the message from the buffer, that is, to erase
+**			elements from the buffer until the start of the next message (the
+**			@a stop position). If the buffer was empty after the message was
+**			reaped, get_message() will send string::npos to clear the whole
 **			buffer.
 **
 **			If the buffer is crlf-terminated after being flushed, its state will
@@ -106,48 +110,176 @@ void		IRC_Server::Client::move(Client & src)
 void	IRC_Server::Client::flush_msg_buf(size_t stop)
 {
 	_msg_buf.erase(0, stop);
-	if (msg_buf_is_crlf_terminated() == false)
-		_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	
 }
+// void	IRC_Server::Client::flush_msg_buf(size_t stop)
+// {
+// 	_msg_buf.erase(0, stop);
+// 	if (msg_buf_is_crlf_terminated() == false)
+// 		_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	
+// }
 
 /*!
-** @brief	Appends up to MSG_BUF_SIZE characters to message buffer, truncating
-**			any extra bytes, if the message buffer is UNREADY to be reaped.
+** @brief	Appends incoming data to the Client's message buffer, setting the
+**			Client's buffer state to READY if a crlf-terminated message of no
+**			greater than MSG_BUF_SIZE bytes is present.
 **
-** @details	This function is used to add to the buffer, while get_message is
-**			used to empty the buffer. A buffer can be emptied when
-**			crlf-terminated. If a buffer is filled to MSG_BUF_SIZE, it will
-**			automatically be crlf-terminated and any extra bytes will be
-**			truncated. If calling this function leads to crlf-termination of the
-**			message buffer, the @a _buf_state changes to READY.
+** @details	Yeah, it's actually much more complicated than that. ;)
+**
++*			We have three buffers.
+**
+**			The @a incoming_data buffer is local to this function and simply
+**			contains all data received by recv(), which must be sent in a
+**			c-string of MSG_BUF_SIZE.
+**
+**			The Client's @a _msg_buf buffer, upon entry to this function, MUST
+**			either be empty or contain the first part of an UNTERMINATED message
+**			received in a previous call to append_to_msg_buf(). So ANY
+**			crlf-termination, if there is one, MUST be located in
+**			@a incoming_data. This is because we ALWAYS ensure @a _msg_buf is
+**			fully cleared of terminated messages before calling
+**			append_to_msg_buf() again.
+**
+**			Consequently, you can think of @a _msg_buf and @a incoming_data as
+**			a single bisected buffer of MSG_BUF_SIZE * 2 size:
+**			@a [_msg_buf+incoming_data]
+**
+**			NOTE: ALL MESSAGES IN _MSG_BUF MUST BE REAPED BY GET_MESSAGE()
+**			BEFORE THIS METHOD IS CALLED. @see ::get_message().
+**
+**			The Client's @a _message buffer will be loaded with the first
+**			crlf-terminated message in @a [_msg_buf+incoming_data], which, again
+**			may have the first part in @a _msg_buf and the termination in
+**			@a incoming_data, or may be entirely contained in @a incoming_data
+**			(in which case @a _msg_buf is empty).
+**
+**			The message loaded into the @a _message buffer will then be flushed
+**			(erased) from the @a [_msg_buf+incoming_data] buffer. Any trailing
+**			data remaining in @a incoming_data will then be moved into
+**			@a _msg_buf. (Should be moved... it's c++98, so they are actually
+**			copied to @a _msg_buf and erased from @a incoming_data).
+**
+**			Thus, the Client's @a _msg_buf buffer, upon return from this
+**			function, MAY still contain additional terminated messages which
+**			MUST then be reaped and flushed from it by repeated get_message()
+**			calls before append_to_msg_buf() is called again.
+**
+**			We always assume that @a _msg_buf contains the first part of an
+**			incomplete message, and that @a _incoming_data contains the second
+**			part of that message. Therefore, to construct @a _message we first
+**			append @a _msg_buf to @a _message and then append @a _incoming_data
+**			until the first crlf-termination.
+**
+**			If @a _msg_buf is empty, that is irrelevant, it just means that
+**			@a _incoming_data contains the entire message.
+**
+**			// MESSAGE SIZE RESTRICTION ENFORCEMENT //
+**			Messages above 512 bytes in length (including crlf-termination) are
+**			not allowed. We know we have a message above 512 bytes in length if:
+**
+**				A crlf-termination is present in @a incoming_data BUT the
+**				Client's @a _msg_buf size + the size of the remaining part of
+**				the message until the crlf-termination (including crlf) is
+**				greater than MSG_BUF_SIZE, OR
+**
+**				A crlf-termination is not present in @a incoming_data and the
+**				Client's @a _msg_buf would overflow by appending all the
+**				@a incoming_data + 2 bytes (for the crlf).
+**
+**			In such a case we send the user the ERR_INPUTTOOLONG error reply and
+**			discard the message. If crlf-termination was not present in the
+**			discarded message and the remaining fragment of that message is
+**			received in subsequent recv() calls, it will be analysed
+**			independently, and likely throw an ERR_UNKNOWNCOMMAND error, but may
+**			be misinterpreted... Sorry. xD I might flag the Client and have it
+**			throw everything out until after their next crlf, I dunno. What's
+**			the done thing here? xD
+**
+**			Anyway, FINALLY, if this odyssey ends with a message ready to be
+**			interpreted, we will set the client's buffer state to READY.
 **
 ** @param	msg_register	Incoming message data.
 ** @param	nbytes			Number of bytes in incoming message data.
-** @return	true if the entire message was appended, false if it was truncated
-**			or not copied due to existing buffer that is READY to be reaped.
+** @return	false if ERR_INPUTTOOLONG error was triggered, otherwise true
 */
 bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
 {
-	int	bytes_remaining = MSG_BUF_SIZE - _msg_buf.size();
-	int ret;
+	std::string	incoming_data(msg_register, nbytes);						//incoming data register
+	size_t		msg_buf_bytes_available;
+	size_t		end_pos = incoming_data.find_first_of("\r\n"); 	//first, determine if incoming data has crlf-terminated data
+	bool		ret = true;
 
-	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
-		ret = false;
-	else if (nbytes > bytes_remaining)
+	if (end_pos != std::string::npos && _msg_buf.size() + end_pos + 2 > MSG_BUF_SIZE)	//found a crlf-terminated message, but input is too long
 	{
-		_msg_buf.append(msg_register, bytes_remaining - 2);
-		_msg_buf += "\r\n";
+		//send ERR_INPUTTOOLONG to sender
+		_msg_buf.clear();											//we discard the message, so clear first part of message, if any
+		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);	//find first character after crlf-termination, or npos if it's the end of the string
+		incoming_data.erase(0, end_pos);							//discard second part of message
+		end_pos = incoming_data.find_first_of("\r\n"); 				//determine if incoming data has additional crlf-terminated data
 		ret = false;
 	}
-	else
+ 	msg_buf_bytes_available = MSG_BUF_SIZE - _msg_buf.size();	//bytes in message buf available for storage
+	if (end_pos == std::string::npos) //incoming data does not have crlf-termination; this is ok as long msg_buf_bytes_available < incoming_data.size() + 2, otherwise it is overflowing buffer with a single message
 	{
-		_msg_buf.append(msg_register, nbytes);
-		ret = true;
+		if(msg_buf_bytes_available < incoming_data.size() + 2) 	//if it would fill the 512-byte buffer and there is still no crlf-termination, message is too long, this is MSGTOOLONG/truncate case
+		{
+			//send ERR_INPUTTOOLONG (417) to sender, and ignore
+			_msg_buf.clear(); //empty message buffer
+			ret = false; //debug //we may want a flag that ignores the rest of the input from this Client until after next crlf
+		}
+		else //otherwise, it's fine, we copy and wait for more
+			_msg_buf.append(incoming_data); //append all incoming_data and wait for more data
 	}
-	if (msg_buf_is_crlf_terminated())
-		_buf_state = IRC_Server::Client::Buffer_State(READY);
+	else //incoming data has crlf-termination, so we extract complete message to _message and copy remaining data to _msg_buf
+	{
+		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);	//find first character after crlf-termination, or npos if it's the end of the string
+		_message.assign(_msg_buf);									//first part of message in msg_buf; if msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
+		_message.append(incoming_data, 0, end_pos); 				//append last part of message from incoming_data
+		incoming_data.erase(0, end_pos);							//flush the part of the incoming data we appended
+		_msg_buf.assign(incoming_data);								//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course
+		_buf_state = IRC_Server::Client::Buffer_State(READY);		//set client buffer state to READY
+	}
 	return (ret);
 }
+
+//DEPRECATED; AH, the simple, naive old days xD
+// /*!
+// ** @brief	Appends up to MSG_BUF_SIZE characters to message buffer, truncating
+// **			any extra bytes, if the message buffer is UNREADY to be reaped.
+// **
+// ** @details	This function is used to add to the buffer, while get_message is
+// **			used to empty the buffer. A buffer can be emptied when
+// **			crlf-terminated. If a buffer is filled to MSG_BUF_SIZE, it will
+// **			automatically be crlf-terminated and any extra bytes will be
+// **			truncated. If calling this function leads to crlf-termination of the
+// **			message buffer, the @a _buf_state changes to READY.
+// **
+// ** @param	msg_register	Incoming message data.
+// ** @param	nbytes			Number of bytes in incoming message data.
+// ** @return	true if the entire message was appended, false if it was truncated
+// **			or not copied due to existing buffer that is READY to be reaped.
+// */
+// bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
+// {
+// 	int	bytes_remaining = MSG_BUF_SIZE - _msg_buf.size();
+// 	int ret;
+
+// 	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
+// 		ret = false;
+// 	else if (nbytes > bytes_remaining)
+// 	{
+// 		_msg_buf.append(msg_register, bytes_remaining - 2);
+// 		_msg_buf += "\r\n";
+// 		ret = false;
+// 	}
+// 	else
+// 	{
+// 		_msg_buf.append(msg_register, nbytes);
+// 		ret = true;
+// 	}
+// 	if (msg_buf_is_crlf_terminated())
+// 		_buf_state = IRC_Server::Client::Buffer_State(READY);
+// 	return (ret);
+// }
 
 /*!
 ** @brief	Sets Client's @a _sockfd to the value passed as an argument and
@@ -315,6 +447,7 @@ void	IRC_Server::Client::clear(void)
 	_username.clear();
 	_realname.clear();
 	_msg_buf.clear();
+	_message.clear();
 }
 
 /*!
@@ -328,6 +461,22 @@ void	IRC_Server::Client::clear(void)
 bool	IRC_Server::Client::is_endline(char const c)
 {
 	return (c == '\r' || c == '\n');
+}
+
+/*!
+** @brief	Retrieves the command from the Client's message.
+**
+** @details NOTE: Assumes crlf termination. Behaviour undefined if used on
+**			non-crlf-terminated string.
+**
+** @return	A string containing the command, or an empty string if no command
+**			exists in the message.
+*/
+std::string	IRC_Server::Client::get_cmd(void) const
+{
+	int	start_pos = _message.find_first_not_of(' ');			//Tolerate leading spaces
+	int	end_pos = _message.find_first_of(" \r\n", start_pos);
+	return (_message.substr(start_pos, end_pos - start_pos));
 }
 
 /*!
@@ -353,6 +502,9 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 **/
 bool	IRC_Server::Client::msg_is_ready(void) const
 {
+	//debug
+	//std::cerr << _buf_state << std::endl;
+	//debug
 	return (_buf_state == IRC_Server::Client::Buffer_State(READY));
 }
 
@@ -420,36 +572,93 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 			//size_t	end_pos;
 
 			ret.push_back(cmd);													//add command
-			start_pos = _msg_buf.find(cmd);										//set start_pos to beginning of cmd
-			start_pos = _msg_buf.find_first_of(" \r\n", start_pos);				//get first space or endline after cmd
-			start_pos = _msg_buf.find_first_not_of(' ', start_pos);				//tolerate leading spaces
-			while (_msg_buf[start_pos] != '\r' && _msg_buf[start_pos] != '\n')	//NOTHING not crlf terminated should get this far, if so fix at source!
+			start_pos = _message.find(cmd);										//set start_pos to beginning of cmd
+			start_pos = _message.find_first_of(" \r\n", start_pos);				//get first space or endline after cmd
+			start_pos = _message.find_first_not_of(' ', start_pos);				//tolerate leading spaces
+			while (_message[start_pos] != '\r' && _message[start_pos] != '\n')	//NOTHING not crlf terminated should get this far, if so fix at source!
 			{	
-				if (_msg_buf[start_pos] == ':')									//last param colon case
+				if (_message[start_pos] == ':')									//last param colon case
 				{
 					++start_pos;
-					end_pos = _msg_buf.find_first_of("\r\n\0");					//strip crlf from last parameter
+					end_pos = _message.find_first_of("\r\n\0");					//strip crlf from last parameter
 				}
-				else															//general param case (if starting pos >= _msg_buf.size(), npos is returned, but this should NOT happen here as everything MUST be cr or lf terminated)
-					end_pos = _msg_buf.find_first_of(" \r\n", start_pos);		//strip crlf from last parameter
+				else															//general param case (if starting pos >= _message.size(), npos is returned, but this should NOT happen here as everything MUST be cr or lf terminated)
+					end_pos = _message.find_first_of(" \r\n", start_pos);		//strip crlf from last parameter
 				// //debug
 				// std::cerr << "START_POS: " << start_pos << " END_POS: " << end_pos << std::endl;
 				// //debug
-				ret.push_back(_msg_buf.substr(start_pos, end_pos - start_pos));	//add parameter to vector; 0 bytes == empty string
-				start_pos = _msg_buf.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
+				ret.push_back(_message.substr(start_pos, end_pos - start_pos));	//add parameter to vector; 0 bytes == empty string
+				start_pos = _message.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
 			}
-			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);				//get the character after crlf termination; npos is OK too if there is no such character
 		}
 		else
 		{
-			end_pos = _msg_buf.find_first_of("\r\n", start_pos);
-			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);
 			ret[0] = cmd;														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
 		}
-		flush_msg_buf(end_pos); //buffer is always flushed with get_message when READY, even if there is no command
+		//is there another message in _msg_buf? if so, get it, otherwise, set state to unready
+		end_pos = _msg_buf.find_first_of("\r\n");
+		if (end_pos != std::string::npos)	//yes, there is another message
+		{
+			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);
+			_message.assign(_msg_buf, end_pos);		//end_pos == std::string::npos means copy whole buffer; should be a move, but, yaknow... c++98...
+			flush_msg_buf(end_pos);					//...so we also have to flush.
+		}
+		else								//no, there is not another message
+			_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
 	}
+	//debug
+	
+	for (std::vector<std::string>::const_iterator it = ret.begin(), end = ret.end(); it != end; ++it)
+		std::cerr << *it << std::endl;
+	//debug
+
 	return  (ret);
 }
+
+// std::vector<std::string>	IRC_Server::Client::get_message(void)
+// {
+// 	std::vector<std::string>	ret;
+
+// 	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
+// 	{
+// 		std::string	cmd = get_cmd();
+// 		size_t		start_pos = 0;
+// 		size_t		end_pos;
+// 		if (cmd.empty() == false)												//if there is a command, we retrieve command and parameters
+// 		{
+// 			//size_t	end_pos;
+
+// 			ret.push_back(cmd);													//add command
+// 			start_pos = _msg_buf.find(cmd);										//set start_pos to beginning of cmd
+// 			start_pos = _msg_buf.find_first_of(" \r\n", start_pos);				//get first space or endline after cmd
+// 			start_pos = _msg_buf.find_first_not_of(' ', start_pos);				//tolerate leading spaces
+// 			while (_msg_buf[start_pos] != '\r' && _msg_buf[start_pos] != '\n')	//NOTHING not crlf terminated should get this far, if so fix at source!
+// 			{	
+// 				if (_msg_buf[start_pos] == ':')									//last param colon case
+// 				{
+// 					++start_pos;
+// 					end_pos = _msg_buf.find_first_of("\r\n\0");					//strip crlf from last parameter
+// 				}
+// 				else															//general param case (if starting pos >= _msg_buf.size(), npos is returned, but this should NOT happen here as everything MUST be cr or lf terminated)
+// 					end_pos = _msg_buf.find_first_of(" \r\n", start_pos);		//strip crlf from last parameter
+// 				// //debug
+// 				// std::cerr << "START_POS: " << start_pos << " END_POS: " << end_pos << std::endl;
+// 				// //debug
+// 				ret.push_back(_msg_buf.substr(start_pos, end_pos - start_pos));	//add parameter to vector; 0 bytes == empty string
+// 				start_pos = _msg_buf.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
+// 			}
+// 			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);				//get the character after crlf termination; npos is OK too if there is no such character
+// 		}
+// 		else
+// 		{
+// 			end_pos = _msg_buf.find_first_of("\r\n", start_pos);
+// 			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);
+// 			ret[0] = cmd;														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
+// 		}
+// 		flush_msg_buf(end_pos); //buffer is always flushed with get_message when READY, even if there is no command
+// 	}
+// 	return  (ret);
+// }
 
 /*!
 ** @brief	Builds a source string for this Client instance in format:
@@ -484,23 +693,7 @@ std::string const &	IRC_Server::Client::get_msg_buf(void) const
 }
 
 /*!
-** @brief	Retrieves the command from the Client's message.
-**
-** @details NOTE: Assumes crlf termination. Behaviour undefined if used on
-**			non-crlf-terminated string.
-**
-** @return	A string containing the command, or an empty string if no command
-**			exists in the message.
-*/
-std::string	IRC_Server::Client::get_cmd(void) const
-{
-	int	start_pos = _msg_buf.find_first_not_of(' ');			//Tolerate leading spaces
-	int	end_pos = _msg_buf.find_first_of(" \r\n", start_pos);
-	return (_msg_buf.substr(start_pos, end_pos - start_pos));
-}
-
-/*!
-** @brief	Returns the number of parameters in the Client's message buffer.
+** @brief	Returns the number of parameters in the Client's message.
 **
 ** @details	All parameters are preceded by SPACE. A parameter preceded by SPACE
 **			and COLON is the last parameter, and all subsequent spaces are
@@ -521,17 +714,17 @@ size_t	IRC_Server::Client::get_param_count(void) const
 	std::string cmd = get_cmd();
 
 	if (cmd.empty() == false)
-		i = _msg_buf.find(cmd);
-	end_pos = _msg_buf.find(" :", i);
+		i = _message.find(cmd);
+	end_pos = _message.find(" :", i);
 	if (end_pos != std::string::npos)						//if there is " :", that is last param	
 		++end_pos;
 	else							 						//if no " :", first char from end that is neither '\r', '\n' nor ' ' is endpos
-		end_pos = _msg_buf.find_last_not_of(" \r\n\0") + 1;	//last param cannot be empty unless preceded by ':', so " \r\n" doesn't count;
+		end_pos = _message.find_last_not_of(" \r\n\0") + 1;	//last param cannot be empty unless preceded by ':', so " \r\n" doesn't count;
 															//the null terminator is just in case one gets in there
-	while (i < end_pos && (i = _msg_buf.find_first_of(" \r\n", i)) < end_pos)
+	while (i < end_pos && (i = _message.find_first_of(" \r\n", i)) < end_pos)
 	{
 		++p_count;
-		i = _msg_buf.find_first_not_of(' ', i);				//tolerate trailing spaces
+		i = _message.find_first_not_of(' ', i);				//tolerate trailing spaces
 	}
 	return (p_count);
 }
