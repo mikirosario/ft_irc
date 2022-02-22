@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/22 18:10:30 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/22 18:21:29 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,17 +225,16 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 */
 bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
 {
-	std::string	incoming_data(msg_register, nbytes);			 //incoming data register
-	size_t		msg_buf_bytes_available;
+	std::string	incoming_data(msg_register, nbytes);			//incoming data register
 	size_t		end_pos;
 	bool		ret = true;
 
-	if (_msg_buf.empty() == true)	//if we don't have anything in the buffer waiting for a crlf-termination
+	if (_msg_buf.empty() == true)								//if we don't have anything in the _msg_buf waiting for a crlf-termination
 	{
-		end_pos = incoming_data.find_first_not_of(" \r\n"); //ignore trailing crlf-termination/empty line
-		incoming_data.erase(0, end_pos);
+		end_pos = incoming_data.find_first_not_of(" \r\n"); 							//ignore trailing crlf-termination/empty line
+		incoming_data.erase(0, end_pos);												//flush trailing crlf/empty line from buffer
 	}
-	end_pos = incoming_data.find_first_of("\r\n"); //first, determine if incoming data has crlf-terminated data
+	end_pos = incoming_data.find_first_of("\r\n");				//determine if remaining incoming data has crlf-termination.
 	if (end_pos != std::string::npos && _msg_buf.size() + end_pos > MSG_BUF_SIZE - 2)	//found a crlf-terminated message, but input is too long
 	{
 		_msg_buf.clear();											//we discard the message, so clear first part of message, if any
@@ -244,25 +243,21 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_S
 		end_pos = incoming_data.find_first_of("\r\n"); 				//determine if incoming data has additional crlf-terminated data
 		ret = false;
 	}
- 	msg_buf_bytes_available = MSG_BUF_SIZE - _msg_buf.size();	//bytes in message buf available for storage
-	if (end_pos == std::string::npos) //incoming data does not have crlf-termination; this is ok as long msg_buf_bytes_available < incoming_data.size() + 2, otherwise it is overflowing buffer with a single message
+	if (end_pos == std::string::npos) 							//incoming data does not have crlf-termination; this is ok as long it will not cause buffer overflow
 	{
-		if(msg_buf_bytes_available < incoming_data.size() + 2) 	//if it would fill the 512-byte buffer and there is still no crlf-termination, message is too long, this is MSGTOOLONG/truncate case
+		size_t	msg_buf_bytes_available = MSG_BUF_SIZE - _msg_buf.size();	//remaining bytes in _msg_buf available for storage
+		if(msg_buf_bytes_available < incoming_data.size() + 2)				//if remaining data + a crlf-termination would overflow the 512-byte buffer, input is also too long
 		{
-			//send ERR_INPUTTOOLONG (417) to sender, and ignore
-			//debug
-			std::cerr << "entro aquí?" << std::endl;
-			//debug
-			_msg_buf.clear(); //empty message buffer
-			ret = false; //debug //we may want a flag that ignores the rest of the input from this Client until after next crlf
+			_msg_buf.clear();				//empty message buffer
+			ret = false;					//debug //we may want a flag that ignores the rest of the input from this Client until after next crlf
 		}
-		else //otherwise, it's fine, we copy and wait for more
-			_msg_buf.append(incoming_data); //append all incoming_data and wait for more data
+		else																//otherwise, it's fine, we copy and wait for more
+			_msg_buf.append(incoming_data);	//append all incoming_data and wait for more data
 	}
-	else //incoming data has crlf-termination, so we extract complete message to _message and copy remaining data to _msg_buf
+	else 														//incoming data has crlf-termination, so we extract complete message to _message and copy remaining data to _msg_buf
 	{
 		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);	//find first character after crlf-termination, or npos if it's the end of the string
-		_message.assign(_msg_buf);									//first part of message in msg_buf; if msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
+		_message.assign(_msg_buf);									//first part of message in _msg_buf; if _msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
 		_message.append(incoming_data, 0, end_pos); 				//append last part of message from incoming_data
 		incoming_data.erase(0, end_pos);							//flush the part of the incoming data we appended
 		_msg_buf.assign(incoming_data);								//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course
