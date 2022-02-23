@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/23 13:19:47 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/23 19:38:59 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <exception>
 
+#include <sstream>
 #include <string>
 #include <vector>
 #include <cstdio> //perror
@@ -34,9 +35,11 @@
 
 #include "irc_numerics.hpp"
 
+#define INT_TO_STR( x ) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str()
 #define MAX_CONNECTIONS 1024	//maximum number of simultaneous connections
 #define MSG_BUF_SIZE 512		//maximum message length in IRC RFC including \r\n termination.
 #define MAX_NICK_SIZE 9 		//maximum nickname length
+#define MAX_HOSTNAME_SIZE 20	//maximum hostname size; //debug use clientaddr instead if this is too long
 #define MAX_USERNAME_SIZE 25	//maximum username size
 #define MAX_REALNAME_SIZE 35	//maximum real name size
 #define MAX_PASS_ATTEMPTS 10	//maximum number of PASS commands allowed during registration before we reject connection
@@ -173,6 +176,7 @@ class IRC_Server
 		std::string						_networkname;
 		std::string						_servername;
 		std::string						_serveraddr;
+		std::string const				_server_creation_time;
 		struct pollfd					_pfds[MAX_CONNECTIONS];
 		Client							_clients[MAX_CONNECTIONS];
 		std::bitset<MAX_CONNECTIONS>	_remove_list;
@@ -217,8 +221,9 @@ class IRC_Server
 		void	remove_flagged_clients(void);
 		
 		//Utils
-		bool	is_endline(char const c);
-		bool	confirm_pass(std::string const & client_pass) const;
+		bool				is_endline(char const c);
+		bool				confirm_pass(std::string const & client_pass) const;
+		static std::string	get_datetime(void);
 
 		//Command interpreting modules
 		#include "ircserv_modules.hpp"

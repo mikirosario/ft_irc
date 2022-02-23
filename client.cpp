@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/23 13:35:36 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/23 19:37:50 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -377,9 +377,9 @@ void	IRC_Server::Client::set_nick(std::string const & nick)
 void	IRC_Server::Client::set_username(std::string const & username)
 {
 	_username.assign(username, 0, MAX_USERNAME_SIZE);
-	//debug
-	std::cout << _username << std::endl;
-	//debug
+	// //debug
+	// std::cout << _username << std::endl;
+	// //debug
 }
 
 /*!
@@ -391,9 +391,9 @@ void	IRC_Server::Client::set_username(std::string const & username)
 void	IRC_Server::Client::set_realname(std::string const & realname)
 {
 	_realname.assign(realname, 0, MAX_REALNAME_SIZE);
-	//debug
-	std::cout << _realname << std::endl;
-	//debug
+	// //debug
+	// std::cout << _realname << std::endl;
+	// //debug
 }
 
 /*!

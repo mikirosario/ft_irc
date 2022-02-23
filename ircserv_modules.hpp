@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/22 16:22:18 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/23 19:42:36 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,10 @@ std::string	numeric_reply_start(Client const & client, char const * numeric) con
 void		numeric_reply_end(std::string & reply, std::string const & description) const;
 	//standard numeric replies
 void		send_rpl_WELCOME(Client const & recipient);
+void		send_rpl_YOURHOST(Client const & recipient);
+void		send_rpl_CREATED(Client const & recipient);
+void		send_rpl_MYINFO(Client const & recipient);
+void		send_rpl_ISUPPORT(Client const & recipient);
 
 	//error numeric replies
 void		send_err_UNKNOWNERROR(Client const & recipient, std::string const & command, std::string const & description) const;

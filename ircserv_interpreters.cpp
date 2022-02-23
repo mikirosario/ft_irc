@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/21 20:42:48 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/23 19:47:35 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,8 @@ bool	IRC_Server::register_client(Client & client)
 	{
 		client.set_state_registered();	//set client state to registered
 		send_rpl_WELCOME(client);
+		send_rpl_YOURHOST(client);
+		send_rpl_CREATED(client);
 	}
 
 	return(true);

@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 13:33:06 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/23 20:08:10 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,6 +155,10 @@ int	main(int argc, char ** argv)
 	std::string	pass;
 
 	std::setlocale(LC_ALL, "C"); //explicitly set locale
+
+	// //debug
+	// std::cout << "Version: " << VERSION << std::endl;
+	// //debug
 	signal(SIGINT, signal_handler);
 	switch (argc)
 	{

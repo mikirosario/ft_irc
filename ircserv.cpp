@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/23 13:03:34 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/23 20:55:20 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ircserv.hpp"
+#include <ctime>
 
 	// ---- CONSTRUCTORS AND DESTRUCTOR ---- //
 /*!
@@ -32,7 +33,12 @@
 ** @param netinfo	(Optional) A string containing the host name, port number
 **					and password of the calling server. Currently unused.
 */
-IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) : _servport(port), _servpass(pass), _networkname("mikinet"), _connections(0)
+IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo) :	_servport(port),
+																											_servpass(pass),
+																											_networkname("mikinet"),
+																											_servername("mikiserv"),
+																											_server_creation_time(get_datetime()),
+																											_connections(0)
 {
 	for (size_t i = 0; i < MAX_CONNECTIONS; ++i)
 		const_cast<size_t &>(_clients[i].pos) = i;
@@ -680,6 +686,19 @@ void	IRC_Server::remove_flagged_clients(void)
 bool	IRC_Server::confirm_pass(std::string const & client_pass) const
 {
 	return (_servpass == client_pass);
+}
+
+std::string	IRC_Server::get_datetime(void)
+{
+	time_t		raw_timestamp = std::time(NULL);
+
+	if (raw_timestamp == -1)
+		return ("time unknown");
+	struct tm *	processed_timestamp = std::localtime(&raw_timestamp);
+	char		timestamp[25];
+
+	std::strftime(timestamp, 25, "%X %a %d %b %Y", processed_timestamp);
+	return (std::string(timestamp));
 }
 
 /*!

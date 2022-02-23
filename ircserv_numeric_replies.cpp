@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/21 21:05:10 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/23 20:08:36 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,3 +95,55 @@ void		IRC_Server::send_rpl_WELCOME(Client const & recipient)
 	numeric_reply_end(msg, welcome_msg);
 	recipient.send_msg(msg);
 }
+
+void		IRC_Server::send_rpl_YOURHOST(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_YOURHOST);
+
+	std::string	yourhost_msg;
+
+	yourhost_msg += "Your host is ";
+	yourhost_msg += _servername;
+	yourhost_msg += ", running version ";
+	yourhost_msg += VERSION; //debug
+	numeric_reply_end(msg, yourhost_msg);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_CREATED(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_CREATED);
+
+	std::string created_msg;
+
+	created_msg += "This server was created ";
+	created_msg += _server_creation_time;
+	numeric_reply_end(msg, created_msg);
+	recipient.send_msg(msg);
+}
+
+//debug //finish these
+void		IRC_Server::send_rpl_MYINFO(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_MYINFO);
+
+	std::string	myinfo_msg;
+	myinfo_msg += _servername + " ";
+}
+
+void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
+{
+	(void)recipient;
+	std::string msg = numeric_reply_start(recipient, RPL_ISUPPORT);
+	
+	std::string 		isupport_msg;
+	
+	isupport_msg += "CASEMAPPING=ascii ";
+	isupport_msg += "NICKLEN=" + INT_TO_STR(MAX_NICK_SIZE << " ");
+	isupport_msg += "HOSTLEN=" + INT_TO_STR(MAX_HOSTNAME_SIZE << " ");
+	isupport_msg += "USERLEN=" + INT_TO_STR(MAX_USERNAME_SIZE);
+	//debug
+	std::cerr << "imprime " << isupport_msg << std::endl;
+	//debug
+}
+//debug  //finish these

@@ -6,13 +6,15 @@
 #    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/21 19:01:14 by mrosario         ###   ########.fr        #
+#    Updated: 2022/02/23 20:05:59 by mrosario         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = ircserv
 
 SRCDIR = .
+
+GIT_VERSION := "$(shell git describe --abbrev=4 --dirty --always --tags)"
 
 GRN = \e[1;32m
 RED = \e[1;31m
@@ -33,7 +35,7 @@ OBJS = $(SRCFILES:.cpp=.o)
 
 INCLUDES = -I $(SRCDIR)
 
-CXXFLAGS = -Wall -Werror -Wextra -g -std=c++98
+CXXFLAGS = -Wall -Werror -Wextra -g -std=c++98 -DVERSION=\"$(GIT_VERSION)\"
 
 all: $(NAME)
 
