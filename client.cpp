@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/23 19:37:50 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/23 21:38:49 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,24 +245,44 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 		incoming_data.erase(0, end_pos);												//flush trailing crlf/empty line from buffer
 	}
 	end_pos = incoming_data.find_first_of("\r\n");				//determine if remaining incoming data has crlf-termination.
-	if (end_pos != std::string::npos && _msg_buf.size() + end_pos > MSG_BUF_SIZE - 2)	//found a crlf-terminated message, but input is too long
+	if (end_pos != std::string::npos && _msg_buf.size() + end_pos > MSG_BUF_SIZE - 2)	//found a crlf-terminated message, but input is too long; truncate
 	{
-		_msg_buf.clear();											//we discard the message, so clear first part of message, if any
+		size_t	msg_buf_bytes_available = MSG_BUF_SIZE - 2 - _msg_buf.size();
+		_message.assign(_msg_buf);
+		_message.append(incoming_data, 0, msg_buf_bytes_available);
+		_message.append("\r\n");
+		_msg_buf.clear();
 		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);	//find first character after crlf-termination, or npos if it's the end of the string
 		incoming_data.erase(0, end_pos);							//discard second part of message
 		end_pos = incoming_data.find_first_of("\r\n"); 				//determine if incoming data has additional crlf-terminated data
+		_buf_state = IRC_Server::Client::Buffer_State(READY);		//set client buffer state to READY
 		ret = false;
 	}
+	// if (end_pos != std::string::npos && _msg_buf.size() + end_pos > MSG_BUF_SIZE - 2)	//found a crlf-terminated message, but input is too long
+	// {
+	// 	_msg_buf.clear();											//we discard the message, so clear first part of message, if any
+	// 	end_pos = incoming_data.find_first_not_of("\r\n", end_pos);	//find first character after crlf-termination, or npos if it's the end of the string
+	// 	incoming_data.erase(0, end_pos);							//discard second part of message
+	// 	end_pos = incoming_data.find_first_of("\r\n"); 				//determine if incoming data has additional crlf-terminated data
+	// 	ret = false;
+	// }
 	if (end_pos == std::string::npos) 							//incoming data does not have crlf-termination; this is ok as long it will not cause buffer overflow
 	{
 		size_t	msg_buf_bytes_available = MSG_BUF_SIZE - _msg_buf.size();	//remaining bytes in _msg_buf available for storage
-		if(msg_buf_bytes_available < incoming_data.size() + 2)				//if remaining data + a crlf-termination would overflow the 512-byte buffer, input is also too long
-		{
-			_msg_buf.clear();				//empty message buffer
-			ret = false;					//debug //we may want a flag that ignores the rest of the input from this Client until after next crlf
-		}
-		else																//otherwise, it's fine, we copy and wait for more
+		if (msg_buf_bytes_available >= incoming_data.size() + 2)				//if remaining data + a crlf-termination would overflow the 512-byte buffer, input is also too long
 			_msg_buf.append(incoming_data);	//append all incoming_data and wait for more data
+		else
+		{
+			_msg_buf.append(incoming_data, 0, msg_buf_bytes_available - 2);		//otherwise, fill the buffer and wait for crlf-termination, at which point we enter the crlf-terminated message but input is too long case
+		}
+																				
+		// if(msg_buf_bytes_available < incoming_data.size() + 2)				//if remaining data + a crlf-termination would overflow the 512-byte buffer, input is also too long
+		// {
+		// 	_msg_buf.clear();				//empty message buffer
+		// 	ret = false;					//debug //we may want a flag that ignores the rest of the input from this Client until after next crlf
+		// }
+		// else																//otherwise, it's fine, we copy and wait for more
+		// 	_msg_buf.append(incoming_data);	//append all incoming_data and wait for more data
 	}
 	else 														//incoming data has crlf-termination, so we extract complete message to _message and copy remaining data to _msg_buf
 	{
