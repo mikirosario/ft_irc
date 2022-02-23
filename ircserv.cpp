@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/22 17:26:44 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/23 13:03:34 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -540,12 +540,11 @@ bool	IRC_Server::poll_listener(void) const
 */
 void	IRC_Server::process_client_message(int i)
 {
-	char						msgbuf[MSG_BUF_SIZE];
-	int nbytes = recv(_pfds[i].fd, msgbuf, MSG_BUF_SIZE, 0);
+	char	server_msgbuf[MSG_BUF_SIZE];
+	int		nbytes = recv(_pfds[i].fd, server_msgbuf, MSG_BUF_SIZE, 0);
+
 	switch (nbytes) //error cases and default successful data reception case
 	{
-		// case 2 :
-		// 	break ; //ignore empty messages
 		case 0 :
 			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
 			remove_client_from_server(i);
@@ -557,21 +556,21 @@ void	IRC_Server::process_client_message(int i)
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
 			//insert message in client's message buffer
-			std::cerr << "nbytes: " << nbytes << std::endl;
-			if (_clients[i].append_to_msg_buf(msgbuf, nbytes) == false)
+			//debug
+			std::cout << "Received " << nbytes << " bytes from " << (_clients[i].is_registered() ? _clients[i].get_nick() : "new client") << std::endl;
+			//debug
+			if (_clients[i].append_to_msg_buf(server_msgbuf, nbytes) == false)
 				send_err_INPUTTOOLONG(_clients[i], "Input line was too long");
 			//do stuff
-			for (int j = 1; j < _connections; ++j) //send to all clients (this is just test code, no RFC stuff yet)
-				if (j != i) //do not send to self
-					if (send(_pfds[j].fd, msgbuf, nbytes, 0) == -1)
-						std::cerr << "send error" << std::endl;
-			//if message in client buff has endline, flush after processing
 
-				//debug
-			std::cerr << "soy leñador" << std::endl;
-				//debug
-			//for loop here, CLIENT buffer not totally flushed, only until next crlf, keep interpreting client msg until UNREADY state :p
-			while (_clients[i].msg_is_ready())
+			//debug
+			for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
+				if (j != i) //do not send to self
+					if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
+						std::cerr << "send error" << std::endl;
+			//debug
+
+			while (_clients[i].msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
 				interpret_msg(_clients[i]);
 
 				

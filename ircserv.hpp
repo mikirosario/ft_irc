@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/22 10:30:06 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/23 13:19:47 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,7 @@ class IRC_Server
 
 				/* SETTERS */
 				void	flush_msg_buf(size_t stop);
-				bool	append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes);
+				bool	append_to_msg_buf(char const (& server_msgbuf)[MSG_BUF_SIZE], int nbytes);
 				void	set_sockfd(int sockfd);
 				void	set_nick(std::string const & nick);
 				void	set_username(std::string const & username);
@@ -150,7 +150,6 @@ class IRC_Server
 				/* GETTERS */
 				std::vector<std::string>	get_message(void);
 				std::string					get_source(void) const;
-				std::string const &			get_msg_buf(void) const;
 				std::string const &			get_serveraddr(void) const;
 				std::string const &			get_nick(void) const;
 				std::string const &			get_username(void) const;
@@ -161,6 +160,9 @@ class IRC_Server
 				int							get_pass_attempts(void) const;
 				size_t						get_pos(void) const;
 				bool						get_pass_validated(void) const;
+				std::string const &			see_next_message(void) const;
+				std::string const &			see_msg_buf(void) const;
+
 		};
 		//friend Client;
 		std::string						_nethost; //no longer needed?? what??

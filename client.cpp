@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/22 18:43:42 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/23 13:35:36 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,17 +120,17 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 
 /*!
 ** @brief	Appends incoming data to the Client's message buffer, setting the
-**			Client's buffer state to READY if a crlf-terminated message of no
-**			greater than MSG_BUF_SIZE bytes is present.
+**			Client's buffer state to READY, IF a crlf-terminated message NO
+**			LONGER than MSG_BUF_SIZE bytes is present.
 **
 ** @details	Yeah, it's actually MUCH more complicated than that. ;)
 **
 +*			We use three buffers: @a incoming_data, @a _msg_buf and @a _message.
 **
 **			The @a incoming_data buffer is a stringified raw copy of the
-**			512-byte server buffer and simply contains all data received from
-**			recv() for the client instance, which must be passed as a c-string
-**			of MSG_BUF_SIZE.
+**			512-byte server buffer used to receive data from each client and
+**			simply contains all data received from recv() for the client
+**			instance, which must be passed as a c-string of MSG_BUF_SIZE.
 **
 **			The Client's @a _msg_buf buffer, upon entry to this function, MUST
 **			either be empty or contain the first part of an UNTERMINATED message
@@ -157,14 +157,14 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **
 **			The message loaded into the @a _message string will then be flushed
 **			(erased) from the @a [_msg_buf+incoming_data] buffer. Any trailing
-**			data remaining in @a incoming_data will then be moved into
+**			data remaining in @a incoming_data afterward will then be moved into
 **			@a _msg_buf. (Should be moved... it's c++98, so they are actually
 **			copied to @a _msg_buf and erased from @a incoming_data).
 **
 **			Thus, the Client's @a _msg_buf buffer, upon return from this
-**			function, MAY still contain additional terminated messages which
+**			function, MAY still contain additional TERMINATED messages which
 **			MUST then be reaped and flushed from it by repeated get_message()
-**			calls before append_to_msg_buf() is called again.
+**			calls BEFORE append_to_msg_buf() is called again!
 **
 **			We always assume that @a _msg_buf contains the first part of an
 **			incomplete message, and that @a _incoming_data contains the second
@@ -175,27 +175,34 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **			If @a _msg_buf is empty, that is irrelevant, it just means that
 **			@a _incoming_data contains the entire message.
 **
-**			If there is no crlf-terminated message that is okay, so long as the
+**			If there is no crlf-terminated message, that is okay so long as the
 **			accumulated bytes in @a _msg_buf are below the MSG_BUF_SIZE limit.
 **			We just append the @a incoming_data to @a msg_buf and continue to
 **			wait for a termination to be sent.
 **
 **			// MESSAGE SIZE RESTRICTION ENFORCEMENT //
 **			Messages above MSG_BUF_SIZE bytes in length (including
-**			crlf-termination) are not allowed. We know we have a message above
-**			MSG_BUF_SIZE bytes in length if:
+**			crlf-termination) are not allowed. Bearing in mind that upon entry
+**			to this function @a _msg_buf ALWAYS contains the first part of an
+**			unterminated message, we know we have a message above MSG_BUF_SIZE
+**			bytes in length if:
 **
 **				A crlf-termination is present in @a incoming_data BUT the
 **				Client's @a _msg_buf size + the size of the remaining part of
-**				the message until the crlf-termination (including crlf) is
-**				greater than MSG_BUF_SIZE, OR
+**				the message in @a incoming_data until the first crlf-termination
+**				(including crlf itself) is greater than MSG_BUF_SIZE, OR
 **
 **				A crlf-termination is not present in @a incoming_data and the
-**				Client's @a _msg_buf would overflow by appending all the
-**				@a incoming_data + 2 bytes (for the crlf).
+**				Client's @a _msg_buf would overflow (grow to more than
+**				MSG_BUF_SIZE) by appending all the @a incoming_data + 2 bytes
+**				(for the obligatory crlf-termination after any message).
 **
-**			In such a case we send the user the ERR_INPUTTOOLONG error reply
-**			(this is done by the caller) and discard the message.
+**			In either such case, the entire overlong message is ignored and
+**			flushed from the buffer, and this function will return false. The
+**			caller must then send the user the ERR_INPUTTOOLONG error reply.
+**
+**			While crlf-termination is expected, in practice message termination
+**			with a single '\r' or '\n' is tolerated.
 **
 **			//debug
 **			If crlf-termination was not present in the discarded message and the
@@ -203,29 +210,32 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **			calls, it will be analysed independently, and likely throw an
 **			ERR_UNKNOWNCOMMAND error, but may also be misinterpreted. Sorry. xD
 **			I might flag the Client and have it throw everything out until after
-**			their next crlf, I dunno. What's the done thing here? xD
+**			their next crlf, I dunno. What's the done thing here? Better ask
+**			rnavarre. xD
 **			//debug
 **
 **			// TRAILING CRLF AND EMPTY LINES //
-**			Trailing crlf-terminations and empty lines are ignored. A trailing
-**			crlf-termination or empty line is defined here as any sequence of
-**			" ", "\r" or "\n" at the beginning of the @a incoming_data buffer
-**			when there is no data in the @a _msg_buf buffer waiting to be
-**			terminated (that is, when @a _msg_buf is empty).
+**			A trailing crlf-termination or empty line is defined here as any
+**			sequence of ' ', '\r' or '\n' characters at the beginning of the
+**			@a incoming_data buffer when there is NO data in the @a _msg_buf
+**			buffer waiting to be terminated (when @a _msg_buf is empty).
 **
-**			Trailing crlf-terminations and empty lines are deleted from the
-**			buffer without processing.
+**			Trailing crlf-terminations and empty lines are ignored, meaning that
+**			they are deleted from the buffer without processing.
 **
 **			Anyway, FINALLY, if this odyssey ends with a message ready to be
 **			interpreted, we will set the client's buffer state to READY.
 **
-** @param	msg_register	Incoming message data.
-** @param	nbytes			Number of bytes in incoming message data.
-** @return	false if ERR_INPUTTOOLONG error was triggered, otherwise true
+** @param	data_received	Incoming message data.
+** @param	nbytes			Number of bytes in incoming message data. If this is
+**							not accurate, behaviour is totally undefined. You
+**							monster.
+** @return	false if a received message was too long (ERR_INPUTTOOLONG) and had
+**			to be discarded, otherwise true
 */
-bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
+bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int nbytes)
 {
-	std::string	incoming_data(msg_register, nbytes);			//incoming data register
+	std::string	incoming_data(data_received, nbytes);			//incoming data register
 	size_t		end_pos;
 	bool		ret = true;
 
@@ -584,13 +594,20 @@ void		IRC_Server::Client::send_msg(std::string const & msg) const
 **			If there is NOT another crlf-terminated message in the buffer, the
 **			buffer will NOT be flushed.
 **
+**			So the proper way to use this method (in pseudocode) might be:
+**			while (client.msg_is_ready())
+**				msg = client.get_message();
+**				do_stuff_with_message(msg);
+**
 **			NOTE:	Once get_message() is called to reap the Client's message,
 **					the Client's message buffer is cleared of the message and,
-**					unless a prior copy was made, the return value of
+**					unless a copy is made by the caller, the return value of
 **					get_message() is the ONLY remaining copy of the message!
 **
-**					To check the Client's message buffer WITHOUT reaping the
-**					message, use the get_msg_buf() method instead.
+**					To check the Client's message buffer WITHOUT flushing the
+**					message buffer, use the see_next_message() or see_msg_buf()
+**					methods instead for the next complete message ready to be
+**					reaped and any trailing data in the buffer, respectively.
 ** @return	A string vector in which the first string is the command and the
 **			rest are parameters. If the message lacks a command, an empty string
 **			will be provided in place of the command. If the buffer state is not
@@ -642,7 +659,10 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 			flush_msg_buf(end_pos);					//...so we also have to flush.
 		}
 		else								//no, there is not another message
+		{
+			_message.clear();
 			_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
+		}
 	}
 	// //debug
 	// for (std::vector<std::string>::const_iterator it = ret.begin(), end = ret.end(); it != end; ++it)
@@ -716,17 +736,6 @@ std::string	IRC_Server::Client::get_source(void) const
 	msg += "@";
 	msg += get_hostname();
 	return (msg);
-}
-
-/*!
-** @brief	Returns a read-only reference to the Client's message buffer. The
-**			buffer and client state remain unchanged.
-**
-** @return	A read-only reference to the Client's message buffer.
-*/
-std::string const &	IRC_Server::Client::get_msg_buf(void) const
-{
-	return(_msg_buf);
 }
 
 /*!
@@ -816,4 +825,40 @@ size_t						IRC_Server::Client::get_pos(void) const
 bool						IRC_Server::Client::get_pass_validated(void) const
 {
 	return (_pass_validated);
+}
+
+/*!
+** @brief	Returns a read-only reference to the Client's next crlf-terminated
+**			message ready to be reaped and parsed. @see ::get_message()
+**
+** @details	This must NOT be used for retrieving a message for parsing. For that
+**			get the argument vector using ::get_message(). It is purely for
+**			observational/debugging purposes.
+**
+**			The buffer and client state remain unchanged.
+** @return	A read-only reference to the Client's next full unreaped message, or
+**			an empty string if the Client currently has no full message.
+*/
+std::string const &			IRC_Server::Client::see_next_message(void) const
+{
+	return (_message);
+}
+
+/*!
+** @brief	Returns a read-only reference to any full or partial messages in the
+**			Client's message buffer AFTER the next full message as returned by
+**			::see_next_message().
+**
+** @details	This must NOT be used for retrieving a message for parsing. For that
+**			get the argument vector using ::get_message(). It is purely for
+**			observational/debugging purposes.
+**
+**			The buffer and client state remain unchanged.
+** @return	A read-only reference to the contents of the Client's message buffer
+**			AFTER the next full unreaped message, or an empty string if the
+**			buffer is empty.
+*/
+std::string const &			IRC_Server::Client::see_msg_buf(void) const
+{
+	return(_msg_buf);
 }
