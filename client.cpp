@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/23 23:20:38 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/25 11:57:38 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,8 +241,9 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int nbytes)
 {
 	std::string	incoming_data(data_received, nbytes);			//incoming data register
-	size_t		msg_buf_bytes_available = MSG_BUF_SIZE - _msg_buf.size() - 2;	//remaining bytes in _msg_buf available for storage
+	size_t		msg_buf_bytes_available = MSG_BUF_SIZE - _msg_buf.size() - 2;	//remaining bytes in _msg_buf available for storage - crlf-termination
 	size_t		end_pos;
+	static bool	message_overflowed_buffer = false;
 	bool		ret = true;
 
 	if (_msg_buf.empty() == true)								//if we don't have anything in the _msg_buf waiting for a crlf-termination
@@ -253,23 +254,27 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 	end_pos = incoming_data.find_first_of("\r\n");				//determine if remaining incoming data has crlf-termination.
 	if (end_pos == std::string::npos) 							//incoming data does not have crlf-termination; this is ok as long it will not cause buffer overflow
 	{
-		if (msg_buf_bytes_available >= incoming_data.size())			//if remaining data + a crlf-termination would overflow the 512-byte buffer, input is too long
+		if (msg_buf_bytes_available < incoming_data.size())		//if remaining data would overflow the 512-byte buffer, input is too long
+		{		
+			_msg_buf.append(incoming_data, 0, msg_buf_bytes_available);		//append up to msg_buf_bytes_available bytes and ignore subsequent data until crlf
+			message_overflowed_buffer = true;								//message_overflowed flag indicates this message was truncated due to buffer overflow.
+		}	
+		else													//otherwise, fill the buffer and wait for crlf-termination, at which point we enter the crlf-terminated message but input is too long case
 			_msg_buf.append(incoming_data);									//append all incoming_data and wait for more data
-		else
-			_msg_buf.append(incoming_data, 0, msg_buf_bytes_available);	//otherwise, fill the buffer and wait for crlf-termination, at which point we enter the crlf-terminated message but input is too long case
-			//debug// too-long flag also set here
+		
 	}
 	else 														//incoming data has crlf-termination, so we extract complete message to _message and copy remaining data to _msg_buf
 	{
-		bool	message_overflows_buffer = (_msg_buf.size() + end_pos + 2 > MSG_BUF_SIZE);
-		_message.assign(_msg_buf);									//first part of message in _msg_buf; if _msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
-		_message.append(incoming_data, 0, (message_overflows_buffer ? msg_buf_bytes_available : end_pos));  //append last part of message from incoming_data; if message would overflow buffer, append up to available bytes in the buffer and truncate rest, otherwise append entire message
-																	//debug //use above craziness also to set too-long flag or something
-		_message.append("\r\n");									//i have so little trust in people i don't even let the client crlf-terminate its own message xD
-		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);	//find first character after crlf-termination, or npos if it's the end of the string
-		incoming_data.erase(0, end_pos);							//flush the part of the incoming data pertaining to the appended message (including any truncated bits)
-		_msg_buf.assign(incoming_data);								//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course
-		_buf_state = IRC_Server::Client::Buffer_State(READY);		//set client buffer state to READY
+		bool	message_overflows_buffer = (_msg_buf.size() + end_pos + 2 > MSG_BUF_SIZE);					//message_overflows_buffer indicates this message will now be truncated due to buffer overflow.
+		_message.assign(_msg_buf);																			//first part of message in _msg_buf; if _msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
+		_message.append(incoming_data, 0, (message_overflows_buffer ? msg_buf_bytes_available : end_pos)); 	//append last part of message from incoming_data; if message would overflow buffer, append up to available bytes in the buffer and truncate rest, otherwise append entire message
+		_message.append("\r\n");																			//i have so little trust in people i don't even let the client crlf-terminate its own message xD
+		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);											//find first character after crlf-termination, or npos if it's the end of the string
+		incoming_data.erase(0, end_pos);																	//flush the part of the incoming data pertaining to the appended message (including any truncated bits)
+		_msg_buf.assign(incoming_data);																		//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course
+		_buf_state = IRC_Server::Client::Buffer_State(READY);												//set client buffer state to READY
+		ret = !(message_overflowed_buffer | message_overflows_buffer);										//in case of buffer overflow, whether detected in past or present input, return false; otherwise return true
+		message_overflowed_buffer = false;																	//overflowed message is handled here, so reset static overflowed flag.
 	}
 	return (ret);
 }
