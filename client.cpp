@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/25 11:57:38 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/25 12:30:34 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,23 +201,34 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **			In either such case, the message is truncated at MSG_BUF_SIZE - 2
 **			bytes. In the second case, MSG_BUF_SIZE - 2 initial bytes of the
 **			message are stored in the buffer until the terminating crlf is sent,
-**			which will then turn it into the first case.
+**			which will then turn it into the first case. In the first case, the
+**			message is truncated at byte MSG_BUF_SIZE - 2 and crlf-terminated.
+**			Coming from the second case to the first this truncation will
+**			already have started in a prior call and so there will only be two
+**			@a msg_buf_bytes_available left for the crlf-termination.
 **
-**			flushed from the buffer, and this function will return false. The
-**			caller must then send the user the ERR_INPUTTOOLONG error reply.
+**			The crlf-terminated message, truncated or not, is loaded into the
+**			@a _message string and flushed from the buffer. Any trailing
+**			@a incoming_data is then copied into @a _msg_buf for future
+**			retrieval and/or termination.
+**
+**			If the message was truncated (overflowed the buffer) at any point,
+**			false is returned. This is controlled with two flags:
+**
+**				@a message_overflows_buffer for overflows detected on
+**				crlf-termination, that is, during message extraction, and
+**	
+**				@a message_overflowed_buffer, a static flag for overflows
+**				detected at any point before crlf was received (causing all the
+**				rest of the received bytes until the crlf to be discarded).
+**
+**			If either of these flags is true, the return value will be false. If
+**			false is returned, the caller should then send the user the
+**			ERR_INPUTTOOLONG error reply. This reply must be sent before any
+**			reply to the content of the truncated message itself.
 **
 **			While crlf-termination is expected, in practice message termination
 **			with a single '\r' or '\n' is tolerated.
-**
-**			//debug
-**			If crlf-termination was not present in the discarded message and the
-**			remaining fragment of that message is received in subsequent recv()
-**			calls, it will be analysed independently, and likely throw an
-**			ERR_UNKNOWNCOMMAND error, but may also be misinterpreted. Sorry. xD
-**			I might flag the Client and have it throw everything out until after
-**			their next crlf, I dunno. What's the done thing here? Better ask
-**			rnavarre. xD
-**			//debug
 **
 **			// TRAILING CRLF AND EMPTY LINES //
 **			A trailing crlf-termination or empty line is defined here as any
@@ -228,8 +239,9 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 **			Trailing crlf-terminations and empty lines are ignored, meaning that
 **			they are deleted from the buffer without processing.
 **
-**			Anyway, FINALLY, if this odyssey ends with a message ready to be
-**			interpreted, we will set the client's buffer state to READY.
+**			Anyway, FINALLY, if this odyssey ends with a crlf-terminated message
+**			ready to be interpreted (truncated or not), we will set the client's
+**			buffer state to READY.
 **
 ** @param	data_received	Incoming message data.
 ** @param	nbytes			Number of bytes in incoming message data. If this is
@@ -257,7 +269,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 		if (msg_buf_bytes_available < incoming_data.size())		//if remaining data would overflow the 512-byte buffer, input is too long
 		{		
 			_msg_buf.append(incoming_data, 0, msg_buf_bytes_available);		//append up to msg_buf_bytes_available bytes and ignore subsequent data until crlf
-			message_overflowed_buffer = true;								//message_overflowed flag indicates this message was truncated due to buffer overflow.
+			message_overflowed_buffer = true;								//message_overflowed flag indicates this message WAS truncated at some point due to buffer overflow.
 		}	
 		else													//otherwise, fill the buffer and wait for crlf-termination, at which point we enter the crlf-terminated message but input is too long case
 			_msg_buf.append(incoming_data);									//append all incoming_data and wait for more data
@@ -265,7 +277,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 	}
 	else 														//incoming data has crlf-termination, so we extract complete message to _message and copy remaining data to _msg_buf
 	{
-		bool	message_overflows_buffer = (_msg_buf.size() + end_pos + 2 > MSG_BUF_SIZE);					//message_overflows_buffer indicates this message will now be truncated due to buffer overflow.
+		bool	message_overflows_buffer = (_msg_buf.size() + end_pos + 2 > MSG_BUF_SIZE);					//message_overflows_buffer indicates this message WILL now be truncated due to buffer overflow.
 		_message.assign(_msg_buf);																			//first part of message in _msg_buf; if _msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
 		_message.append(incoming_data, 0, (message_overflows_buffer ? msg_buf_bytes_available : end_pos)); 	//append last part of message from incoming_data; if message would overflow buffer, append up to available bytes in the buffer and truncate rest, otherwise append entire message
 		_message.append("\r\n");																			//i have so little trust in people i don't even let the client crlf-terminate its own message xD
