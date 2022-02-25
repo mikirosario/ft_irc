@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/25 17:24:53 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/25 20:29:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -544,40 +544,40 @@ bool	IRC_Server::poll_listener(void) const
 **			submodules for different RFC functionalities.
 ** @param	i The position in the @a _pfds array of the client with a message.
 */
-void	IRC_Server::process_client_message(int i)
+void	IRC_Server::process_client_message(Client & client)
 {
 	char	server_msgbuf[MSG_BUF_SIZE];
-	int		nbytes = recv(_pfds[i].fd, server_msgbuf, MSG_BUF_SIZE, 0);
+	int		nbytes = recv(client.get_sockfd(), server_msgbuf, MSG_BUF_SIZE, 0);
 
 	switch (nbytes) //error cases and default successful data reception case
 	{
 		case 0 :
-			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
-			remove_client_from_server(i);
+			std::cerr << "pollserver: socket " << client.get_sockfd() << " hung up." << std::endl;
+			remove_client_from_server(client);
 			break ;
 		case -1 :
 			std::cerr << "recv error" << std::endl;
-			remove_client_from_server(i);
+			remove_client_from_server(client);
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
 			//insert message in client's message buffer
 			//debug
-			std::cout << "Received " << nbytes << " bytes from " << (_clients[i].is_registered() ? _clients[i].get_nick() : "new client") << std::endl;
+			std::cout << "Received " << nbytes << " bytes from " << (client.is_registered() ? client.get_nick() : "new client") << std::endl;
 			//debug
-			if (_clients[i].append_to_msg_buf(server_msgbuf, nbytes) == false)
-				send_err_INPUTTOOLONG(_clients[i], "Input line was too long");
+			if (client.append_to_msg_buf(server_msgbuf, nbytes) == false)
+				send_err_INPUTTOOLONG(client, "Input line was too long");
 			//do stuff
 
 			//debug
 			for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
-				if (j != i) //do not send to self
+				if (static_cast<size_t>(j) != client.get_pos()) //do not send to self
 					if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
 						std::cerr << "send error" << std::endl;
 			//debug
 
-			while (_clients[i].msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
-				interpret_msg(_clients[i]);
+			while (client.msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
+				interpret_msg(client);
 
 				
 				//debug
@@ -599,6 +599,61 @@ void	IRC_Server::process_client_message(int i)
 				// //debug
 	}
 }
+// void	IRC_Server::process_client_message(int i)
+// {
+// 	char	server_msgbuf[MSG_BUF_SIZE];
+// 	int		nbytes = recv(_pfds[i].fd, server_msgbuf, MSG_BUF_SIZE, 0);
+
+// 	switch (nbytes) //error cases and default successful data reception case
+// 	{
+// 		case 0 :
+// 			std::cerr << "pollserver: socket " << _pfds[i].fd << " hung up." << std::endl;
+// 			remove_client_from_server(i);
+// 			break ;
+// 		case -1 :
+// 			std::cerr << "recv error" << std::endl;
+// 			remove_client_from_server(i);
+// 			break ;
+// 		//handover to interpreter module in default case
+// 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
+// 			//insert message in client's message buffer
+// 			//debug
+// 			std::cout << "Received " << nbytes << " bytes from " << (_clients[i].is_registered() ? _clients[i].get_nick() : "new client") << std::endl;
+// 			//debug
+// 			if (_clients[i].append_to_msg_buf(server_msgbuf, nbytes) == false)
+// 				send_err_INPUTTOOLONG(_clients[i], "Input line was too long");
+// 			//do stuff
+
+// 			//debug
+// 			for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
+// 				if (j != i) //do not send to self
+// 					if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
+// 						std::cerr << "send error" << std::endl;
+// 			//debug
+
+// 			while (_clients[i].msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
+// 				interpret_msg(_clients[i]);
+
+				
+// 				//debug
+// 				//debug
+
+// 				// //debug get_param_count and get_message tests
+// 				// //MAKE get_param_count() PUBLIC TO TEST THIS
+// 				// // std::cout	<< "TEST PARAM_COUNT: \n"
+// 				// // 			<< _clients[i].get_param_count() << std::endl;
+// 				// std::cout << "TEST GET_MESSAGE:" << std::endl;
+// 				// //debug
+
+// 				// std::vector<std::string>	argv = _clients[i].get_message();
+
+// 				// //debug
+// 				// std::cout << "vector size: " << argv.size() << std::endl;
+// 				// for (size_t i = 0; i < argv.size(); ++i)
+// 				// 	std::cout << argv[i] << "\n";
+// 				// //debug
+// 	}
+// }
 
 /*!
 ** @brief	Safely flags the Client at position @a pos in the @a _clients array
@@ -781,7 +836,7 @@ void	IRC_Server::server_loop(void)
 			{
 				if (poll_client(i) == true)
 				{
-					process_client_message(i);
+					process_client_message(_clients[i]);
 					--poll_count;
 				}
 			}
