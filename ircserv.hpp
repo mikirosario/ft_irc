@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/23 21:02:29 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/25 17:25:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,12 @@
 // 		std::string	_name; //up to 50 characters, first character must be '&', '#', '+' or '!', and no spaces, ASCII 7 (bel) or commas allowed. case-insensitive
 // }
 
-enum Args
-{
-	PASSWORD = 1,
-	PORT,
-	NETINFO
-};
+// enum Args
+// {
+// 	PASSWORD = 1,
+// 	PORT,
+// 	NETINFO
+// };
 
 class IRC_Server
 {
@@ -66,27 +66,8 @@ class IRC_Server
 			ONLINE,
 			RESTART
 		}			_state;
-	//One option could be to have a map of registered Users, and an array of clients that just mirrors the _pfds array
-	// and searches for an existing user_profile on instantiation. We can use add_connection and remove_connection to
-	//ensure they mirror each other precisely. If no registered User exists, we add one to the map.
-		class User
-		{
-			private:
-				enum State
-				{
-					DISCONNECTED,
-					CONNECTED
-				}			_state;
-				std::string	_nick; //maximum nick length 9 chars
-				std::string _pass; //super secure!! xD I guess this should be scrambled before storage?
-				std::string	_IPaddr; //I AM KNOW WHERE U LIVE BISH I AM HAS YOURE IP I IS H@X000R
-						User(void);
-			public:
-				//		User(User const & src) {}
-						~User(void) {}
-						User(std::string const & user_info) { _nick = user_info; }
-				//User &	operator=(User const & src);
-		};
+		#include "channel.hpp";
+
 		class Client
 		{
 			private:
