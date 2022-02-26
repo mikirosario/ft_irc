@@ -6,11 +6,11 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/23 16:47:44 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 21:29:57 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ircserv.hpp"
+#include  "../includes/ircserv.hpp"
 
 /*!
 ** @brief	Properly terminates a non-numeric reply, adding @a last_param if one

@@ -1,10 +1,8 @@
 #ifndef DATABASE_HPP
 #define DATABASE_HPP
 
-#include "channel.hpp"
-
-class IRC_Server
-{
+//class IRC_Server
+//{
 	class Database
     {
         private:
@@ -22,6 +20,6 @@ class IRC_Server
             bool checkIfClientExists(std::string clientUsername);
             bool checkIfUserPasswordIsCorrect(std::string username, std::string password);
     };
-};
+//};
 
 #endif

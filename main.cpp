@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/23 20:08:10 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 21:26:16 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #elif __APPLE__
 #include <clocale> //for std::setlocale on Mac
 #endif
-#include "ircserv.hpp"
+#include "./includes/ircserv.hpp"
 
 //Notes
 //service	==	port

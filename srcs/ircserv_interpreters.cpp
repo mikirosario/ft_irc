@@ -6,11 +6,11 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/23 19:47:35 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 21:28:43 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ircserv.hpp"
+#include "../includes/ircserv.hpp"
 
 /* ---- PARSING ---- */
 

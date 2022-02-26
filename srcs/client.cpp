@@ -6,11 +6,11 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/25 12:30:34 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 21:29:01 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ircserv.hpp"
+#include "../includes/ircserv.hpp"
 
 IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED)),
 									_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),

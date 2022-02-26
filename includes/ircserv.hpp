@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/25 19:48:06 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 22:04:24 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,15 +35,7 @@
 #include <cstring> //for memset
 
 #include "irc_numerics.hpp"
-
-#define INT_TO_STR( x ) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str() //itoa-like macro for std::string that saves me from loading up my functions with ugly stringstreams :p
-#define MAX_CONNECTIONS 1024	//maximum number of simultaneous connections
-#define MSG_BUF_SIZE 512		//maximum message length in IRC RFC including \r\n termination.
-#define MAX_NICK_SIZE 9 		//maximum nickname length
-#define MAX_HOSTNAME_SIZE 20	//maximum hostname size; //debug use clientaddr instead if this is too long
-#define MAX_USERNAME_SIZE 25	//maximum username size
-#define MAX_REALNAME_SIZE 35	//maximum real name size
-#define MAX_PASS_ATTEMPTS 10	//maximum number of PASS commands allowed during registration before we reject connection
+#include "constants.hpp"
 // class Channel
 // {
 // 	private:
@@ -68,8 +60,7 @@ class IRC_Server
 			RESTART
 		}			_state;
 
-		#include "channel.hpp"
-
+	//public:
 		class Client
 		{
 			private:
@@ -208,7 +199,8 @@ class IRC_Server
 
 		//Command interpreting modules
 		#include "ircserv_modules.hpp"
-
+		#include "channel.hpp"
+		#include "database.hpp"
 	public:
 		/* CONSTRUCTORS AND DESTRUCTOR */
 			IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo = std::string());	//Argument constructor
@@ -218,7 +210,6 @@ class IRC_Server
 		std::string const &	get_port(void) const;
 		std::string const & get_serveraddr(void) const;
 		std::string	get_source(void) const;
-
 };
 
 #endif

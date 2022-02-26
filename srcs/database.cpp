@@ -1,4 +1,4 @@
-#include "database.hpp"
+#include "../includes/ircserv.hpp"
 
 IRC_Server::Database::Database(std::string username_file)
 {
@@ -56,6 +56,7 @@ bool IRC_Server::Database::checkIfClientExists(std::string clientUsername)
 
 bool IRC_Server::Database::checkIfUserPasswordIsCorrect(std::string username, std::string password) 
 {
+	(void)password; // Error de momento. Cuando haya password, cambiar
     loadDatabase();
     if (checkIfClientExists(username))
 	{
