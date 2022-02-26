@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
+#    By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/23 20:05:59 by mrosario         ###   ########.fr        #
+#    Updated: 2022/02/26 12:56:32 by acortes-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,8 @@ SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/ircserv.cpp \
 			$(SRCDIR)/ircserv_numeric_replies.cpp \
 			$(SRCDIR)/ircserv_numeric_error_replies.cpp \
 			$(SRCDIR)/ircserv_other_replies.cpp \
-			$(SRCDIR)/client.cpp
+			$(SRCDIR)/client.cpp \
+			$(SRCDIR)/channel.cpp
 
 OBJS = $(SRCFILES:.cpp=.o)
 
