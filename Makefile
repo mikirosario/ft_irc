@@ -6,13 +6,13 @@
 #    By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/26 12:56:32 by acortes-         ###   ########.fr        #
+#    Updated: 2022/02/26 20:04:21 by acortes-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = ircserv
 
-SRCDIR = .
+SRCDIR = ./srcs
 
 GIT_VERSION := "$(shell git describe --abbrev=4 --dirty --always --tags)"
 
@@ -24,12 +24,12 @@ RST = \e[0m
 
 CXX = clang++
 
-SRCFILES =	$(SRCDIR)/main.cpp $(SRCDIR)/ircserv.cpp \
+SRCFILES =	./main.cpp $(SRCDIR)/ircserv.cpp \
 			$(SRCDIR)/ircserv_interpreters.cpp \
 			$(SRCDIR)/ircserv_numeric_replies.cpp \
 			$(SRCDIR)/ircserv_numeric_error_replies.cpp \
 			$(SRCDIR)/ircserv_other_replies.cpp \
-			$(SRCDIR)/client.cpp \
+			$(SRCDIR)/client.cpp \
 			$(SRCDIR)/channel.cpp
 
 OBJS = $(SRCFILES:.cpp=.o)
@@ -40,7 +40,7 @@ CXXFLAGS = -Wall -Werror -Wextra -g -std=c++98 -DVERSION=\"$(GIT_VERSION)\"
 
 all: $(NAME)
 
-$(NAME): $(MAIN_O) $(OBJS)
+$(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -ltermcap -o $(NAME) $(MAIN_O) $(OBJS)
 
 clean:

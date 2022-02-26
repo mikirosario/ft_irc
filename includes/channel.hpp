@@ -6,30 +6,26 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 15:48:36 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/26 20:16:41 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CHANNEL_H
 # define CHANNEL_H
 
-#include "client.hpp"
+#include "ircserv.hpp"
 
 class IRC_Server
 {
 	class Channel
 	{
-		const int clientUser = 0;
-		const int adminUser = 1;
-		const int ownerUser = 2;
-
 		public:
 
 			Channel(void);
 			Channel(std::string chName);
 			Channel(Channel &other);
 
-			Channel &Channel::operator=(Channel const &other)
+			Channel &operator=(Channel const &other)
 			{
 				if (*this == other)
 					return(*this);
@@ -42,9 +38,11 @@ class IRC_Server
 
 			bool addNewClient(Client client);
 			bool removeClient(Client client);
-			inline std::string getChannelName()const {return channelName;};
-			inline void setOwner(Client OwnerUser2){OwnerUser = OwnerUser2;};
-			inline std::string getOwner()const{return OwnerUser.get_nick();};
+			std::string getChannelName()const {return channelName;};
+
+			void setOwner(Client OwnerUser2);
+
+			std::string getOwner()const{return OwnerUser.get_nick();};
 			void sendMessageToAllClients( User user, std::string message);
 			bool findClient(Client client);
 
@@ -63,6 +61,6 @@ class IRC_Server
 			std::map<Client, int> allClients;
 			Client OwnerUser;
 	};
-};
+}
 
 #endif

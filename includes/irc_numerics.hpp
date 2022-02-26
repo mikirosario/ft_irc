@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/02/25 17:28:35 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 20:12:39 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef IRC_NUMERICS_H
-# define IRC_NUMERICS_H
+#ifndef IRC_NUMERICS_HPP
+# define IRC_NUMERICS_HPP
 
 /* -- RPL NUMERICS -- */
 #define RPL_WELCOME "001"

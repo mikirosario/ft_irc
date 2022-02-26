@@ -1,12 +1,12 @@
-#include "../includes/database.hpp"
+#include "../includes/ircserv.hpp"
 
-Database::Database(std::string username_file)
+IRC_Server::Database::Database(std::string username_file)
 {
     file_name = username_file;
     loadDatabase();
 }
 
-void Database::loadDatabase() 
+void IRC_Server::Database::loadDatabase() 
 {
     std::ifstream file(file_name);
     std::string username, password, buffer;
@@ -25,7 +25,7 @@ void Database::loadDatabase()
     file.close();
 }
 
-void Database::saveDatabase()
+void IRC_Server::Database::saveDatabase()
 {
     std::ofstream file(file_name, std::ofstream::out);
     std::string outputLine;
@@ -39,14 +39,14 @@ void Database::saveDatabase()
     file.close();
 }
 
-bool Database::addClient(Client newClient) 
+bool IRC_Server::Database::addClient(Client newClient) 
 {
     clients.push_back(newClient);
     saveDatabase();
     return true;
 }
 
-bool Database::checkIfClientExists(std::string clientUsername) 
+bool IRC_Server::Database::checkIfClientExists(std::string clientUsername) 
 {
     for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); it++)
         if (clientUsername == it->get_username())
@@ -54,7 +54,7 @@ bool Database::checkIfClientExists(std::string clientUsername)
     return false;
 }
 
-bool Database::checkIfUserPasswordIsCorrect(std::string username, std::string password) 
+bool IRC_Server::Database::checkIfUserPasswordIsCorrect(std::string username, std::string password) 
 {
     loadDatabase();
     if (checkIfClientExists(username))

@@ -6,14 +6,14 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/26 16:28:01 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/26 18:43:34 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/client.hpp"
+#include "../includes/ircserv.hpp"
 
-Client::Client(void) :	_state(Client::State(UNREGISTERED)),
-									_buf_state(Client::Buffer_State(UNREADY)),
+IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED)),
+									_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),
 									_pass_attempts(0),
 									_pass_validated(false),
 									pos(0)
@@ -28,7 +28,7 @@ Client::Client(void) :	_state(Client::State(UNREGISTERED)),
 }
 
 
-Client &	Client::operator=(Client const & src)
+IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 {
 	_state = src._state;
 	_buf_state = src._buf_state;
@@ -45,7 +45,7 @@ Client &	Client::operator=(Client const & src)
 	return (*this);
 }
 
-Client::~Client(void)
+IRC_Server::Client::~Client(void)
 {}
 
 /*!
@@ -63,7 +63,7 @@ Client::~Client(void)
 **
 ** @param	src The Client to be moved.
 */
-void		Client::move(Client & src)
+void		IRC_Server::Client::move(Client & src)
 {
 	_state = src._state;
 	_buf_state = src._buf_state;
@@ -107,15 +107,15 @@ void		Client::move(Client & src)
 ** @param	stop	The position preceding which all data in the buffer will be
 **					cleared.
 */
-void	Client::flush_msg_buf(size_t stop)
+void	IRC_Server::Client::flush_msg_buf(size_t stop)
 {
 	_msg_buf.erase(0, stop);
 }
-// void	Client::flush_msg_buf(size_t stop)
+// void	IRC_Server::Client::flush_msg_buf(size_t stop)
 // {
 // 	_msg_buf.erase(0, stop);
 // 	if (msg_buf_is_crlf_terminated() == false)
-// 		_buf_state = Client::Buffer_State(UNREADY);	
+// 		_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	
 // }
 
 /*!
@@ -250,7 +250,7 @@ void	Client::flush_msg_buf(size_t stop)
 ** @return	false if a received message was too long (ERR_INPUTTOOLONG) and had
 **			to be discarded, otherwise true
 */
-bool	Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int nbytes)
+bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int nbytes)
 {
 	std::string	incoming_data(data_received, nbytes);			//incoming data register
 	size_t		msg_buf_bytes_available = MSG_BUF_SIZE - _msg_buf.size() - 2;	//remaining bytes in _msg_buf available for storage - crlf-termination
@@ -284,7 +284,7 @@ bool	Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int n
 		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);											//find first character after crlf-termination, or npos if it's the end of the string
 		incoming_data.erase(0, end_pos);																	//flush the part of the incoming data pertaining to the appended message (including any truncated bits)
 		_msg_buf.assign(incoming_data);																		//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course
-		_buf_state = Client::Buffer_State(READY);												//set client buffer state to READY
+		_buf_state = IRC_Server::Client::Buffer_State(READY);												//set client buffer state to READY
 		ret = !(message_overflowed_buffer | message_overflows_buffer);										//in case of buffer overflow, whether detected in past or present input, return false; otherwise return true
 		message_overflowed_buffer = false;																	//overflowed message is handled here, so reset static overflowed flag.
 	}
@@ -308,12 +308,12 @@ bool	Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int n
 // ** @return	true if the entire message was appended, false if it was truncated
 // **			or not copied due to existing buffer that is READY to be reaped.
 // */
-// bool	Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
+// bool	IRC_Server::Client::append_to_msg_buf(char const (& msg_register)[MSG_BUF_SIZE], int nbytes)
 // {
 // 	int	bytes_remaining = MSG_BUF_SIZE - _msg_buf.size();
 // 	int ret;
 
-// 	if (_buf_state == Client::Buffer_State(READY))
+// 	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
 // 		ret = false;
 // 	else if (nbytes > bytes_remaining)
 // 	{
@@ -327,7 +327,7 @@ bool	Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int n
 // 		ret = true;
 // 	}
 // 	if (msg_buf_is_crlf_terminated())
-// 		_buf_state = Client::Buffer_State(READY);
+// 		_buf_state = IRC_Server::Client::Buffer_State(READY);
 // 	return (ret);
 // }
 
@@ -338,8 +338,7 @@ bool	Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_SIZE], int n
 **
 ** @param	sockfd The Client's sockfd.
 */
-
-void	Client::set_sockfd(int sockfd)
+void	IRC_Server::Client::set_sockfd(int sockfd)
 {
 	struct sockaddr	serverIP;
 	socklen_t		addrlen(sizeof(sockaddr));
@@ -363,7 +362,7 @@ void	Client::set_sockfd(int sockfd)
 ** @return	true if PASS has been sent fewer than MAX_PASS_ATTEMPTS times,
 **			otherwise false.
 */
-bool	Client::reg_pass_attempt(void)
+bool	IRC_Server::Client::reg_pass_attempt(void)
 {
 	if (_pass_attempts > MAX_PASS_ATTEMPTS)
 		return (false);
@@ -376,7 +375,7 @@ bool	Client::reg_pass_attempt(void)
 **
 ** @param	nick	The string containing the Client's nickname.
 */
-void	Client::set_nick(std::string const & nick)
+void	IRC_Server::Client::set_nick(std::string const & nick)
 {
 	_nick = nick;
 	// //debug
@@ -390,7 +389,7 @@ void	Client::set_nick(std::string const & nick)
 **
 ** @param	username	The string containing the Client's username.
 */
-void	Client::set_username(std::string const & username)
+void	IRC_Server::Client::set_username(std::string const & username)
 {
 	_username.assign(username, 0, MAX_USERNAME_SIZE);
 	// //debug
@@ -404,7 +403,7 @@ void	Client::set_username(std::string const & username)
 **
 ** @param	username	The string containing the Client's real name.
 */
-void	Client::set_realname(std::string const & realname)
+void	IRC_Server::Client::set_realname(std::string const & realname)
 {
 	_realname.assign(realname, 0, MAX_REALNAME_SIZE);
 	// //debug
@@ -433,7 +432,7 @@ void	Client::set_realname(std::string const & realname)
 ** @param	clientaddr	The string containing the remote IP address.
 ** @return	true if a clientaddr was set, otherwise false.
 */
-bool	Client::set_clientaddr(char const * clientaddr)
+bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 {	
 	//attempt canonical name lookup
 	struct addrinfo		hints;
@@ -468,7 +467,7 @@ bool	Client::set_clientaddr(char const * clientaddr)
 ** @param	state	State to which to set Client's @a _pass_validated flag (true
 **					or false).
 */
-void	Client::set_pass_validated(bool state)
+void	IRC_Server::Client::set_pass_validated(bool state)
 {
 	_pass_validated = state;
 }
@@ -476,15 +475,15 @@ void	Client::set_pass_validated(bool state)
 /*!
 ** @brief	Sets Client's state to REGISTERED.
 */
-void	Client::set_state_registered(void)
+void	IRC_Server::Client::set_state_registered(void)
 {
-	_state = Client::State(REGISTERED);
+	_state = IRC_Server::Client::State(REGISTERED);
 }
 
 /*!
 ** @brief	Clears all Client data.
 */
-void	Client::clear(void)
+void	IRC_Server::Client::clear(void)
 {
 	_state = Client::State(UNREADY);
 	_buf_state = Client::Buffer_State(UNREGISTERED);
@@ -509,7 +508,7 @@ void	Client::clear(void)
 ** @param	c A character.
 ** @return	true if end of line, otherwise false.
 **/
-bool	Client::is_endline(char const c)
+bool	IRC_Server::Client::is_endline(char const c)
 {
 	return (c == '\r' || c == '\n');
 }
@@ -523,7 +522,7 @@ bool	Client::is_endline(char const c)
 ** @return	A string containing the command, or an empty string if no command
 **			exists in the message.
 */
-std::string	Client::get_cmd(void) const
+std::string	IRC_Server::Client::get_cmd(void) const
 {
 	int	start_pos = _message.find_first_not_of(' ');			//Tolerate leading spaces
 	int	end_pos = _message.find_first_of(" \r\n", start_pos);
@@ -538,7 +537,7 @@ std::string	Client::get_cmd(void) const
 **
 ** @return	true if message buffer is crlf-terminated, otherwise false.
 */
-bool	Client::msg_buf_is_crlf_terminated(void) const
+bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 {
 	return(_msg_buf.find_first_of("\r\n") != std::string::npos);
 }
@@ -551,12 +550,12 @@ bool	Client::msg_buf_is_crlf_terminated(void) const
 **			the public methods to improve clarity.
 ** @return	true if Client's message is ready to be reaped, otherwise false.
 **/
-bool	Client::msg_is_ready(void) const
+bool	IRC_Server::Client::msg_is_ready(void) const
 {
 	//debug
 	//std::cerr << _buf_state << std::endl;
 	//debug
-	return (_buf_state == Client::Buffer_State(READY));
+	return (_buf_state == IRC_Server::Client::Buffer_State(READY));
 }
 
 /*!
@@ -566,12 +565,12 @@ bool	Client::msg_is_ready(void) const
 **
 ** @return	true if the client is registered, otherwise false
 */
-bool		Client::is_registered(void) const
+bool		IRC_Server::Client::is_registered(void) const
 {
-	return (_state == Client::State(REGISTERED));
+	return (_state == IRC_Server::Client::State(REGISTERED));
 }
 
-void		Client::send_msg(std::string const & msg) const
+void		IRC_Server::Client::send_msg(std::string const & msg) const
 {
 	send(_sockfd, msg.data(), msg.size(), 0);
 }
@@ -629,11 +628,11 @@ void		Client::send_msg(std::string const & msg) const
 **			will be provided in place of the command. If the buffer state is not
 **			READY, an empty vector is returned.
 */
-std::vector<std::string>	Client::get_message(void)
+std::vector<std::string>	IRC_Server::Client::get_message(void)
 {
 	std::vector<std::string>	ret;
 
-	if (_buf_state == Client::Buffer_State(READY))
+	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
 	{
 		std::string	cmd = get_cmd();
 		size_t		start_pos = 0;
@@ -677,7 +676,7 @@ std::vector<std::string>	Client::get_message(void)
 		else								//no, there is not another message
 		{
 			_message.clear();
-			_buf_state = Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
+			_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
 		}
 	}
 	// //debug
@@ -688,11 +687,11 @@ std::vector<std::string>	Client::get_message(void)
 	return  (ret);
 }
 
-// std::vector<std::string>	Client::get_message(void)
+// std::vector<std::string>	IRC_Server::Client::get_message(void)
 // {
 // 	std::vector<std::string>	ret;
 
-// 	if (_buf_state == Client::Buffer_State(READY))
+// 	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
 // 	{
 // 		std::string	cmd = get_cmd();
 // 		size_t		start_pos = 0;
@@ -741,7 +740,7 @@ std::vector<std::string>	Client::get_message(void)
 **			a new nick is set... depends how often I need this or variants.
 **
 */
-std::string	Client::get_source(void) const
+std::string	IRC_Server::Client::get_source(void) const
 {
 	std::string	msg;
 
@@ -768,7 +767,7 @@ std::string	Client::get_source(void) const
 **
 ** @return	The number of parameters in the message.
 */
-size_t	Client::get_param_count(void) const
+size_t	IRC_Server::Client::get_param_count(void) const
 {
 	size_t	end_pos;
 	size_t	i = 0;
@@ -791,54 +790,54 @@ size_t	Client::get_param_count(void) const
 	return (p_count);
 }
 
-std::string const &			Client::get_serveraddr(void) const
+std::string const &			IRC_Server::Client::get_serveraddr(void) const
 {
 	return(_serveraddr);
 }
 
-std::string const &			Client::get_nick(void) const
+std::string const &			IRC_Server::Client::get_nick(void) const
 {
 	return(_nick);
 }
 
-std::string const &			Client::get_username(void) const
+std::string const &			IRC_Server::Client::get_username(void) const
 {
 	return (_username);
 }
 
-std::string const &			Client::get_realname(void) const
+std::string const &			IRC_Server::Client::get_realname(void) const
 {
 	return (_realname);
 }
 
 //this is currently an alias for getclientaddr. :P
-std::string const &			Client::get_hostname(void) const
+std::string const &			IRC_Server::Client::get_hostname(void) const
 {
 	//return (_hostname);
 	return(get_clientaddr());
 }
 
-std::string const &			Client::get_clientaddr(void) const
+std::string const &			IRC_Server::Client::get_clientaddr(void) const
 {
 	return (_clientaddr);
 }
 
-int							Client::get_sockfd(void) const
+int							IRC_Server::Client::get_sockfd(void) const
 {
 	return(_sockfd);
 }
 
-int							Client::get_pass_attempts(void) const
+int							IRC_Server::Client::get_pass_attempts(void) const
 {
 	return (_pass_attempts);
 }
 
-size_t						Client::get_pos(void) const
+size_t						IRC_Server::Client::get_pos(void) const
 {
 	return (pos);
 }
 
-bool						Client::get_pass_validated(void) const
+bool						IRC_Server::Client::get_pass_validated(void) const
 {
 	return (_pass_validated);
 }
@@ -855,7 +854,7 @@ bool						Client::get_pass_validated(void) const
 ** @return	A read-only reference to the Client's next full unreaped message, or
 **			an empty string if the Client currently has no full message.
 */
-std::string const &			Client::see_next_message(void) const
+std::string const &			IRC_Server::Client::see_next_message(void) const
 {
 	return (_message);
 }
@@ -874,7 +873,7 @@ std::string const &			Client::see_next_message(void) const
 **			AFTER the next full unreaped message, or an empty string if the
 **			buffer is empty.
 */
-std::string const &			Client::see_msg_buf(void) const
+std::string const &			IRC_Server::Client::see_msg_buf(void) const
 {
 	return(_msg_buf);
 }

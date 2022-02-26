@@ -1,4 +1,4 @@
-#include "../includes/channel.hpp"
+#include "../includes/ircserv.hpp"
 
 IRC_Server::Channel::Channel(void)
 :
@@ -56,12 +56,17 @@ bool IRC_Server::Channel::findClient(Client client)
     return(1);
 }
 
+void IRC_Server::setOwner(Client OwnerUser2)
+{
+    this->OwnerUser  = OwnerUser2;
+}
+
 
 bool IRC_Server::Channel::addNewClient(Client client)
 {
     if (!this->findClient(client))
     {
-        allClients.insert(std::make_pair(client, clientUser));
+        allClients.insert(std::make_pair(client, CLIENT_USER));
         return(true);
     }
     return (false);

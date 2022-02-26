@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 11:44:11 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/26 18:43:49 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::
 ** @return	A pointer to the client with the nickname @a nick if one exists,
 **			otherwise a NULL pointer.
 */
-IRC_Server::Client *	IRC_Server::find_client_by_nick(std::string const & nick)
+IRC_Server::Client	*IRC_Server::find_client_by_nick(std::string const & nick)
 {
 	for (int i = 0; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
