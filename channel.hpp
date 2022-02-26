@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 20:48:13 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/25 19:43:53 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,5 @@ class Channel
 		std::map<IRC_Server::Client, int> allClients;
 		IRC_Server::Client OwnerUser;
 };
-
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 20:51:46 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/25 19:48:06 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,12 +50,12 @@
 // 		std::string	_name; //up to 50 characters, first character must be '&', '#', '+' or '!', and no spaces, ASCII 7 (bel) or commas allowed. case-insensitive
 // }
 
-// enum Args
-// {
-// 	PASSWORD = 1,
-// 	PORT,
-// 	NETINFO
-// };
+enum Args
+{
+	PASSWORD = 1,
+	PORT,
+	NETINFO
+};
 
 class IRC_Server
 {
@@ -67,12 +67,12 @@ class IRC_Server
 			ONLINE,
 			RESTART
 		}			_state;
-		#include "channel.hpp";
+
+		#include "channel.hpp"
 
 		class Client
 		{
 			private:
-				typedef std::map<std::string, User>::iterator t_user_ptr;
 				enum State
 				{
 					UNREGISTERED,
@@ -102,7 +102,6 @@ class IRC_Server
 				bool		msg_buf_is_crlf_terminated(void) const;
 			public:
 				Client(void);
-				Client(User const & src);
 				~Client(void);
 				Client &	operator=(Client const & src);
 
@@ -162,7 +161,6 @@ class IRC_Server
 		struct pollfd					_pfds[MAX_CONNECTIONS];
 		Client							_clients[MAX_CONNECTIONS];
 		std::bitset<MAX_CONNECTIONS>	_remove_list;
-		std::map<std::string, User>		_reg_users; //for saving data from registered users//all users (not sure yet, would have to delete unregged users from here on disconnect in latter case, do two nick searches per connection in former)
 		int								_connections;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
@@ -197,7 +195,8 @@ class IRC_Server
 		void	accept_connection(void);
 		bool	poll_listener(void) const;
 		bool	poll_client(int i) const;
-		void	process_client_message(int i);
+		//void	process_client_message(int i);
+		void	process_client_message(Client & client);
 		void	remove_client_from_server(size_t pos);
 		void	remove_client_from_server(Client const & client);
 		void	remove_flagged_clients(void);
