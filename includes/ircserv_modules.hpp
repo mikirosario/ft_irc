@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/23 19:42:36 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 23:34:01 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ bool	username_is_valid(std::string const & username) const;
 void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 

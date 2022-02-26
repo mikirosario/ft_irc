@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 21:58:02 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/26 23:27:43 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,6 @@
 #define CLIENT_USER 0
 #define ADMIN_USER 1
 #define CREATOR_USER 2
+#define MAX_CHANNELNAME_SIZE 50
 
 #endif
