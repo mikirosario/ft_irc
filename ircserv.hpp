@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
 /*   Updated: 2022/02/25 19:48:06 by mrosario         ###   ########.fr       */
@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <iostream>
+#include <fstream> // I'm iostream but better
 #include <cstring> //for memset
 
 #include "irc_numerics.hpp"
