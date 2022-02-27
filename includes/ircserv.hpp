@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 23:11:05 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/27 20:14:06 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,12 @@ class IRC_Server
 		std::bitset<MAX_CONNECTIONS>	_remove_list;
 		int								_connections;
 
-		std::map<std::string, Channel>	_channels;
+		/* CASE-INSENSITIVE STRING COMPARE OBJECT */
+		struct case_insensitive_less : std::binary_function<std::string, std::string, bool>
+		{
+			bool	operator() (std::string const & str1, std::string const & str2) const;
+		};
+		std::map<std::string, Channel, case_insensitive_less>	_channels;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
 						IRC_Server(void);						//Default constructor
@@ -114,6 +119,9 @@ class IRC_Server
 		void	remove_client_from_server(Client const & client);
 		void	remove_flagged_clients(void);
 		
+		//Channel controls
+		//void	add_channel()
+
 		//Utils
 		bool				is_endline(char const c);
 		bool				confirm_pass(std::string const & client_pass) const;

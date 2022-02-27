@@ -6,7 +6,7 @@
 #    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/02/26 22:03:55 by mrosario         ###   ########.fr        #
+#    Updated: 2022/02/27 19:59:31 by mrosario         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,8 @@ SRCFILES =	./main.cpp $(SRCDIR)/ircserv.cpp \
 			$(SRCDIR)/ircserv_other_replies.cpp \
 			$(SRCDIR)/client.cpp \
 			$(SRCDIR)/channel.cpp \
-			$(SRCDIR)/database.cpp
+			$(SRCDIR)/database.cpp \
+			$(SRCDIR)/case_insensitive_lexicographical_compare.cpp
 
 OBJS = $(SRCFILES:.cpp=.o)
 

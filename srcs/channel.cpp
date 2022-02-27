@@ -1,47 +1,19 @@
 #include "../includes/ircserv.hpp"
 
 IRC_Server::Channel::Channel(void)
-:
-		channelName(),
-		allClients(),
-		OwnerUser(),
-        topic(),
-        channelPassword()
 {}
 
-IRC_Server::Channel::Channel(std::string chName) //sacar comprobaciones a llamador
-:
-		allClients(),
-		OwnerUser()
-        topic(),
-        channelPassword()
-{
-	//size_t chName_len = chName.size();
+IRC_Server::Channel::Channel(std::string chName) : channelName(chName)
+{}
 
-    // if (chName_len > 50)
-    //     send_err_UNKNOWNERROR(OwnerUser, chName, "Channel name to long");
-    // else if (chName_len <= 1)
-    //     send_err_UNKNOWNERROR(OwnerUser, chName, "Channel name to short");
-    // else if (chName[0] != '&' && chName[0] != '#' && chName[0] != '+' && chName[0] != '!')
-    //     send_err_UNKNOWNERROR(OwnerUser, chName, "Channel first char invalid. Use '&', '#', '+' or '!'");
-    // else
-    //     std::transform(chName.begin(), chName.end(), chName.begin(), asciitolower);
-    // for(size_t i = 1; i < chName_len; i++)
-    // {
-    //     if(chName[i] == ' ' || chName[i] == ',' || chName[i] == ':')
-    //          send_err_UNKNOWNERROR(OwnerUser, chName, "Invalid symbol used in the creation of the channel name");
-    // }
-    this->channelName = chName;
-    return ;
-}
-
-IRC_Server::Channel::Channel(Channel &other)
+IRC_Server::Channel::Channel(Channel const &other)
 :
     	channelName(other.channelName),
+		channelPassword(other.channelPassword),
 		allClients(other.allClients),
-		OwnerUser(other.OwnerUser)
-        topic(other.topic),
-        channelPassword(other.channelPassword)
+		OwnerUser(other.OwnerUser),
+        topic(other.topic)
+        
 {}
 
 bool IRC_Server::Channel::findClient(Client const & client)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 18:30:41 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/27 19:52:35 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,86 +283,86 @@ std::vector<std::string> ft_parseStringToVector(std::string const &str, std::str
 
 // TODO: Reduce the size of this function
 
-void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
-{
-	std::vector<std::string> stringVector;
-	std::vector<std::string> stringVector2;
-	size_t	pos;
-	bool	havePasswords;
-	size_t it_size;
+// void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
+// {
+// 	std::vector<std::string> stringVector;
+// 	std::vector<std::string> stringVector2;
+// 	size_t	pos;
+// 	bool	havePasswords;
+// 	size_t it_size;
 
-	//   JOIN 0    	; Leave all currently joined channels.
+// 	//   JOIN 0    	; Leave all currently joined channels.
 
-	if (argv.size() == 2 && argv[1] == "0")
-	{
-		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
-	}
-	stringVector = ft_parseStringToVector(argv[1], ",");
-	havePasswords = false;
-	if (argv.size() == 3)
-	{	
-		stringVector2 = ft_parseStringToVector(argv[2], ",");
-		havePasswords = true;
-	}
-	pos = 0;
-	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
-	{
-		std::string password = "";
-		it_size = it->size();
-		if (havePasswords && pos < stringVector2.size())
-			password = stringVector2[pos];
-		if (it_size > 50)
-			send_err_INPUTTOOLONG(sender, "Channel name to long");
-		else if (it_size <= 1)
-			send_err_NOSUCHCHANNEL(sender, *it, "Channel name to short");
-		else if (it[0] != "&" && it[0] != "#" && it[0] != "+" && it[0] != "!")
-			send_err_UNKNOWNERROR(sender, *it, "Channel first char invalid. Use '&', '#', '+' or '!'");
-		for(size_t i = 1; i < it_size; i++)
-		{
-			if(it[i] == " " || it[i] == "," || it[i] == ":")
-				send_err_UNKNOWNERROR(sender, *it, "Invalid symbol used in the creation of the channel name");
-		}
+// 	if (argv.size() == 2 && argv[1] == "0")
+// 	{
+// 		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
+// 	}
+// 	stringVector = ft_parseStringToVector(argv[1], ",");
+// 	havePasswords = false;
+// 	if (argv.size() == 3)
+// 	{	
+// 		stringVector2 = ft_parseStringToVector(argv[2], ",");
+// 		havePasswords = true;
+// 	}
+// 	pos = 0;
+// 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+// 	{
+// 		std::string password = "";
+// 		it_size = it->size();
+// 		if (havePasswords && pos < stringVector2.size())
+// 			password = stringVector2[pos];
+// 		if (it_size > 50)
+// 			send_err_INPUTTOOLONG(sender, "Channel name to long");
+// 		else if (it_size <= 1)
+// 			send_err_NOSUCHCHANNEL(sender, *it, "Channel name to short");
+// 		else if (it[0] != "&" && it[0] != "#" && it[0] != "+" && it[0] != "!")
+// 			send_err_UNKNOWNERROR(sender, *it, "Channel first char invalid. Use '&', '#', '+' or '!'");
+// 		for(size_t i = 1; i < it_size; i++)
+// 		{
+// 			if(it[i] == " " || it[i] == "," || it[i] == ":")
+// 				send_err_UNKNOWNERROR(sender, *it, "Invalid symbol used in the creation of the channel name");
+// 		}
 
-		// Aqui necesitamos ya la lista de canales y un metodo que nos diga si existe el canal que buscamos. Tambien el metodo para crear un canal, tanto 
-		//	sin contraseña como con ella
+// 		// Aqui necesitamos ya la lista de canales y un metodo que nos diga si existe el canal que buscamos. Tambien el metodo para crear un canal, tanto 
+// 		//	sin contraseña como con ella
 
-		bool existChannel = this->findChannel(it);
-		if(!existChannel)
-		{
-			if (pos < stringVector2.size())
-				_createChannel(sender,it);
-			else
-				_createChannel(sender, it, password);
-			return ;
-		}
+// 		bool existChannel = this->findChannel(it);
+// 		if(!existChannel)
+// 		{
+// 			if (pos < stringVector2.size())
+// 				_createChannel(sender,it);
+// 			else
+// 				_createChannel(sender, it, password);
+// 			return ;
+// 		}
 			
-		// Aqui comprobamos si existe una contraseña a introducir. De ser así, intentamos logear. De no serlo, vamos
-		//	al else y intentamos entrar al canal sin contraseña
+// 		// Aqui comprobamos si existe una contraseña a introducir. De ser así, intentamos logear. De no serlo, vamos
+// 		//	al else y intentamos entrar al canal sin contraseña
 
-		if (pos < stringVector2.size())
-		{
-			// this->channelMap[it].addNewClient es como deberia implementarse, pero aún no esta creado
+// 		if (pos < stringVector2.size())
+// 		{
+// 			// this->channelMap[it].addNewClient es como deberia implementarse, pero aún no esta creado
 			
-			int addClientReturn = sender.channelMap[it].addNewClient(sender, password);
+// 			int addClientReturn = sender.channelMap[it].addNewClient(sender, password);
 
-			if (addClientReturn == INVALID_PASSWORD_RETURN)
-				send_err_PASSWDMISMATCH(sender, "Incorrect password");
-			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-				send_err_UNKNOWNERROR(sender, *it, "User already exist in this channel");
-		}
-		else
-		{
-			// Aqui nececito un map con todas las clases creadas para saber si ya existe
-			int addClientReturn = sender.channelMap[it].addNewClient(sender);
+// 			if (addClientReturn == INVALID_PASSWORD_RETURN)
+// 				send_err_PASSWDMISMATCH(sender, "Incorrect password");
+// 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+// 				send_err_UNKNOWNERROR(sender, *it, "User already exist in this channel");
+// 		}
+// 		else
+// 		{
+// 			// Aqui nececito un map con todas las clases creadas para saber si ya existe
+// 			int addClientReturn = sender.channelMap[it].addNewClient(sender);
 
-			if (addClientReturn == INVALID_PASSWORD_RETURN)
-				send_err_PASSWDMISMATCH(sender, "This channel need a password");
-			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-				send_err_UNKNOWNERROR(sender, *it, "User already exist in this channel");
-		}
-		pos++;
-	}
-}
+// 			if (addClientReturn == INVALID_PASSWORD_RETURN)
+// 				send_err_PASSWDMISMATCH(sender, "This channel need a password");
+// 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+// 				send_err_UNKNOWNERROR(sender, *it, "User already exist in this channel");
+// 		}
+// 		pos++;
+// 	}
+// }
 
 void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv)
 {
@@ -373,7 +373,8 @@ void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const &
 	else if (argv.size() > 3)
 		send_err_UNKNOWNERROR(sender, argv[0]	, "To many parameters");
 	else
-		exec_join(sender, argv);
+		//exec_join(sender, argv);
+		std::cerr << "fiesta" << std::endl; //debug
 }
 
 
