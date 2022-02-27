@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 21:28:31 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/27 11:59:40 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,3 +147,22 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 	//debug
 }
 //debug  //finish these
+
+// Join: replies to command
+
+
+void		IRC_Server::send_rpl_topic(Client const & recipient, std::string const & channelName, std::string const & channelTopic )
+{
+	std::string msg = numeric_reply_start(recipient, RPL_TOPIC);
+	std::string	welcome_msg;
+
+	welcome_msg += recipient.get_username();
+	welcome_msg += " ";
+	welcome_msg += channelName;
+	welcome_msg += " : ";
+	welcome_msg += channelTopic;
+	numeric_reply_end(msg, welcome_msg);
+	recipient.send_msg(msg);
+
+}
+

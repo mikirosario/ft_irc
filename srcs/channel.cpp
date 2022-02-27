@@ -4,20 +4,17 @@ IRC_Server::Channel::Channel(void)
 :
 		channelName(),
 		allClients(),
-		OwnerUser()
+		OwnerUser(),
+        topic(),
+        channelPassword()
 {}
-
-char asciitolower(char in) 
-{
-    if (in <= 'Z' && in >= 'A')
-        return in - ('Z' - 'z');
-    return in;
-}
 
 IRC_Server::Channel::Channel(std::string chName) //sacar comprobaciones a llamador
 :
 		allClients(),
 		OwnerUser()
+        topic(),
+        channelPassword()
 {
 	//size_t chName_len = chName.size();
 
@@ -43,6 +40,8 @@ IRC_Server::Channel::Channel(Channel &other)
     	channelName(other.channelName),
 		allClients(other.allClients),
 		OwnerUser(other.OwnerUser)
+        topic(other.topic),
+        channelPassword(other.channelPassword)
 {}
 
 bool IRC_Server::Channel::findClient(Client const & client)
@@ -62,6 +61,16 @@ std::string IRC_Server::Channel::getChannelName() const
     return (this->channelName);
 }
 
+std::string IRC_Server::Channel::getTopic() const
+{
+    return (this->topic);
+}
+
+void IRC_Server::Channel::serTopic(std::string Topic)
+{
+    this->topic = Topic;
+}
+
 void IRC_Server::Channel::setOwner(Client OwnerUser2)
 {
     this->OwnerUser  = OwnerUser2.get_nick();
@@ -72,14 +81,28 @@ std::string IRC_Server::Channel::getOwner() const
     return(this->OwnerUser);
 };
 
-bool IRC_Server::Channel::addNewClient(Client client)
+int IRC_Server::Channel::addNewClient(Client client)
 {
+    if (this->channelPassword != "")
+        return(INVALID_PASSWORD_RETURN);
     if (!this->findClient(client))
     {
         allClients.insert(std::make_pair(client.get_nick(), CLIENT_USER));
-        return(true);
+        return(1);
     }
-    return (false);
+    return (CLIENT_ALREADY_EXIST_RETURN);
+}
+
+int IRC_Server::Channel::addNewClient(Client client, std::string password)
+{
+    if (this->channelPassword != password)
+        return(INVALID_PASSWORD_RETURN);
+    if (!this->findClient(client))
+    {
+            allClients.insert(std::make_pair(client.get_nick(), CLIENT_USER));
+            return(1);
+    }
+    return (CLIENT_ALREADY_EXIST_RETURN);
 }
 
 bool IRC_Server::Channel::removeClient(Client client) 
