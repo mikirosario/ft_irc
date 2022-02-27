@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 18:30:03 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/27 22:03:18 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ void		send_err_NICKNAMEINUSE(Client const & recipient, std::string const & nick,
 void		send_err_ERRONEOUSNICKNAME(Client const & recipient, std::string const & nick, std::string const & description) const;
 void		send_err_PASSWDMISMATCH(Client const & recipient, std::string const & description) const;
 void		send_err_INPUTTOOLONG(Client const & recipient, std::string const & description) const;
+void		send_err_NOTREGISTERED(Client const & recipient, std::string const & description) const;
 
 
 

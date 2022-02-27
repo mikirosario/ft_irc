@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 19:52:35 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/27 22:22:22 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,7 +311,7 @@ std::vector<std::string> ft_parseStringToVector(std::string const &str, std::str
 // 		it_size = it->size();
 // 		if (havePasswords && pos < stringVector2.size())
 // 			password = stringVector2[pos];
-// 		if (it_size > 50)
+// 		if (it_size > MAX_CHANNELNAME_SIZE)
 // 			send_err_INPUTTOOLONG(sender, "Channel name to long");
 // 		else if (it_size <= 1)
 // 			send_err_NOSUCHCHANNEL(sender, *it, "Channel name to short");
@@ -366,12 +366,8 @@ std::vector<std::string> ft_parseStringToVector(std::string const &str, std::str
 
 void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv)
 {
-	if (sender.is_registered() == true)
-		send_err_UNKNOWNERROR(sender, argv[0], "You may register to the server first");
-	else if (argv.size() < 2)
+	if (argv.size() < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (argv.size() > 3)
-		send_err_UNKNOWNERROR(sender, argv[0]	, "To many parameters");
 	else
 		//exec_join(sender, argv);
 		std::cerr << "fiesta" << std::endl; //debug
@@ -471,6 +467,7 @@ void	IRC_Server::interpret_msg(Client & client)
 {
 	std::vector<std::string>	argv = client.get_message();
 	
+
 	//this might work best as a cmd-method map, just need to standardize all the functions...
 	if (argv.size() < 1) //if somehow the client buffer contained no command, we do nothing with the message
 		return ;
@@ -483,20 +480,25 @@ void	IRC_Server::interpret_msg(Client & client)
 		exec_cmd_NICK(client, argv);
 	else if (cmd == "USER")
 		exec_cmd_USER(client, argv);
-	else if (cmd == "JOIN")
-		exec_cmd_JOIN(client, argv);
-	else if (cmd == "PART")
-		exec_cmd_PART(client, argv);
-	else if (cmd == "TOPIC")
-		exec_cmd_TOPIC(client, argv);
-	else if (cmd == "NAMES")
-		exec_cmd_NAMES(client, argv);
-	else if (cmd == "LIST")
-		exec_cmd_LIST(client, argv);
-	else if (cmd == "INVITE")
-		exec_cmd_LIST(client, argv);
-	else if (cmd == "KICK")
-		exec_cmd_LIST(client, argv);
+	else if (client.is_registered() == false)
+		send_err_NOTREGISTERED(client, "You must register with the server first");
 	else
-		send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
+	{
+		if (cmd == "JOIN")
+			exec_cmd_JOIN(client, argv);
+		else if (cmd == "PART")
+			exec_cmd_PART(client, argv);
+		else if (cmd == "TOPIC")
+			exec_cmd_TOPIC(client, argv);
+		else if (cmd == "NAMES")
+			exec_cmd_NAMES(client, argv);
+		else if (cmd == "LIST")
+			exec_cmd_LIST(client, argv);
+		else if (cmd == "INVITE")
+			exec_cmd_LIST(client, argv);
+		else if (cmd == "KICK")
+			exec_cmd_LIST(client, argv);
+		else
+			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
+	}
 }

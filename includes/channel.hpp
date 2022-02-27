@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 20:07:43 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/27 21:26:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,8 @@ class Channel
 		int addNewClient(Client client);
 		int addNewClient(Client client, std::string password);
 		bool removeClient(Client client);
-		std::string getChannelName() const;
-		std::string getTopic() const;
+		std::string const & getChannelName() const;
+		std::string const & getTopic() const;
 
 		void setOwner(Client OwnerUser2);
 		void serTopic(std::string Topic);

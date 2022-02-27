@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 19:48:25 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/27 22:09:29 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,6 +152,14 @@ void	IRC_Server::send_err_PASSWDMISMATCH(Client const & recipient, std::string c
 void	IRC_Server::send_err_INPUTTOOLONG(Client const & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_INPUTTOOLONG);
+
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NOTREGISTERED(Client const & recipient, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_NOTREGISTERED);
 
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);

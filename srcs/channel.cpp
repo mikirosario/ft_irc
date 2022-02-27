@@ -28,12 +28,12 @@ bool IRC_Server::Channel::findClient(Client const & client)
     return(1);
 }
 
-std::string IRC_Server::Channel::getChannelName() const
+std::string const & IRC_Server::Channel::getChannelName() const
 {
     return (this->channelName);
 }
 
-std::string IRC_Server::Channel::getTopic() const
+std::string const & IRC_Server::Channel::getTopic() const
 {
     return (this->topic);
 }
