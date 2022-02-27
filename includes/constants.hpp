@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 14:19:06 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/26 23:27:43 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #define CLIENT_USER 0
 #define ADMIN_USER 1
 #define CREATOR_USER 2
+#define MAX_CHANNELNAME_SIZE 50
 
 #define CLIENT_ALREADY_EXIST_RETURN	0
 #define INVALID_PASSWORD_RETURN	-1

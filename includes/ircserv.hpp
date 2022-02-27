@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 14:34:45 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/26 23:11:05 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,8 @@ class IRC_Server
 		Client							_clients[MAX_CONNECTIONS];
 		std::bitset<MAX_CONNECTIONS>	_remove_list;
 		int								_connections;
+
+		std::map<std::string, Channel>	_channels;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
 						IRC_Server(void);						//Default constructor

@@ -24,6 +24,7 @@ bool	username_is_valid(std::string const & username) const;
 void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
+
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
@@ -32,6 +33,9 @@ void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
 
+
+
+void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
 
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
