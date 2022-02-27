@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 11:59:40 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/27 18:30:10 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,7 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 // Join: replies to command
 
 
-void		IRC_Server::send_rpl_topic(Client const & recipient, std::string const & channelName, std::string const & channelTopic )
+void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic )
 {
 	std::string msg = numeric_reply_start(recipient, RPL_TOPIC);
 	std::string	welcome_msg;

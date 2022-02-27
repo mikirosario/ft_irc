@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 15:12:31 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/27 18:30:41 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,22 +264,32 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 			JOIN COMMAND
 *****************************************/
 
+std::vector<std::string> ft_parseStringToVector(std::string const &str, std::string const &delimiter)
+{
+	std::vector<std::string> stringVector;
+	size_t	pos;
+	std::string token;
+
+	std::string str_copy = str;
+	pos = 0;
+	while ((pos = str_copy.find(delimiter)) != std::string::npos) 
+	{
+		token = str_copy.substr(0, pos);
+		stringVector.push_back(token);
+		str_copy.erase(0, pos + delimiter.length());
+	}
+	return(stringVector);
+}
 
 // TODO: Reduce the size of this function
 
-char asciitolower(char in) 
-{
-    if (in <= 'Z' && in >= 'A')
-        return in - ('Z' - 'z');
-    return in;
-}
-
 void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
 {
+	std::vector<std::string> stringVector;
+	std::vector<std::string> stringVector2;
 	size_t	pos;
 	bool	havePasswords;
 	size_t it_size;
-	std::string token;
 
 	//   JOIN 0    	; Leave all currently joined channels.
 
@@ -287,38 +297,18 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 	{
 		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
 	}
-	std::string delimiter = ",";
-	std::string argv1_copy = argv[1];		
-	std::vector<std::string> stringVector;
-	std::vector<std::string> stringVector2;
-	
-	pos = 0;
-	while ((pos = argv1_copy.find(delimiter)) != std::string::npos) 
-	{
-		token = argv1_copy.substr(0, pos);
-		stringVector.push_back(token);
-		argv1_copy.erase(0, pos + delimiter.length());
-	}
+	stringVector = ft_parseStringToVector(argv[1], ",");
 	havePasswords = false;
 	if (argv.size() == 3)
 	{	
-		pos = 0;
-		std::string argv2_copy = argv[2];
-		while ((pos = argv2_copy.find(delimiter)) != std::string::npos) 
-		{
-			token = argv2_copy.substr(0, pos);
-			stringVector2.push_back(token);
-			argv2_copy.erase(0, pos + delimiter.length());
-		}
+		stringVector2 = ft_parseStringToVector(argv[2], ",");
 		havePasswords = true;
 	}
-
 	pos = 0;
 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
 	{
 		std::string password = "";
 		it_size = it->size();
-
 		if (havePasswords && pos < stringVector2.size())
 			password = stringVector2[pos];
 		if (it_size > 50)
@@ -327,8 +317,6 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 			send_err_NOSUCHCHANNEL(sender, *it, "Channel name to short");
 		else if (it[0] != "&" && it[0] != "#" && it[0] != "+" && it[0] != "!")
 			send_err_UNKNOWNERROR(sender, *it, "Channel first char invalid. Use '&', '#', '+' or '!'");
-		else
-			std::transform(it->begin(), it->end(), it->begin(), asciitolower);
 		for(size_t i = 1; i < it_size; i++)
 		{
 			if(it[i] == " " || it[i] == "," || it[i] == ":")
@@ -342,13 +330,12 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 		if(!existChannel)
 		{
 			if (pos < stringVector2.size())
-				sender.creteChannel(it);
+				_createChannel(sender,it);
 			else
-				sender.creteChannel(it, password);
+				_createChannel(sender, it, password);
 			return ;
 		}
 			
-
 		// Aqui comprobamos si existe una contraseña a introducir. De ser así, intentamos logear. De no serlo, vamos
 		//	al else y intentamos entrar al canal sin contraseña
 
@@ -391,8 +378,82 @@ void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const &
 
 
 /****************************************
-			JOIN COMMAND
+			PART COMMAND
 *****************************************/
+
+void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const & argv)
+{
+	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
+
+	(void) sender;
+	(void) argv;
+}
+
+/****************************************
+			TOPIC COMMAND
+*****************************************/
+
+void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv)
+{
+	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
+
+	if (argv.size() < 2)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	/*if (argv.size() == 2)
+		send_rpl_TOPIC(sender, argv);*/
+
+}
+
+/****************************************
+			NAMES COMMAND
+*****************************************/
+
+void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv)
+{
+	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
+	(void) sender;
+	(void) argv;
+}
+
+/****************************************
+			LIST COMMAND
+*****************************************/
+
+void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv)
+{
+	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
+	(void) sender;
+	(void) argv;
+}
+
+/****************************************
+			INVITE COMMAND
+*****************************************/
+
+void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv)
+{
+	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
+	(void) sender;
+	(void) argv;
+}
+
+/****************************************
+			KICK COMMAND
+*****************************************/
+
+void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv)
+{
+	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
+	(void) sender;
+	(void) argv;
+}
+
+/********************************************************************************
+
+		TODO - Existe el commando MODE...pero me niego a hacerlo
+		
+*********************************************************************************/
+
 
 
 /*!
@@ -423,6 +484,18 @@ void	IRC_Server::interpret_msg(Client & client)
 		exec_cmd_USER(client, argv);
 	else if (cmd == "JOIN")
 		exec_cmd_JOIN(client, argv);
+	else if (cmd == "PART")
+		exec_cmd_PART(client, argv);
+	else if (cmd == "TOPIC")
+		exec_cmd_TOPIC(client, argv);
+	else if (cmd == "NAMES")
+		exec_cmd_NAMES(client, argv);
+	else if (cmd == "LIST")
+		exec_cmd_LIST(client, argv);
+	else if (cmd == "INVITE")
+		exec_cmd_LIST(client, argv);
+	else if (cmd == "KICK")
+		exec_cmd_LIST(client, argv);
 	else
 		send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 }

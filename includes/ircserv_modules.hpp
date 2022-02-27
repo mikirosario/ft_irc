@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 14:48:10 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/27 18:30:03 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,14 @@ void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
+
+
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 
@@ -41,9 +49,7 @@ void		send_rpl_ISUPPORT(Client const & recipient);
 
 //replies to command
 
-// Join
-
-void		send_rpl_topic(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
+void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
 
 // Esto no lo considero neceserio
 
