@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 21:54:42 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/27 18:27:43 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,14 @@ class Channel
 			return(*this);
 		};
 
-		bool addNewClient(Client client);
+		int addNewClient(Client client);
+		int addNewClient(Client client, std::string password);
 		bool removeClient(Client client);
 		std::string getChannelName() const;
+		std::string getTopic() const;
 
 		void setOwner(Client OwnerUser2);
+		void serTopic(std::string Topic);
 		std::string getOwner() const;
 		void sendMessageToAllClients(Client const & client, std::string message);
 		bool findClient(Client const & client);
@@ -55,8 +58,10 @@ class Channel
 
 	private:
 		std::string channelName;
+		std::string	channelPassword;
 		std::map<std::string, int> allClients;
 		std::string OwnerUser;
+		std::string topic;
 };
 
 #endif
