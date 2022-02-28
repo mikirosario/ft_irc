@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   constants.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 23:27:43 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 15:26:25 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 #define ADMIN_USER 1
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
+#define UNSUPPORTED_NAME_PREFIXES "+~&@%*"
 
 #define CLIENT_ALREADY_EXIST_RETURN	0
 #define INVALID_PASSWORD_RETURN	-1

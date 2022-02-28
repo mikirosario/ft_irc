@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 13:08:55 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 16:57:57 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,6 +257,53 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 		if (sender.get_nick().empty() == false) //The client already sent a nick, so we can FINALLY try to register
 			register_client(sender);
 	}
+}
+
+//debug; ban channel names with channel prefixes CHANNEL_PREFIXES (see constants.hpp)
+//debug; TON of unresolved questions:
+	//sender == recipient is allowed?
+	//user_nick == channel_nick allowed?
+	//what if getline fails, UNKNOWN error?
+	//treat user_nick same as channel_nick?
+	//what the hell to do with all the prefixes and suffixes???
+	//very basic still xD!!!!
+void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv)
+{
+
+	if (argv.size() < 3) //we need cmd target{,target} :message
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (argv[1].empty() == true)
+	{
+		std::ostringstream ss;
+		ss << "No recipient given (" << argv[0] << ")";
+		send_err_NORECIPIENT(sender, ss.str()); //debug //there HAS to be a way to one-line this xD
+	}
+	else if (argv[2].empty() == true)
+		send_err_NOTEXTTOSEND(sender, "No text to send");
+	else
+	{
+		std::string			msg_source = sender.get_source() + " ";
+		std::string			target;
+		Client * 			recipient;
+		std::stringstream	raw_target_list(argv[1]);
+
+		do
+		{
+			std::getline(raw_target_list, target, ',');
+			
+			if (raw_target_list.fail() == true) //debug //what to do with fail??
+			{
+				std::cerr << "qué hago? xD" << std::endl; //debug
+			}
+			else if ((recipient = find_client_by_nick(target)) == NULL) //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
+				send_err_NOSUCHNICK(sender, target, "No such nick");
+			else
+				send_rpl_PRIVMSG(*recipient, sender, argv[2]);				
+		}
+		while (raw_target_list.eof() == false);
+	}
+
+	//
 }
 
 
@@ -537,6 +584,8 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_LIST(client, argv);
 		else if (cmd == "KICK")
 			exec_cmd_LIST(client, argv);
+		else if (cmd == "PRIVMSG")
+			exec_cmd_PRIVMSG(client, argv);
 		else
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 	}

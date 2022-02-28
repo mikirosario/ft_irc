@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 22:03:18 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 16:39:22 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ bool	username_is_valid(std::string const & username) const;
 void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv);
 
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
@@ -45,13 +46,12 @@ std::string	numeric_reply_start(Client const & client, char const * numeric) con
 void		numeric_reply_end(std::string & reply, std::string const & description) const;
 	//standard numeric replies
 
+//replies to command
 void		send_rpl_WELCOME(Client const & recipient);
 void		send_rpl_YOURHOST(Client const & recipient);
 void		send_rpl_CREATED(Client const & recipient);
 void		send_rpl_MYINFO(Client const & recipient);
 void		send_rpl_ISUPPORT(Client const & recipient);
-
-//replies to command
 
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
 
@@ -75,6 +75,9 @@ void		send_err_ERRONEOUSNICKNAME(Client const & recipient, std::string const & n
 void		send_err_PASSWDMISMATCH(Client const & recipient, std::string const & description) const;
 void		send_err_INPUTTOOLONG(Client const & recipient, std::string const & description) const;
 void		send_err_NOTREGISTERED(Client const & recipient, std::string const & description) const;
+void		send_err_NOTEXTTOSEND(Client const & recipient, std::string const & description) const;
+void		send_err_NORECIPIENT(Client const & recipient, std::string const & description) const;
+void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const;
 
 
 
@@ -93,7 +96,8 @@ void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & comm
 
 //non-numeric replies
 void		non_numeric_reply_end(std::string & reply, std::string const & last_param) const;
-void		send_rpl_NICK(Client const & recipient, std::string const & old_source);
+void		send_rpl_NICK(Client const & recipient, std::string const & old_source) const;
+void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
 
 // Auxiliar methods
 
