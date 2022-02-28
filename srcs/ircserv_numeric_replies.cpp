@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
 /*   Updated: 2022/02/28 15:34:07 by acortes-         ###   ########.fr       */
@@ -178,7 +178,3 @@ void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string cons
 	numeric_reply_end(msg, end_msg);
 	recipient.send_msg(msg);
 }
-
-
-
-

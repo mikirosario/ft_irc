@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 13:13:39 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 16:24:26 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,6 +161,31 @@ void	IRC_Server::send_err_NOTREGISTERED(Client const & recipient, std::string co
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOTREGISTERED);
 
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NOTEXTTOSEND(Client const & recipient, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_NOTEXTTOSEND);
+
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NORECIPIENT(Client const & recipient, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_NORECIPIENT);
+
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_NOSUCHNICK);
+
+	msg += nick;
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }

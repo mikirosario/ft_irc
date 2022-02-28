@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 21:29:57 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 16:46:20 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,14 +59,36 @@ void		IRC_Server::non_numeric_reply_end(std::string & reply, std::string const &
 **			before the nickname change, so the caller is expected to make a copy
 **			and pass it to this reply function.
 **
-**			Since the source of this message
+**			The source of this message is also the recipient.
 ** @param	recipient	The reply recipient.
+** @param	old_source	The recipient's old source, before the nick change
+**						(call get_source() on sender before implementing nick
+**						change to get this).
 */
-void	IRC_Server::send_rpl_NICK(Client const & recipient, std::string const & old_source)
+void	IRC_Server::send_rpl_NICK(Client const & recipient, std::string const & old_source) const
 {
 	std::string msg = old_source;	//:old_nickname!username@hostname
+
 	msg += " NICK ";
 	msg += recipient.get_nick();	//new nick
 	non_numeric_reply_end(msg, std::string());
+	recipient.send_msg(msg);
+}
+
+/*!
+** @brief	Builds and sends @a message from @a source to @a recipient following
+**			successful PRIVMSG command when @a recipient is a Client.
+**
+** @param	recipient	The message recipient.
+** @param	source		The message sender.
+** @param	message		The text message being sent.
+*/
+void		IRC_Server::send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const
+{
+	std::string msg = source.get_source() + " ";
+
+	msg += "PRIVMSG ";
+	msg += recipient.get_nick();
+	non_numeric_reply_end(msg, message);
 	recipient.send_msg(msg);
 }
