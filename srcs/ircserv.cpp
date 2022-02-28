@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 13:08:15 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 14:49:22 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -692,6 +692,17 @@ bool	IRC_Server::find_channel(std::string const & channel_name)
 		return(0);
 	return(1);
 }
+
+void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name)
+{
+	_channels[channel_name].removeClient(client);
+}
+
+void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg)
+{
+	_channels[channel_name].removeClient(client, msg);
+}
+
 
 /*!
 ** @brief	Compares @a client_pass to the server's password.

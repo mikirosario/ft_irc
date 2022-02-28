@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 14:09:12 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/28 14:58:58 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ class Channel
 	public:
 
 		Channel(void);
-		Channel(std::string chName);
-		Channel(std::string chName,std::string password);
+		Channel(std::string const &chName);
+		Channel(std::string const &chName,std::string const &password);
 		Channel(Channel const &other);
 
 		Channel &operator=(Channel const &other)
@@ -35,17 +35,18 @@ class Channel
 			return(*this);
 		};
 
-		int addNewClient(Client client);
-		int addNewClient(Client client, std::string password);
-		bool removeClient(Client client);
+		int addNewClient(Client const &client);
+		int addNewClient(Client const &client, std::string const &password);
+		bool removeClient(Client const &client);
+		bool removeClient(Client const &client, std::string const &msg);
 		std::string const & getChannelName() const;
 		std::string const & getTopic() const;
 
-		void setOwner(Client OwnerUser2);
-		void serTopic(std::string Topic);
+		void setOwner(Client const &OwnerUser2);
+		void serTopic(std::string const &Topic);
 		std::string getOwner() const;
-		void sendMessageToAllClients(Client const & client, std::string message);
-		bool findClient(Client const & client);
+		void sendMessageToAllClients(Client const &client, std::string message);
+		bool findClient(Client const &client);
 
 		bool operator==(const Channel &other) const 
 		{						

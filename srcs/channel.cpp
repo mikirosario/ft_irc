@@ -3,10 +3,10 @@
 IRC_Server::Channel::Channel(void)
 {}
 
-IRC_Server::Channel::Channel(std::string chName) : channelName(chName)
+IRC_Server::Channel::Channel(std::string const &chName) : channelName(chName)
 {}
 
-IRC_Server::Channel::Channel(std::string chName,std::string password) : channelName(chName), channelPassword(password)
+IRC_Server::Channel::Channel(std::string const &chName,std::string const &password) : channelName(chName), channelPassword(password)
 {}
 
 IRC_Server::Channel::Channel(Channel const &other)
@@ -43,12 +43,12 @@ std::string const & IRC_Server::Channel::getTopic() const
     return (this->topic);
 }
 
-void IRC_Server::Channel::serTopic(std::string Topic)
+void IRC_Server::Channel::serTopic(std::string const &Topic)
 {
     this->topic = Topic;
 }
 
-void IRC_Server::Channel::setOwner(Client OwnerUser2)
+void IRC_Server::Channel::setOwner(Client const &OwnerUser2)
 {
     this->OwnerUser  = OwnerUser2.get_nick();
 }
@@ -68,7 +68,7 @@ std::string IRC_Server::Channel::getOwner() const
 	// al castear un bool a int true == 1 y false == 0.
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-int IRC_Server::Channel::addNewClient(Client client)
+int IRC_Server::Channel::addNewClient(Client const &client)
 {
 	if (this->channelPassword != "")
 		return(INVALID_PASSWORD_RETURN);															//-miki vvvv--esto debería pasarlo la llamadora, no?
@@ -78,7 +78,7 @@ int IRC_Server::Channel::addNewClient(Client client)
 
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-int IRC_Server::Channel::addNewClient(Client client, std::string password)
+int IRC_Server::Channel::addNewClient(Client const &client, std::string const &password)
 {
     if (this->channelPassword != password)
 		return(INVALID_PASSWORD_RETURN);
@@ -98,12 +98,19 @@ int IRC_Server::Channel::addNewClient(Client client, std::string password)
 	// return (static_cast<bool>(todalapesca)).
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-bool IRC_Server::Channel::removeClient(Client client) 
+bool IRC_Server::Channel::removeClient(Client const &client) 
 {
 	return (allClients.erase(client.get_nick()));
 }
 
-void IRC_Server::Channel::sendMessageToAllClients(Client const & client, std::string message) 
+bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)
+{
+	sendMessageToAllClients(client, msg);
+	return (allClients.erase(client.get_nick()));
+}
+
+
+void IRC_Server::Channel::sendMessageToAllClients(Client const &client, std::string message) 
 {
     message = channelName + ":"+ client.get_nick() + ":"+message;
     char buffer[255];

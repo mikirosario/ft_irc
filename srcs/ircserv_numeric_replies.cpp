@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 15:51:19 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/28 15:34:07 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,4 +164,17 @@ void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & c
 	numeric_reply_end(msg, welcome_msg);
 	recipient.send_msg(msg);
 
+}
+
+void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channelName)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_TOPIC);
+	std::string	end_msg;
+
+	end_msg += recipient.get_username();
+	end_msg += " ";
+	end_msg += channelName;
+	end_msg += ":End of /NAMES list";
+	numeric_reply_end(msg, end_msg);
+	recipient.send_msg(msg);
 }
