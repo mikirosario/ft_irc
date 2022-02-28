@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 14:56:39 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 15:26:08 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -435,35 +435,35 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv)
 {
 	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
-	(void) sender;
-	(void) argv;
 
-	// size_t argv_size = argv.size();
-	// std::string msg;
+	size_t argv_size = argv.size();
+	std::string msg;
+	std::vector<std::string> stringVector;
+
 	
-	// if (argv_size < 2)
-	// 	send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	// else if (argv[1].size() <= 1)
-	// 	send_err_NOSUCHCHANNEL(sender, argv[1], "Channel name to short");
+	if (argv_size < 1)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	if (argv_size == 1)
+	{
+		//funcion para recibir todos los canales y usuarios del servidor
+		return ;
+	}
 
-	// bool existChannel = this->findChannel(argv[1]);
+	stringVector = ft_parseStringToVector(argv[1], ",");
+	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+	{
+		std::string expectsString(*it);
 
-	// if (!existChannel)
-	// 	send_err_NOSUCHCHANNEL(sender, argv[1], "Channel not found");
-	// else
-	// {
-	// 	if (argv_size == 2)
-	// 		_channels[argv[1]].removeClient(sender);
-	// 	else
-	// 	{
-	// 		for(size_t i = 2; i < argv_size; i++)
-	// 		{
-	// 			msg += argv[i];
-	// 			msg += " ";
-	// 		}
-	// 		_channels[argv[1]].removeClientWithMessage(sender, msg);
-	// 	}
-	// }
+		bool existChannel = find_channel(expectsString);
+		if (!existChannel)
+			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel not found");
+		else
+		{
+			// Aqui recibimos todos los miembros pertenecientes al canal siempre que esten publicos
+			continue;
+		}
+		
+	}
 }
 
 /****************************************
