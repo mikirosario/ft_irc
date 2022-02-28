@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 13:09:07 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 13:34:42 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,12 @@ enum Args
 	NETINFO
 };
 
+/* CASE-INSENSITIVE STRING COMPARE OBJECT */
+struct case_insensitive_less : std::binary_function<std::string, std::string, bool>
+{
+	bool	operator() (std::string const & str1, std::string const & str2) const;
+};
+
 class IRC_Server
 {
 	private:
@@ -74,11 +80,6 @@ class IRC_Server
 		std::bitset<MAX_CONNECTIONS>	_remove_list;
 		int								_connections;
 
-		/* CASE-INSENSITIVE STRING COMPARE OBJECT */
-		struct case_insensitive_less : std::binary_function<std::string, std::string, bool>
-		{
-			bool	operator() (std::string const & str1, std::string const & str2) const;
-		};
 		std::map<std::string, Channel, case_insensitive_less>	_channels;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */

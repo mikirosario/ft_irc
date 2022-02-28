@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   case_insensitive_lexicographical_compare.cp        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/27 19:19:59 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 20:14:40 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 13:57:28 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 ** @param	str2	Second string to compare.
 ** @return			true if str1 is less than str2, otherwise false
 */
-bool	IRC_Server::case_insensitive_less::operator() (std::string const & str1, std::string const & str2) const
+bool	case_insensitive_less::operator() (std::string const & str1, std::string const & str2) const
 {
 	typedef std::string::const_iterator	str_it;
 	str_it	index_str1 = str1.begin(), last_str1 = str1.end(),

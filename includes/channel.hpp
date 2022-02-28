@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 13:02:30 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 14:09:12 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,10 +57,11 @@ class Channel
 			return (this->channelName != other.channelName);
 		}
 
+		typedef std::map<std::string, int, case_insensitive_less> t_ChannelMemberMap;
 	private:
 		std::string channelName;
 		std::string	channelPassword;
-		std::map<std::string, int> allClients;
+		t_ChannelMemberMap allClients;
 		std::string OwnerUser;
 		std::string topic;
 };
