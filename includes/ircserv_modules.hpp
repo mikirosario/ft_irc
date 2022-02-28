@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 22:03:18 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 15:31:13 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,13 +54,13 @@ void		send_rpl_ISUPPORT(Client const & recipient);
 //replies to command
 
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
+void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & command);
 
 // Esto no lo considero neceserio
 
 /*
 void		send_rpl_topicWhoTime(Client const & recipient, std::string const & command, std::string const & description)
 void		send_rpl_namReply(Client const & recipient, std::string const & command, std::string const & description)
-void		send_rpl_endOfNames(Client const & recipient, std::string const & command, std::string const & description)
 */
 
 	//error numeric replies
