@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 14:58:58 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 21:18:24 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,9 @@ class Channel
 		void sendMessageToAllClients(Client const &client, std::string message);
 		bool findClient(Client const &client);
 
+		// - miki
+			//USA case_insensitive_ascii_compare()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		bool operator==(const Channel &other) const 
 		{						
 			return (this->channelName == other.channelName);

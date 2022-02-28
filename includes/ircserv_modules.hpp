@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 15:31:13 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 21:20:33 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,16 @@ bool	nick_is_valid(std::string const & str) const;
 bool	username_is_valid(std::string const & username) const;
 
 //interpreting
+	//-miki
 void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
+bool	register_client(Client & client);
+void	interpret_msg(Client & client);
 
+	//-adrian
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
@@ -36,10 +41,6 @@ void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
 
 
 
-void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
-
-bool	register_client(Client & client);
-void	interpret_msg(Client & client);
 
 //numeric replies
 std::string	numeric_reply_start(Client const & client, char const * numeric) const;
