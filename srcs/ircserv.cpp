@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 21:51:54 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 13:08:15 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -684,6 +684,13 @@ void	IRC_Server::add_channel(Channel const & new_channel)
 void	IRC_Server::remove_channel(std::string const & channel_name)
 {
 	_channels.erase(channel_name);
+}
+
+bool	IRC_Server::find_channel(std::string const & channel_name)
+{
+	if ( _channels.end() == _channels.find(channel_name))
+		return(0);
+	return(1);
 }
 
 /*!

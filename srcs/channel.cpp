@@ -6,6 +6,9 @@ IRC_Server::Channel::Channel(void)
 IRC_Server::Channel::Channel(std::string chName) : channelName(chName)
 {}
 
+IRC_Server::Channel::Channel(std::string chName,std::string password) : channelName(chName), channelPassword(password)
+{}
+
 IRC_Server::Channel::Channel(Channel const &other)
 :
     	channelName(other.channelName),
