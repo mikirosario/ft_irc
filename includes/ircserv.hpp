@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 13:34:42 by miki             ###   ########.fr       */
+/*   Updated: 2022/02/28 14:49:13 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,8 @@ class IRC_Server
 		void	add_channel(Channel const & new_channel);
 		void	remove_channel(std::string const & channel_name);
 		bool	find_channel(std::string const & channel_name);
-
+		void	remove_user_from_channel(Client const &client, std::string const & channel_name);
+		void	remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg);
 		//Utils
 		bool				is_endline(char const c);
 		bool				confirm_pass(std::string const & client_pass) const;
