@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 15:39:03 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/02/28 19:46:44 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,13 +259,16 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 	}
 }
 
+
+		//(std::string() += "blah").size(); //debug //normal
+		//(std::ostringstream() << "No recipient given (" << argv[0] << ")").str(); //debug //why not compiler????
 //debug; ban channel names with channel prefixes CHANNEL_PREFIXES (see constants.hpp)
 //debug; TON of unresolved questions:
-	//sender == recipient is allowed?
-	//user_nick == channel_nick allowed?
-	//what if getline fails, UNKNOWN error?
-	//treat user_nick same as channel_nick?
-	//what the hell to do with all the prefixes and suffixes???
+	//sender == recipient is allowed?								sí
+	//user_nick == channel_nick allowed?							#channel always
+	//what if getline fails, UNKNOWN error?							sí
+	//treat user_nick same as channel_nick?							no
+	//what the hell to do with all the prefixes and suffixes???		parse
 	//very basic still xD!!!!
 void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv)
 {
