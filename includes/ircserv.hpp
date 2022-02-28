@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 21:47:08 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 13:09:07 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,7 @@ class IRC_Server
 		//Channel controls
 		void	add_channel(Channel const & new_channel);
 		void	remove_channel(std::string const & channel_name);
+		bool	find_channel(std::string const & channel_name);
 
 		//Utils
 		bool				is_endline(char const c);

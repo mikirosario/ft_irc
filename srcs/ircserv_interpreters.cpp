@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 22:22:22 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 13:08:55 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,86 +283,92 @@ std::vector<std::string> ft_parseStringToVector(std::string const &str, std::str
 
 // TODO: Reduce the size of this function
 
-// void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
-// {
-// 	std::vector<std::string> stringVector;
-// 	std::vector<std::string> stringVector2;
-// 	size_t	pos;
-// 	bool	havePasswords;
-// 	size_t it_size;
+void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
+{
+	std::vector<std::string> stringVector;
+	std::vector<std::string> stringVector2;
+	size_t	pos;
+	bool	havePasswords;
+	size_t it_size;
 
-// 	//   JOIN 0    	; Leave all currently joined channels.
+	//   JOIN 0    	; Leave all currently joined channels.
 
-// 	if (argv.size() == 2 && argv[1] == "0")
-// 	{
-// 		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
-// 	}
-// 	stringVector = ft_parseStringToVector(argv[1], ",");
-// 	havePasswords = false;
-// 	if (argv.size() == 3)
-// 	{	
-// 		stringVector2 = ft_parseStringToVector(argv[2], ",");
-// 		havePasswords = true;
-// 	}
-// 	pos = 0;
-// 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
-// 	{
-// 		std::string password = "";
-// 		it_size = it->size();
-// 		if (havePasswords && pos < stringVector2.size())
-// 			password = stringVector2[pos];
-// 		if (it_size > MAX_CHANNELNAME_SIZE)
-// 			send_err_INPUTTOOLONG(sender, "Channel name to long");
-// 		else if (it_size <= 1)
-// 			send_err_NOSUCHCHANNEL(sender, *it, "Channel name to short");
-// 		else if (it[0] != "&" && it[0] != "#" && it[0] != "+" && it[0] != "!")
-// 			send_err_UNKNOWNERROR(sender, *it, "Channel first char invalid. Use '&', '#', '+' or '!'");
-// 		for(size_t i = 1; i < it_size; i++)
-// 		{
-// 			if(it[i] == " " || it[i] == "," || it[i] == ":")
-// 				send_err_UNKNOWNERROR(sender, *it, "Invalid symbol used in the creation of the channel name");
-// 		}
+	if (argv.size() == 2 && argv[1] == "0")
+	{
+		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
+	}
+	stringVector = ft_parseStringToVector(argv[1], ",");
+	havePasswords = false;
+	if (argv.size() == 3)
+	{	
+		stringVector2 = ft_parseStringToVector(argv[2], ",");
+		havePasswords = true;
+	}
+	pos = 0;
+	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+	{
+		std::string password = "";
+		std::string expectsString(*it);
+		it_size = it->size();
+		if (havePasswords && pos < stringVector2.size())
+			password = stringVector2[pos];
+		if (it_size > 50)
+			send_err_INPUTTOOLONG(sender, "Channel name to long");
+		else if (it_size <= 1)
+			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel name to short");
+		else if (expectsString[0] != '&' && expectsString[0] != '#' && expectsString[0] != '+' && expectsString[0] != '!')
+			send_err_UNKNOWNERROR(sender, expectsString, "Channel first char invalid. Use '&', '#', '+' or '!'");
+		for(size_t i = 1; i < it_size; i++)
+		{
+			if(expectsString[i] == ' ' || expectsString[i] == ',' || expectsString[i] == ':')
+				send_err_UNKNOWNERROR(sender, expectsString, "Invalid symbol used in the creation of the channel name");
+		}
 
-// 		// Aqui necesitamos ya la lista de canales y un metodo que nos diga si existe el canal que buscamos. Tambien el metodo para crear un canal, tanto 
-// 		//	sin contraseña como con ella
+		// Aqui necesitamos ya la lista de canales y un metodo que nos diga si existe el canal que buscamos. Tambien el metodo para crear un canal, tanto 
+		//	sin contraseña como con ella
 
-// 		bool existChannel = this->findChannel(it);
-// 		if(!existChannel)
-// 		{
-// 			if (pos < stringVector2.size())
-// 				_createChannel(sender,it);
-// 			else
-// 				_createChannel(sender, it, password);
-// 			return ;
-// 		}
+		bool existChannel = find_channel(expectsString);
+		if(!existChannel)
+		{
+			if (pos < stringVector2.size())
+			{
+				Channel new_channel(expectsString);
+				add_channel(new_channel);
+			}
+			else
+			{
+				Channel new_channel(expectsString, password);
+				add_channel(new_channel);
+			}
+			return ;
+		}
 			
-// 		// Aqui comprobamos si existe una contraseña a introducir. De ser así, intentamos logear. De no serlo, vamos
-// 		//	al else y intentamos entrar al canal sin contraseña
+		// Aqui comprobamos si existe una contraseña a introducir. De ser así, intentamos logear. De no serlo, vamos
+		//	al else y intentamos entrar al canal sin contraseña
 
-// 		if (pos < stringVector2.size())
-// 		{
-// 			// this->channelMap[it].addNewClient es como deberia implementarse, pero aún no esta creado
+		if (pos < stringVector2.size())
+		{
+			// this->channelMap[it].addNewClient es como deberia implementarse, pero aún no esta creado
 			
-// 			int addClientReturn = sender.channelMap[it].addNewClient(sender, password);
+			int addClientReturn = _channels[expectsString].addNewClient(sender, password);
 
-// 			if (addClientReturn == INVALID_PASSWORD_RETURN)
-// 				send_err_PASSWDMISMATCH(sender, "Incorrect password");
-// 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-// 				send_err_UNKNOWNERROR(sender, *it, "User already exist in this channel");
-// 		}
-// 		else
-// 		{
-// 			// Aqui nececito un map con todas las clases creadas para saber si ya existe
-// 			int addClientReturn = sender.channelMap[it].addNewClient(sender);
-
-// 			if (addClientReturn == INVALID_PASSWORD_RETURN)
-// 				send_err_PASSWDMISMATCH(sender, "This channel need a password");
-// 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-// 				send_err_UNKNOWNERROR(sender, *it, "User already exist in this channel");
-// 		}
-// 		pos++;
-// 	}
-// }
+			if (addClientReturn == INVALID_PASSWORD_RETURN)
+				send_err_PASSWDMISMATCH(sender, "Incorrect password");
+			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
+		}
+		else
+		{
+			// Aqui nececito un map con todas las clases creadas para saber si ya existe
+			int addClientReturn = _channels[expectsString].addNewClient(sender);
+			if (addClientReturn == INVALID_PASSWORD_RETURN)
+				send_err_PASSWDMISMATCH(sender, "This channel need a password");
+			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
+		}
+		pos++;
+	}
+}
 
 void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv)
 {
@@ -394,10 +400,16 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 {
 	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
 
-	if (argv.size() < 2)
-		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	/*if (argv.size() == 2)
-		send_rpl_TOPIC(sender, argv);*/
+	(void) sender;
+	(void) argv;
+
+	// if (argv.size() == 2)
+	// {
+	// 	send_rpl_TOPIC(sender, _channels, _channels[argv[1]]);
+	// 	return;
+	// }
+		
+	// bool existChannel = this->findChannel(argv[1]);
 
 }
 
@@ -410,6 +422,33 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
 	(void) sender;
 	(void) argv;
+
+	// size_t argv_size = argv.size();
+	// std::string msg;
+	
+	// if (argv_size < 2)
+	// 	send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	// else if (argv[1].size() <= 1)
+	// 	send_err_NOSUCHCHANNEL(sender, argv[1], "Channel name to short");
+
+	// bool existChannel = this->findChannel(argv[1]);
+
+	// if (!existChannel)
+	// 	send_err_NOSUCHCHANNEL(sender, argv[1], "Channel not found");
+	// else
+	// {
+	// 	if (argv_size == 2)
+	// 		_channels[argv[1]].removeClient(sender);
+	// 	else
+	// 	{
+	// 		for(size_t i = 2; i < argv_size; i++)
+	// 		{
+	// 			msg += argv[i];
+	// 			msg += " ";
+	// 		}
+	// 		_channels[argv[1]].removeClientWithMessage(sender, msg);
+	// 	}
+	// }
 }
 
 /****************************************

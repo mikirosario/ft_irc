@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/27 22:09:29 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/02/28 13:13:39 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,56 +167,56 @@ void	IRC_Server::send_err_NOTREGISTERED(Client const & recipient, std::string co
 
 // Join errors
 
-// void	IRC_Server::send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & command, std::string const & description) const
-// {
-// 	std::string msg = numeric_reply_start(recipient, send_err_NOSUCHCHANNEL);
+void	IRC_Server::send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_NOSUCHCHANNEL);
 
-// 	msg += command;
-// 	numeric_reply_end(msg, description);
-// 	recipient.send_msg(msg);
-// }
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
 
-// void	IRC_Server::send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const
-// {
-// 	std::string msg = numeric_reply_start(recipient, send_err_TOOMANYCHANNELS);
+void	IRC_Server::send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_TOOMANYCHANNELS);
 
-// 	msg += command;
-// 	numeric_reply_end(msg, description);
-// 	recipient.send_msg(msg);
-// }
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
 
-// void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, std::string const & command, std::string const & description) const
-// {
-// 	std::string msg = numeric_reply_start(recipient, send_err_BADCHANNELKEY;
+void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_BADCHANNELKEY);
 
-// 	msg += command;
-// 	numeric_reply_end(msg, description);
-// 	recipient.send_msg(msg);
-// }
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
 
-// void	IRC_Server::send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const
-// {
-// 	std::string msg = numeric_reply_start(recipient, send_err_BANNEDFROMCHAN;
+void	IRC_Server::send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_BADCHANNELKEY);
 
-// 	msg += command;
-// 	numeric_reply_end(msg, description);
-// 	recipient.send_msg(msg);
-// }
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
 
-// void	IRC_Server::send_err_CHANNELISFULL(Client const & recipient, std::string const & command, std::string const & description) const
-// {
-// 	std::string msg = numeric_reply_start(recipient, send_err_CHANNELISFULL;
+void	IRC_Server::send_err_CHANNELISFULL(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_CHANNELISFULL);
 
-// 	msg += command;
-// 	numeric_reply_end(msg, description);
-// 	recipient.send_msg(msg);
-// }
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
 
-// void	IRC_Server::send_err_INVITEONLYCHAN(Client const & recipient, std::string const & command, std::string const & description) const
-// {
-// 	std::string msg = numeric_reply_start(recipient, send_err_INVITEONLYCHAN;
+void	IRC_Server::send_err_INVITEONLYCHAN(Client const & recipient, std::string const & command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_INVITEONLYCHAN);
 
-// 	msg += command;
-// 	numeric_reply_end(msg, description);
-// 	recipient.send_msg(msg);
-// }
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
