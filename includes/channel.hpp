@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 21:18:24 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/01 12:30:33 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,12 @@ class Channel
 		void serTopic(std::string const &Topic);
 		std::string getOwner() const;
 		void sendMessageToAllClients(Client const &client, std::string message);
-		bool findClient(Client const &client);
+		std::pair<std::string, int> findClient(Client const &client);
 
 		// - miki
 			//USA case_insensitive_ascii_compare()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			
 		bool operator==(const Channel &other) const 
 		{						
 			return (this->channelName == other.channelName);

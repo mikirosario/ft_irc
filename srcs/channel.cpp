@@ -18,20 +18,30 @@ IRC_Server::Channel::Channel(Channel const &other)
         topic(other.topic)
         
 {}
-// -miki
-	// en principio esta funcionalidad ya está cubierta por el map con
-	// case_insensitive_less.
-// bool IRC_Server::Channel::findClient(Client const & client)
-// {
-// 	(void)client; //	Error: it necesita de find en map
-//     std::map<std::string,int>::iterator it;
 
-//     it = this->allClients.begin();
 
-//     if( it == this->allClients.end())
-//         return(0);
-//     return(1);
-// }
+//	This function returns a pair with the name of the user and the number of permision. If client doesn't exit, empty string and -1
+
+std::pair<std::string, int> IRC_Server::Channel::findClient(Client const & client)
+{
+	(void)client; //	Error: it necesita de find en map
+    std::map<std::string,int>::iterator it;
+	std::string client_nick;
+
+    it = this->allClients.begin();
+
+    if( it == this->allClients.end())
+    {
+		return(std::make_pair("", CLIENT_FAILTURE));
+	}
+	client_nick = client.get_nick();
+	for (; it != allClients.end(); it++)
+	{
+		if (it->first == client_nick)
+			return(std::make_pair(it->first, it->second));
+	};
+	return(std::make_pair("", CLIENT_FAILTURE));
+}
 
 std::string const & IRC_Server::Channel::getChannelName() const
 {
@@ -121,7 +131,7 @@ void IRC_Server::Channel::sendMessageToAllClients(Client const &client, std::str
 
     for (; it != allClients.end(); it++)
     {
-        //PRIVMSG(to every user)
+  //      send_rpl_PRIVMSG(client, find_client_by_nick(it->first), message);
         (void)it;
     }
 }
