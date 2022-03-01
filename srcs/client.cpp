@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 20:47:21 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/01 11:56:20 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -670,7 +670,7 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 		if (end_pos != std::string::npos)	//yes, there is another message
 		{
 			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);
-			_message.assign(_msg_buf, end_pos);		//end_pos == std::string::npos means copy whole buffer; should be a move, but, yaknow... c++98...
+			_message.assign(_msg_buf, 0, end_pos);		//end_pos == std::string::npos means copy whole buffer; should be a move, but, yaknow... c++98...
 			flush_msg_buf(end_pos);					//...so we also have to flush.
 		}
 		else								//no, there is not another message
@@ -679,29 +679,6 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 			_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
 		}
 	}
-
-	/*		PRUEBAS PARA DESCUBRIR EL POR QUÉ DE LO IMPOSIBLE
-			end_pos = _msg_buf.find_first_of("\r\n");
-		//debug
-		size_t show_me = std::string::npos;
-		(void) show_me;
-		size_t bleh;
-		std::cerr << _msg_buf[(bleh = _msg_buf.find_first_of("l"))] << std::endl;
-		//debug
-		if (end_pos < show_me)	//yes, there is another message
-		{
-			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);
-			std::cerr << "THIS IS IMPOSSIBLE!!! I WAS NOT PRINTED!!! " << '\n' << end_pos << '\n' << show_me << std::endl;
-			_message.assign(_msg_buf, end_pos);		//end_pos == std::string::npos means copy whole buffer; should be a move, but, yaknow... c++98...
-			flush_msg_buf(end_pos);					//...so we also have to flush.
-		}
-		else								//no, there is not another message
-		{
-			_message.clear();
-			_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
-		}
-	*/
-
 	// //debug
 	// for (std::vector<std::string>::const_iterator it = ret.begin(), end = ret.end(); it != end; ++it)
 	// 	std::cerr << *it << std::endl;
