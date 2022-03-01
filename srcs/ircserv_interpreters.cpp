@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 19:46:44 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/01 12:19:44 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,9 +264,9 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 		//(std::ostringstream() << "No recipient given (" << argv[0] << ")").str(); //debug //why not compiler????
 //debug; ban channel names with channel prefixes CHANNEL_PREFIXES (see constants.hpp)
 //debug; TON of unresolved questions:
-	//sender == recipient is allowed?								sí
+	//sender == recipient is allowed?								sí				//hecho
 	//user_nick == channel_nick allowed?							#channel always
-	//what if getline fails, UNKNOWN error?							sí
+	//what if getline fails, UNKNOWN error?							sí				//hecho
 	//treat user_nick same as channel_nick?							no
 	//what the hell to do with all the prefixes and suffixes???		parse
 	//very basic still xD!!!!
@@ -294,10 +294,8 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		{
 			std::getline(raw_target_list, target, ',');
 			
-			if (raw_target_list.fail() == true) //debug //what to do with fail??
-			{
-				std::cerr << "qué hago? xD" << std::endl; //debug
-			}
+			if (raw_target_list.fail() == true)
+				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
 			else if ((recipient = find_client_by_nick(target)) == NULL) //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
 				send_err_NOSUCHNICK(sender, target, "No such nick");
 			else

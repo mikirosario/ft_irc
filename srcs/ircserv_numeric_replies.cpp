@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 15:34:07 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/01 14:02:57 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,16 +134,23 @@ void		IRC_Server::send_rpl_MYINFO(Client const & recipient)
 void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 {
 	(void)recipient;
+	std::ostringstream	ss;
 	std::string msg = numeric_reply_start(recipient, RPL_ISUPPORT);
 	
 	std::string 		isupport_msg;
 	
-	isupport_msg += "CASEMAPPING=ascii ";
-	isupport_msg += "NICKLEN=" + INT_TO_STR(MAX_NICK_SIZE << " ");
-	isupport_msg += "HOSTLEN=" + INT_TO_STR(MAX_HOSTNAME_SIZE << " ");
-	isupport_msg += "USERLEN=" + INT_TO_STR(MAX_USERNAME_SIZE);
+	ss	<< "CASEMAPPING=ascii "
+		<< "CHANLIMIT=" << SUPPORTED_CHANNEL_PREFIXES << ": "
+		<< "CHANTYPES=" << SUPPORTED_CHANNEL_PREFIXES << " "
+		<< "PREFIX=(" << SUPPORTED_CHANNEL_MODES << ")" << SUPPORTED_CHANNEL_PREFIXES << " "
+		<< "NICKLEN=" << MAX_NICK_SIZE << " "
+		<< "HOSTLEN=" << MAX_HOSTNAME_SIZE << " "
+		<< "USERLEN=" << MAX_USERNAME_SIZE;
+
+	msg += ss.str();
+	numeric_reply_end(msg, std::string());
 	//debug
-	std::cerr << "imprime " << isupport_msg << std::endl;
+	std::cerr << "imprime " << msg << std::endl;
 	//debug
 }
 //debug  //finish these
