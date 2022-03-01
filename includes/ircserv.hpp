@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 14:49:13 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/01 16:18:38 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class IRC_Server
 		#include "channel.hpp"
 		#include "database.hpp"
 
+		typedef std::map<std::string, Channel, case_insensitive_less> Channel_Map;
 		std::string						_nethost; //no longer needed?? what??
 		std::string						_netport;
 		std::string						_netpass;
@@ -80,7 +81,7 @@ class IRC_Server
 		std::bitset<MAX_CONNECTIONS>	_remove_list;
 		int								_connections;
 
-		std::map<std::string, Channel, case_insensitive_less>	_channels;
+		Channel_Map						_channels;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
 						IRC_Server(void);						//Default constructor

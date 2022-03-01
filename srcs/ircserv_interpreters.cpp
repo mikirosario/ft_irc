@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/01 12:19:44 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/01 16:33:10 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -377,20 +377,22 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 		{
 			if (pos < stringVector2.size())
 			{
-				Channel new_channel(expectsString);
+				Channel new_channel(sender, expectsString);
 				add_channel(new_channel);
 			}
 			else
 			{
-				Channel new_channel(expectsString, password);
+				Channel new_channel(sender, expectsString, password);
 				add_channel(new_channel);
 			}
 			return ;
 		}
 
 		if (pos < stringVector2.size())
-		{			
-			int addClientReturn = _channels[expectsString].addNewClient(sender, password);
+		{
+			Channel_Map::iterator it = _channels.find(expectsString);
+			int addClientReturn = it->second.addNewClient(sender, password, std::string());
+			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
 
 			if (addClientReturn == INVALID_PASSWORD_RETURN)
 				send_err_PASSWDMISMATCH(sender, "Incorrect password");
@@ -399,7 +401,9 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 		}
 		else
 		{
-			int addClientReturn = _channels[expectsString].addNewClient(sender);
+			Channel_Map::iterator it = _channels.find(expectsString);
+			int addClientReturn = it->second.addNewClient(sender, std::string());
+			//int addClientReturn = _channels[expectsString].addNewClient(sender);
 			if (addClientReturn == INVALID_PASSWORD_RETURN)
 				send_err_PASSWDMISMATCH(sender, "This channel need a password");
 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)

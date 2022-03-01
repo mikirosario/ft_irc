@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 14:49:22 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/01 16:25:23 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -695,12 +695,18 @@ bool	IRC_Server::find_channel(std::string const & channel_name)
 
 void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name)
 {
-	_channels[channel_name].removeClient(client);
+	Channel_Map::iterator it = _channels.find(channel_name);
+	if  (it != _channels.end())
+		it->second.removeClient(client);
+	//_channels[channel_name].removeClient(client);
 }
 
 void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg)
 {
-	_channels[channel_name].removeClient(client, msg);
+	Channel_Map::iterator it = _channels.find(channel_name);
+	if  (it != _channels.end())
+		it->second.removeClient(client, msg);
+	//_channels[channel_name].removeClient(client, msg);
 }
 
 

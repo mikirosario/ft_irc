@@ -1,13 +1,70 @@
 #include "../includes/ircserv.hpp"
 
-IRC_Server::Channel::Channel(void)
+//User_Privileges
+
+IRC_Server::Channel::User_Privileges::User_Privileges(void)
+{
+	_privis.reserve(sizeof(SUPPORTED_CHANNEL_PREFIXES) - 1);
+}
+
+IRC_Server::Channel::User_Privileges::User_Privileges(User_Privileges const & src) : _privis(src._privis)
 {}
 
-IRC_Server::Channel::Channel(std::string const &chName) : channelName(chName)
+IRC_Server::Channel::User_Privileges::User_Privileges(std::string const & privileges) : _privis(privileges)
 {}
 
-IRC_Server::Channel::Channel(std::string const &chName,std::string const &password) : channelName(chName), channelPassword(password)
+IRC_Server::Channel::User_Privileges::~User_Privileges(void)
 {}
+
+IRC_Server::Channel::User_Privileges &	IRC_Server::Channel::User_Privileges::operator=(User_Privileges const & src)
+{
+	_privis.assign(src._privis);
+	return (*this);
+}
+
+bool	IRC_Server::Channel::User_Privileges::set_privileges(std::string const & privileges)
+{
+	if (privileges.empty() == true || privileges.size() > sizeof(SUPPORTED_CHANNEL_PREFIXES) - 1 || privileges.find_first_not_of(SUPPORTED_CHANNEL_PREFIXES) != std::string::npos)
+		return false;
+	for (size_t end = sizeof(SUPPORTED_CHANNEL_PREFIXES), i = 0; i < end; ++i)
+	{
+		if (_privis.find(SUPPORTED_CHANNEL_PREFIXES[i]) == std::string::npos
+			&& privileges.find(SUPPORTED_CHANNEL_PREFIXES[i]) != std::string::npos)
+			_privis.push_back(SUPPORTED_CHANNEL_PREFIXES[i]);
+	}
+	return true;
+}
+
+bool	IRC_Server::Channel::User_Privileges::remove_privileges(std::string const & privileges)
+{
+	if (privileges.empty() == true || privileges.size() > sizeof(SUPPORTED_CHANNEL_PREFIXES) - 1 || privileges.find_first_not_of(SUPPORTED_CHANNEL_PREFIXES) != std::string::npos)
+		return false;
+	for (size_t end = sizeof(SUPPORTED_CHANNEL_PREFIXES), i = 0; i < end; ++i)
+	{
+		size_t char_pos;
+		if ((char_pos = _privis.find(SUPPORTED_CHANNEL_PREFIXES[i])) != std::string::npos
+			&& privileges.find(SUPPORTED_CHANNEL_PREFIXES[i]) != std::string::npos)
+			_privis.erase(char_pos, sizeof(char));
+	}
+	return true;
+}
+
+bool	IRC_Server::Channel::User_Privileges::privilege_is_set(char membership_prefix) const
+{
+	if (_privis.find(membership_prefix) != std::string::npos)
+		return true;
+	return false;
+}
+
+IRC_Server::Channel::Channel(Client const & creator, std::string const &chName) : channelName(chName), OwnerUser(creator.get_nick())
+{
+	addNewClient(creator, "~");
+}
+
+IRC_Server::Channel::Channel(Client const & creator, std::string const &chName, std::string const &password) : channelName(chName), channelPassword(password), OwnerUser(creator.get_nick())
+{
+	addNewClient(creator, password, "~");
+}
 
 IRC_Server::Channel::Channel(Channel const &other)
 :
@@ -15,8 +72,7 @@ IRC_Server::Channel::Channel(Channel const &other)
 		channelPassword(other.channelPassword),
 		allClients(other.allClients),
 		OwnerUser(other.OwnerUser),
-        topic(other.topic)
-        
+        topic(other.topic)     
 {}
 // -miki
 	// en principio esta funcionalidad ya está cubierta por el map con
@@ -32,6 +88,9 @@ IRC_Server::Channel::Channel(Channel const &other)
 //         return(0);
 //     return(1);
 // }
+
+IRC_Server::Channel::~Channel(void)
+{}
 
 std::string const & IRC_Server::Channel::getChannelName() const
 {
@@ -68,21 +127,29 @@ std::string IRC_Server::Channel::getOwner() const
 	// al castear un bool a int true == 1 y false == 0.
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-int IRC_Server::Channel::addNewClient(Client const &client)
+int IRC_Server::Channel::addNewClient(Client const &client, std::string const & privileges)
 {
 	if (this->channelPassword != "")
 		return(INVALID_PASSWORD_RETURN);															//-miki vvvv--esto debería pasarlo la llamadora, no?
-	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), CLIENT_USER));
+	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), privileges));
     return (ret.second);
 }
 
-// Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
-// eso pendiente. ;)
-int IRC_Server::Channel::addNewClient(Client const &client, std::string const &password)
+// // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
+// // eso pendiente. ;)
+// int IRC_Server::Channel::addNewClient(Client const &client, std::string const &password)
+// {
+//     if (this->channelPassword != password)
+// 		return(INVALID_PASSWORD_RETURN);
+// 	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), std::string()));
+//     return (ret.second);
+// }
+
+int IRC_Server::Channel::addNewClient(Client const &client, std::string const &password, std::string const & privileges)
 {
     if (this->channelPassword != password)
 		return(INVALID_PASSWORD_RETURN);
-	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), CLIENT_USER));
+	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), privileges));
     return (ret.second);
 }
 
@@ -117,7 +184,7 @@ void IRC_Server::Channel::sendMessageToAllClients(Client const &client, std::str
     bzero(buffer, 255);
     strcpy(buffer,message.c_str());
 
-    std::map<std::string, int>::iterator it = allClients.begin();
+    std::map<std::string, User_Privileges>::iterator it = allClients.begin();
 
     for (; it != allClients.end(); it++)
     {
