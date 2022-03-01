@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/01 13:54:16 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/01 18:47:30 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 #define ADMIN_USER 1
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
-#define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Operator, HalfOp, Founder
+#define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp
 #define SUPPORTED_CHANNEL_MODES "qoh" //Founder (q)~ // Operator (o)@ // HalfOp(h)%
 #define UNSUPPORTED_CHANNEL_PREFIXES "&+" //we don't support Protected or Voice
 

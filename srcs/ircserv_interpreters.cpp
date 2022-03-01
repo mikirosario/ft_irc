@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/01 16:33:10 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/01 19:50:12 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,10 +285,11 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		send_err_NOTEXTTOSEND(sender, "No text to send");
 	else
 	{
-		std::string			msg_source = sender.get_source() + " ";
-		std::string			target;
-		Client * 			recipient;
-		std::stringstream	raw_target_list(argv[1]);
+		std::string				msg_source = sender.get_source() + " ";
+		std::string				target;
+		Client * 				usr_recipient;
+		t_Channel_Map::iterator	ch_recipient;
+		std::stringstream		raw_target_list(argv[1]);
 
 		do
 		{
@@ -296,10 +297,27 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 			
 			if (raw_target_list.fail() == true)
 				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
-			else if ((recipient = find_client_by_nick(target)) == NULL) //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
-				send_err_NOSUCHNICK(sender, target, "No such nick");
-			else
-				send_rpl_PRIVMSG(*recipient, sender, argv[2]);				
+			else //pre-parse
+			{
+				size_t		hash_pos = target.find_first_of("#");
+				if (hash_pos != std::string::npos) //it's a channel
+				{
+					size_t		chname_pos;
+					if ((chname_pos = target.find_first_not_of("#", hash_pos)) == std::string::npos ||
+						(ch_recipient = _channels.find(target.substr(chname_pos))) == _channels.end())	//it's a channel, but with an empty name OR it's a channel that does not exist in _channels
+						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");	//Don't know why but RFC says use NOSUCHNICK, not NOSUCHCHANNEL, in PRIVMSG
+					else
+						//get the pre-hash-pos prefixes, if any!!!!
+						//will need to send prefixes before hash to the overload to send to specified privilege levels!!!
+						//send_rpl_PRIVMSG(ch_recipient->second, sender, argv[2]); //need to make this overload
+						std::cerr << "under construction" << std::endl;
+					
+				}
+				else if((usr_recipient = find_client_by_nick(target)) == NULL) //it's a user, but no such nick //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
+					send_err_NOSUCHNICK(sender, target, "No such nick");
+				else
+					send_rpl_PRIVMSG(*usr_recipient, sender, argv[2]);			//it's a user, and we found nick
+			}
 		}
 		while (raw_target_list.eof() == false);
 	}
@@ -390,7 +408,7 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 
 		if (pos < stringVector2.size())
 		{
-			Channel_Map::iterator it = _channels.find(expectsString);
+			t_Channel_Map::iterator it = _channels.find(expectsString);
 			int addClientReturn = it->second.addNewClient(sender, password, std::string());
 			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
 
@@ -401,7 +419,7 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 		}
 		else
 		{
-			Channel_Map::iterator it = _channels.find(expectsString);
+			t_Channel_Map::iterator it = _channels.find(expectsString);
 			int addClientReturn = it->second.addNewClient(sender, std::string());
 			//int addClientReturn = _channels[expectsString].addNewClient(sender);
 			if (addClientReturn == INVALID_PASSWORD_RETURN)

@@ -22,6 +22,22 @@ IRC_Server::Channel::User_Privileges &	IRC_Server::Channel::User_Privileges::ope
 	return (*this);
 }
 
+/*!
+** @brief	Sets the privileges indicated in @a privileges for the
+**			User_Privileges instance.
+**
+** @details	'~' is Owner/Founder, '@' is Operator and '%' is HalfOp. Additional
+**			supported prefixes in @a SUPPORTED_CHANNEL_PREFIXES.
+**
+**			If the requested privileges are already set, nothing is done for
+**			those privileges. If @a privileges contains characters not present
+**			in SUPPORTED_CHANNEL_PARAMETERS, or more characters than those
+**			present in SUPPORTED_CHANNEL_PARAMETERS, or is empty, nothing is
+**			done and the method returns false.
+** @param	privileges	The privileges you want to set from among
+**						@a SUPPORTED_CHANNEL_PREFIXES.
+** @return	true if @a privileges argument was valid, false otherwise
+*/
 bool	IRC_Server::Channel::User_Privileges::set_privileges(std::string const & privileges)
 {
 	if (privileges.empty() == true || privileges.size() > sizeof(SUPPORTED_CHANNEL_PREFIXES) - 1 || privileges.find_first_not_of(SUPPORTED_CHANNEL_PREFIXES) != std::string::npos)
@@ -35,6 +51,22 @@ bool	IRC_Server::Channel::User_Privileges::set_privileges(std::string const & pr
 	return true;
 }
 
+/*!
+** @brief	Removes the privileges indicated in @a privileges for the
+**			User_Privileges instance.
+**
+** @details '~' is Owner/Founder, '@' is Operator and '%' is HalfOp. Additional
+**			supported prefixes in @a SUPPORTED_CHANNEL_PREFIXES.
+**
+**			If the requested privileges are not set, nothing is done for those
+**			privileges. If @a privileges contains characters not present in
+**			SUPPORTED_CHANNEL_PARAMETERS, or more characters than those present
+**			in SUPPORTED_CHANNEL_PARAMETERS, or is empty, nothing is done and
+**			the method returns false.
+** @param	privileges	The privileges you want to remove from among
+**						@a SUPPORTED_CHANNEL_PREFIXES.
+** @return	true if @a privileges argument was valid, false otherwise
+*/
 bool	IRC_Server::Channel::User_Privileges::remove_privileges(std::string const & privileges)
 {
 	if (privileges.empty() == true || privileges.size() > sizeof(SUPPORTED_CHANNEL_PREFIXES) - 1 || privileges.find_first_not_of(SUPPORTED_CHANNEL_PREFIXES) != std::string::npos)
@@ -49,6 +81,15 @@ bool	IRC_Server::Channel::User_Privileges::remove_privileges(std::string const &
 	return true;
 }
 
+/*!
+** @brief	Determines whether the privilege corresponding to
+**			@a membership_prefix is or is not set.
+**
+** @details	'~' is Owner/Founder, '@' is Operator and '%' is HalfOp. Additional
+**			supported prefixes in @a SUPPORTED_CHANNEL_PREFIXES.
+** @param	membership_prefix	The prefix representing the privilege level.
+** @return	true if the privilege is set, otherwise false
+*/
 bool	IRC_Server::Channel::User_Privileges::privilege_is_set(char membership_prefix) const
 {
 	if (_privis.find(membership_prefix) != std::string::npos)
