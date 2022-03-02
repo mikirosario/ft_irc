@@ -97,23 +97,24 @@ bool	IRC_Server::Channel::User_Privileges::privilege_is_set(char membership_pref
 	return false;
 }
 
-IRC_Server::Channel::Channel(Client const & creator, std::string const &chName) : channelName(chName), OwnerUser(creator.get_nick())
+IRC_Server::Channel::Channel(Client const & creator, std::string const &chName) : _channelName(chName), _owner(creator.get_nick())
 {
-	addNewClient(creator, "~");
 }
 
-IRC_Server::Channel::Channel(Client const & creator, std::string const &chName, std::string const &password) : channelName(chName), channelPassword(password), OwnerUser(creator.get_nick())
+IRC_Server::Channel::Channel(Client const & creator, std::string const &chName, std::string const &password) : _channelName(chName), _channelPassword(password), _owner(creator.get_nick())
 {
-	addNewClient(creator, password, "~");
 }
 
 IRC_Server::Channel::Channel(Channel const &other)
 :
-    	channelName(other.channelName),
-		channelPassword(other.channelPassword),
-		allClients(other.allClients),
-		OwnerUser(other.OwnerUser),
-        topic(other.topic)     
+    	_channelName(other._channelName),
+		_channelPassword(other._channelPassword),
+		_owner(other._owner),
+		_chanops(other._chanops),
+		_halfops(other._halfops),
+		_users(other._users),
+		//allClients(other.allClients),
+        _topic(other._topic)     
 {}
 // -miki
 	// en principio esta funcionalidad ya está cubierta por el map con
@@ -135,27 +136,27 @@ IRC_Server::Channel::~Channel(void)
 
 std::string const & IRC_Server::Channel::getChannelName() const
 {
-    return (this->channelName);
+    return (_channelName);
 }
 
 std::string const & IRC_Server::Channel::getTopic() const
 {
-    return (this->topic);
+    return (_topic);
 }
 
-void IRC_Server::Channel::serTopic(std::string const &Topic)
+void IRC_Server::Channel::setTopic(std::string const & topic)
 {
-    this->topic = Topic;
+    _topic = topic;
 }
 
-void IRC_Server::Channel::setOwner(Client const &OwnerUser2)
+void IRC_Server::Channel::setOwner(Client const & client)
 {
-    this->OwnerUser  = OwnerUser2.get_nick();
+    _owner = client.get_nick(); //se puede cambiar de owner? al cambiar, el antiguo owner sigue siendo miembro del canal?
 }
 
 std::string IRC_Server::Channel::getOwner() const
 {
-    return(this->OwnerUser);
+    return(_owner);
 };
 
 // -miki
@@ -168,29 +169,59 @@ std::string IRC_Server::Channel::getOwner() const
 	// al castear un bool a int true == 1 y false == 0.
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-int IRC_Server::Channel::addNewClient(Client const &client, std::string const & privileges)
-{
-	if (this->channelPassword != "")
-		return(INVALID_PASSWORD_RETURN);															//-miki vvvv--esto debería pasarlo la llamadora, no?
-	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), privileges));
-    return (ret.second);
-}
-
-// // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
-// // eso pendiente. ;)
-// int IRC_Server::Channel::addNewClient(Client const &client, std::string const &password)
+// int IRC_Server::Channel::addMember(Client const &client, std::string const & privileges)
 // {
-//     if (this->channelPassword != password)
-// 		return(INVALID_PASSWORD_RETURN);
-// 	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), std::string()));
+// 	if (this->channelPassword != "")
+// 		return(INVALID_PASSWORD_RETURN);															//-miki vvvv--esto debería pasarlo la llamadora, no?
+// 	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), privileges));
 //     return (ret.second);
 // }
 
-int IRC_Server::Channel::addNewClient(Client const &client, std::string const &password, std::string const & privileges)
+// // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
+// // eso pendiente. ;) De momento los client no saben a qué canales están suscritos
+
+/*!
+** @brief	Adds @a client to the channel with @a privilege_level if @a password
+**			matches the channel password.
+**
+** @details	Clients will be added to one of three sets of members in the channel
+**			object depending on @a privilege_level.
+**
+**			@a privilege_level '0' is the lowest, and linked to the _users set.
+**			@a privilege_level '%' is the next, and linked to the _halfops set.
+**			@a privilege_level '@' is the next, and linked to the _chanops set.
+**			@a privilege_level '~' is the highest, and linked to _owner.
+**
+**			There can only be one _owner, so a replaced _owner is downgraded to
+**			_chanop.
+**
+** @param	client			The member to be added.
+** @param	password		The password provided by the client.
+** @param	privilege_level	The member's privilege level in the channel.
+**							@see SUPPORTED_CHANNEL_PREFIXESÇ
+** @return	1 if the member was successfully added. Otherwise, -1 if the
+**			client's password was wrong, -2 if the client's privilege_level was
+**			not understood, and 0 if the member was not successfully added for
+**			any other reason.
+*/
+int IRC_Server::Channel::addMember(Client & client, std::string const &password, char privilege_level)
 {
-    if (this->channelPassword != password)
+    if (_channelPassword != password)
 		return(INVALID_PASSWORD_RETURN);
-	std::pair<t_ChannelMemberMap::iterator, bool> ret = allClients.insert(std::make_pair(client.get_nick(), privileges));
+	else if (std::strchr(SUPPORTED_CHANNEL_PREFIXES, privilege_level) == NULL)
+		return(-2); //BAD PREFIX
+	std::pair<t_ChannelMemberSet::iterator, bool> ret;
+	ret.second = false;
+	if (privilege_level == 0)														//lowest privilege level
+		ret = _users.insert(client.get_nick());
+	else if (privilege_level == '%')												//halfops privilege level
+		ret = _halfops.insert(client.get_nick());
+	else if (privilege_level == '@')												//chanops privilege level
+		ret = _chanops.insert(client.get_nick());
+	else if (privilege_level == '~' &&
+			((ret.second = _owner.empty()) == true || (ret = _chanops.insert(_owner)).second == 1))	//owner privilege level; if there is no owner, or existing owner is successfully downgraded to chanops, replace owner
+		_owner = client.get_nick();
+	
     return (ret.second);
 }
 
@@ -206,30 +237,81 @@ int IRC_Server::Channel::addNewClient(Client const &client, std::string const &p
 	// return (static_cast<bool>(todalapesca)).
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-bool IRC_Server::Channel::removeClient(Client const &client) 
+
+/*!
+** @brief	Removes @a client_nick from this channel, if @a client_nick is a
+**			member.
+**
+** @details	If @a client_nick is the owner, the channel becomes ownerless.
+**			Otherwise, we search for @a client in each of the privilege levels
+**			and erase when we find them.
+** @param	client_nick	Nick of the member to remove from the channel.
+** @return	true if member was removed, false if @a client_nick was not a member
+*/
+bool IRC_Server::Channel::removeMember(std::string const & client_nick) 
 {
-	return (allClients.erase(client.get_nick()));
+	if (_owner == client_nick)
+	{
+		_owner.clear();
+		return (true);
+	}
+	else
+	{
+		IRC_Server::Channel::t_ChannelMemberSet	* pMemberSet[] = {&_chanops, &_halfops, &_users};
+	
+		for (size_t i = 0, ret = 0; i < 3; ++i)
+			if ((ret = pMemberSet[i]->erase(client_nick)) > 0)
+				return (true);
+		return (false);
+	}
 }
 
-bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)
+// bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)
+// {
+// 	sendMessageToAllClients(client, msg);
+// 	return (allClients.erase(client.get_nick()));
+// }
+
+
+// void IRC_Server::Channel::sendMessageToAllClients(Client const &client, std::string message) 
+// {
+//     message = channelName + ":"+ client.get_nick() + ":"+message;
+//     char buffer[255];
+//     bzero(buffer, 255);
+//     strcpy(buffer,message.c_str());
+
+//     std::map<std::string, User_Privileges>::iterator it = allClients.begin();
+
+//     for (; it != allClients.end(); it++)
+//     {
+//         //PRIVMSG(to every user)
+//         (void)it;
+//     }
+// }
+
+bool	IRC_Server::Channel::send_msg(char privilege_level, std::string const & message, IRC_Server const & parent) const
 {
-	sendMessageToAllClients(client, msg);
-	return (allClients.erase(client.get_nick()));
+	IRC_Server::Client const *	recipient = NULL;
+	switch (privilege_level)
+	{
+		case 0 :
+			for (t_ChannelMemberSet::iterator it = _users.begin(), end = _users.end(); it != end; ++it)
+				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+					recipient->send_msg(message);
+		case '%' :
+			for (t_ChannelMemberSet::iterator it = _halfops.begin(), end = _halfops.end(); it != end; ++it)
+				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+					recipient->send_msg(message);
+		case '@' :
+			for (t_ChannelMemberSet::iterator it = _chanops.begin(), end = _chanops.end(); it != end; ++it)
+				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+					recipient->send_msg(message);
+		case '~' :
+			if ((recipient = parent.find_client_by_nick(_owner)) != NULL)
+				recipient->send_msg(message);
+			return true;
+		default :
+			return false;
+	}
 }
 
-
-void IRC_Server::Channel::sendMessageToAllClients(Client const &client, std::string message) 
-{
-    message = channelName + ":"+ client.get_nick() + ":"+message;
-    char buffer[255];
-    bzero(buffer, 255);
-    strcpy(buffer,message.c_str());
-
-    std::map<std::string, User_Privileges>::iterator it = allClients.begin();
-
-    for (; it != allClients.end(); it++)
-    {
-        //PRIVMSG(to every user)
-        (void)it;
-    }
-}

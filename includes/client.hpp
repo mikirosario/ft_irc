@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/27 22:21:40 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/02 16:03:17 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 class Client
 {
+	//typedef std::set<std::string, IRC_Server::t_Channel_Map::iterator, case_insensitive_less>	t_ChanMap;
 	private:
 		enum State
 		{
@@ -38,6 +39,7 @@ class Client
 		//std::string	_longname;		//Client's name in format nickname!username@hostname. maybe replace build_source with this
 		std::string	_msg_buf;
 		std::string	_message;
+		//t_ChanMap	_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
 
 		/* PRIVATE UTILS */
 		size_t		get_param_count(void) const;
@@ -59,6 +61,7 @@ class Client
 		bool		is_registered(void) const;
 		bool		reg_pass_attempt(void);
 		void		send_msg(std::string const & msg) const;
+		//bool		check_channel_membership(std::) const;
 
 		/* SETTERS */
 		void	flush_msg_buf(size_t stop);
@@ -71,6 +74,8 @@ class Client
 		void	set_hostname(std::string const & hostname);
 		void	set_pass_validated(bool state);
 		void	set_state_registered(void);
+		//void	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
+		//void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 
 		void	clear(void);
 

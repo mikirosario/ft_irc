@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/01 19:50:12 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/02 18:10:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,10 +307,11 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 						(ch_recipient = _channels.find(target.substr(chname_pos))) == _channels.end())	//it's a channel, but with an empty name OR it's a channel that does not exist in _channels
 						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");	//Don't know why but RFC says use NOSUCHNICK, not NOSUCHCHANNEL, in PRIVMSG
 					else
-						//get the pre-hash-pos prefixes, if any!!!!
+						std::string	prefixes = target.substr(0, hash_pos); //get the pre-hash-pos prefixes, if any!!!!
+						
 						//will need to send prefixes before hash to the overload to send to specified privilege levels!!!
-						//send_rpl_PRIVMSG(ch_recipient->second, sender, argv[2]); //need to make this overload
-						std::cerr << "under construction" << std::endl;
+						send_rpl_PRIVMSG(ch_recipient->second, sender, std::string(), argv[2]); //need to make this overload
+						//std::cerr << "under construction" << std::endl;
 					
 				}
 				else if((usr_recipient = find_client_by_nick(target)) == NULL) //it's a user, but no such nick //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
@@ -373,12 +374,12 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 	pos = 0;
 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
 	{
-		std::string password = "";
+		std::string password;;
 		std::string expectsString(*it);
 		it_size = it->size();
 		if (havePasswords && pos < stringVector2.size())
 			password = stringVector2[pos];
-		if (it_size > 50)
+		if (it_size > MAX_CHANNELNAME_SIZE)
 			send_err_INPUTTOOLONG(sender, "Channel name to long");
 		else if (it_size <= 1)
 			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel name to short");
@@ -409,7 +410,7 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 		if (pos < stringVector2.size())
 		{
 			t_Channel_Map::iterator it = _channels.find(expectsString);
-			int addClientReturn = it->second.addNewClient(sender, password, std::string());
+			int addClientReturn = it->second.addMember(sender, password, 0);
 			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
 
 			if (addClientReturn == INVALID_PASSWORD_RETURN)
@@ -417,16 +418,16 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
 				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
 		}
-		else
-		{
-			t_Channel_Map::iterator it = _channels.find(expectsString);
-			int addClientReturn = it->second.addNewClient(sender, std::string());
-			//int addClientReturn = _channels[expectsString].addNewClient(sender);
-			if (addClientReturn == INVALID_PASSWORD_RETURN)
-				send_err_PASSWDMISMATCH(sender, "This channel need a password");
-			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-		}
+		// else
+		// {
+		// 	t_Channel_Map::iterator it = _channels.find(expectsString);
+		// 	int addClientReturn = it->second.addMember(sender, 0);
+		// 	//int addClientReturn = _channels[expectsString].addNewClient(sender);
+		// 	if (addClientReturn == INVALID_PASSWORD_RETURN)
+		// 		send_err_PASSWDMISMATCH(sender, "This channel need a password");
+		// 	else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+		// 		send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
+		// }
 		pos++;
 	}
 }
@@ -465,19 +466,19 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 		{
 			if (argv_size == 2)
 				remove_user_from_channel(sender, expectsString);
-			else
-			{
-				size_t i = 2;
-				std::string tmp_msg;
+			// else
+			// {
+			// 	size_t i = 2;
+			// 	std::string tmp_msg;
 
-				while (i < argv_size)
-				{
-					tmp_msg += argv[i];
-					tmp_msg += " ";
-					i++;
-				}
-				remove_user_from_channel(sender, expectsString, tmp_msg);
-			}
+			// 	while (i < argv_size)
+			// 	{
+			// 		tmp_msg += argv[i];
+			// 		tmp_msg += " ";
+			// 		i++;
+			// 	}
+			// 	remove_user_from_channel(sender, expectsString, tmp_msg);
+			// }
 		}
 	}
 }

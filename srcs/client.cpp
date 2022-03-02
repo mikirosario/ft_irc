@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/01 11:56:20 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/02 16:03:07 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_username = src._username;
 	_realname = src._realname;
 	_hostname = src._hostname;
+	//_channels = src._channels;
 	return (*this);
 }
 
@@ -77,6 +78,7 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_msg_buf, src._msg_buf);
 	std::swap(this->_message, src._message);
 	std::swap(this->_hostname, src._hostname);
+	//std::swap(this->_channels, src._channels);
 	src.clear();
 }
 
@@ -480,6 +482,28 @@ void	IRC_Server::Client::set_state_registered(void)
 	_state = IRC_Server::Client::State(REGISTERED);
 }
 
+// /*!
+// ** @brief	Records channel membership in client object.
+// **
+// ** @param	channel_iterator	An iterator to the channel of which the client
+// **								has become a member.
+// */
+// void	IRC_Server::Client::set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
+// {
+// 	_channels.insert(std::make_pair(channel_iterator->second.getChannelName(), channel_iterator));
+// }
+
+// /*!
+// ** @brief	Removes channel membership from client object.
+// **
+// ** @param	channel_iterator	An iterator to the channel of which the client's
+// **								membership is being removed.
+// */
+// void	IRC_Server::Client::remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
+// {
+// 	_channels.erase(channel_iterator->second.getChannelName());
+// }
+
 /*!
 ** @brief	Clears all Client data.
 */
@@ -498,6 +522,7 @@ void	IRC_Server::Client::clear(void)
 	_realname.clear();
 	_msg_buf.clear();
 	_message.clear();
+	//_channels.clear();
 }
 
 /*!

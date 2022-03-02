@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/01 18:43:29 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/02 13:58:10 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 //parsing
 bool	nick_is_valid(std::string const & str) const;
 bool	username_is_valid(std::string const & username) const;
+
 
 //interpreting
 	//-miki
@@ -99,6 +100,7 @@ void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & comm
 void		non_numeric_reply_end(std::string & reply, std::string const & last_param) const;
 void		send_rpl_NICK(Client const & recipient, std::string const & old_source) const;
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
+void		send_rpl_PRIVMSG(Channel const & channel, Client const & source, std::string const & privileges, std::string const & message) const;
 
 // Auxiliar methods
 
