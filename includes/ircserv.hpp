@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 14:49:13 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/02 17:57:58 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <cstdio> //perror
 #include <algorithm>
 #include <map>
+#include <set>
 #include <bitset>
 
 #include <sys/types.h>
@@ -62,9 +63,11 @@ class IRC_Server
 		}			_state;
 		//Modules
 		#include "client.hpp"
-		#include "ircserv_modules.hpp"
 		#include "channel.hpp"
 		#include "database.hpp"
+		#include "ircserv_modules.hpp"
+
+		typedef std::map<std::string, Channel, case_insensitive_less> t_Channel_Map;
 
 		std::string						_nethost; //no longer needed?? what??
 		std::string						_netport;
@@ -80,7 +83,7 @@ class IRC_Server
 		std::bitset<MAX_CONNECTIONS>	_remove_list;
 		int								_connections;
 
-		std::map<std::string, Channel, case_insensitive_less>	_channels;
+		t_Channel_Map						_channels;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
 						IRC_Server(void);						//Default constructor
@@ -89,10 +92,11 @@ class IRC_Server
 
 		/* PRIVATE MEMBER FUNCTIONS */
 		//Parsing
-		bool		get_network_info(std::string const & arg);
-		bool		case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const;
-		Client *	find_client_by_nick(std::string const & nick);
-		int			find_client_pos_by_nick(std::string const & nick);
+		bool			get_network_info(std::string const & arg);
+		bool			case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const;
+		Client *		find_client_by_nick(std::string const & nick);
+		Client const *	find_client_by_nick(std::string const & nick) const;
+		//int			find_client_pos_by_nick(std::string const & nick); still undefined
 
 		//Server initialization
 		bool			init(std::string const & netinfo);
@@ -125,7 +129,7 @@ class IRC_Server
 		void	remove_channel(std::string const & channel_name);
 		bool	find_channel(std::string const & channel_name);
 		void	remove_user_from_channel(Client const &client, std::string const & channel_name);
-		void	remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg);
+		//void	remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg);
 		//Utils
 		bool				is_endline(char const c);
 		bool				confirm_pass(std::string const & client_pass) const;

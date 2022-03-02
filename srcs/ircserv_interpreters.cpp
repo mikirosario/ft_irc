@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 19:46:44 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/02 22:24:31 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,9 +264,9 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 		//(std::ostringstream() << "No recipient given (" << argv[0] << ")").str(); //debug //why not compiler????
 //debug; ban channel names with channel prefixes CHANNEL_PREFIXES (see constants.hpp)
 //debug; TON of unresolved questions:
-	//sender == recipient is allowed?								sí
+	//sender == recipient is allowed?								sí				//hecho
 	//user_nick == channel_nick allowed?							#channel always
-	//what if getline fails, UNKNOWN error?							sí
+	//what if getline fails, UNKNOWN error?							sí				//hecho
 	//treat user_nick same as channel_nick?							no
 	//what the hell to do with all the prefixes and suffixes???		parse
 	//very basic still xD!!!!
@@ -285,23 +285,40 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		send_err_NOTEXTTOSEND(sender, "No text to send");
 	else
 	{
-		std::string			msg_source = sender.get_source() + " ";
-		std::string			target;
-		Client * 			recipient;
-		std::stringstream	raw_target_list(argv[1]);
+		std::string				msg_source = sender.get_source() + " ";
+		std::string				target;
+		Client * 				usr_recipient;
+		t_Channel_Map::iterator	ch_recipient;
+		std::stringstream		raw_target_list(argv[1]);
 
 		do
 		{
 			std::getline(raw_target_list, target, ',');
 			
-			if (raw_target_list.fail() == true) //debug //what to do with fail??
+			if (raw_target_list.fail() == true)
+				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
+			else //pre-parse
 			{
-				std::cerr << "qué hago? xD" << std::endl; //debug
+				size_t		hash_pos = target.find_first_of("#");
+				if (hash_pos != std::string::npos) //it's a channel
+				{
+					size_t		chname_pos;
+					if ((chname_pos = target.find_first_not_of("#", hash_pos)) == std::string::npos ||
+						(ch_recipient = _channels.find(target.substr(chname_pos))) == _channels.end())	//it's a channel, but with an empty name OR it's a channel that does not exist in _channels
+						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");	//Don't know why but RFC says use NOSUCHNICK, not NOSUCHCHANNEL, in PRIVMSG
+					else
+						std::string	prefixes = target.substr(0, hash_pos); //get the pre-hash-pos prefixes, if any!!!!
+						
+						//will need to send prefixes before hash to the overload to send to specified privilege levels!!!
+						send_rpl_PRIVMSG(ch_recipient->second, sender, std::string(), argv[2]); //need to make this overload
+						//std::cerr << "under construction" << std::endl;
+					
+				}
+				else if((usr_recipient = find_client_by_nick(target)) == NULL) //it's a user, but no such nick //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
+					send_err_NOSUCHNICK(sender, target, "No such nick");
+				else
+					send_rpl_PRIVMSG(*usr_recipient, sender, argv[2]);			//it's a user, and we found nick
 			}
-			else if ((recipient = find_client_by_nick(target)) == NULL) //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
-				send_err_NOSUCHNICK(sender, target, "No such nick");
-			else
-				send_rpl_PRIVMSG(*recipient, sender, argv[2]);				
 		}
 		while (raw_target_list.eof() == false);
 	}
@@ -357,12 +374,12 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 	pos = 0;
 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
 	{
-		std::string password = "";
+		std::string password;;
 		std::string expectsString(*it);
 		it_size = it->size();
 		if (havePasswords && pos < stringVector2.size())
 			password = stringVector2[pos];
-		if (it_size > 50)
+		if (it_size > MAX_CHANNELNAME_SIZE)
 			send_err_INPUTTOOLONG(sender, "Channel name to long");
 		else if (it_size <= 1)
 			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel name to short");
@@ -379,34 +396,38 @@ void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string>
 		{
 			if (pos < stringVector2.size())
 			{
-				Channel new_channel(expectsString);
+				Channel new_channel(sender, expectsString);
 				add_channel(new_channel);
 			}
 			else
 			{
-				Channel new_channel(expectsString, password);
+				Channel new_channel(sender, expectsString, password);
 				add_channel(new_channel);
 			}
 			return ;
 		}
 
 		if (pos < stringVector2.size())
-		{			
-			int addClientReturn = _channels[expectsString].addNewClient(sender, password);
+		{
+			t_Channel_Map::iterator it = _channels.find(expectsString);
+			int addClientReturn = it->second.addMember(sender, password, 0);
+			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
 
 			if (addClientReturn == INVALID_PASSWORD_RETURN)
 				send_err_PASSWDMISMATCH(sender, "Incorrect password");
 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
 				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
 		}
-		else
-		{
-			int addClientReturn = _channels[expectsString].addNewClient(sender);
-			if (addClientReturn == INVALID_PASSWORD_RETURN)
-				send_err_PASSWDMISMATCH(sender, "This channel need a password");
-			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-		}
+		// else
+		// {
+		// 	t_Channel_Map::iterator it = _channels.find(expectsString);
+		// 	int addClientReturn = it->second.addMember(sender, 0);
+		// 	//int addClientReturn = _channels[expectsString].addNewClient(sender);
+		// 	if (addClientReturn == INVALID_PASSWORD_RETURN)
+		// 		send_err_PASSWDMISMATCH(sender, "This channel need a password");
+		// 	else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+		// 		send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
+		// }
 		pos++;
 	}
 }
@@ -445,19 +466,19 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 		{
 			if (argv_size == 2)
 				remove_user_from_channel(sender, expectsString);
-			else
-			{
-				size_t i = 2;
-				std::string tmp_msg;
+			// else
+			// {
+			// 	size_t i = 2;
+			// 	std::string tmp_msg;
 
-				while (i < argv_size)
-				{
-					tmp_msg += argv[i];
-					tmp_msg += " ";
-					i++;
-				}
-				remove_user_from_channel(sender, expectsString, tmp_msg);
-			}
+			// 	while (i < argv_size)
+			// 	{
+			// 		tmp_msg += argv[i];
+			// 		tmp_msg += " ";
+			// 		i++;
+			// 	}
+			// 	remove_user_from_channel(sender, expectsString, tmp_msg);
+			// }
 		}
 	}
 }

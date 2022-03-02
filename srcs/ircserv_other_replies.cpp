@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 16:46:20 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/02 18:19:49 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,4 +91,31 @@ void		IRC_Server::send_rpl_PRIVMSG(Client const & recipient, Client const & sour
 	msg += recipient.get_nick();
 	non_numeric_reply_end(msg, message);
 	recipient.send_msg(msg);
+}
+
+/*!
+** @brief	Builds and sends @a message from @a source to all members of
+**			@a channel with @a privileges.
+**
+** @param	channel		The target channel of the message.
+** @param	source		The message sender.
+** @param	privileges	The minimum allowed privilege level of recipients ('~' Founder/Owner, '@' Chanop, '%' Halfop, '' All)
+** @param	message		The text message being sent.
+*/
+void		IRC_Server::send_rpl_PRIVMSG(Channel const & channel, Client const & source, std::string const & privileges, std::string const & message) const
+{
+	char		privilege_level = 0;
+	std::string msg = source.get_source() + " ";
+
+	msg += "PRIVMSG ";
+	msg += "#" + channel.getChannelName();
+	non_numeric_reply_end(msg, message);
+	if (privileges.size() > 0) //find lowest privilege level
+		for (size_t i = sizeof(SUPPORTED_CHANNEL_PREFIXES) - 1; i > 0; )
+			if (privileges.find(SUPPORTED_CHANNEL_PREFIXES[--i]) != std::string::npos)
+			{
+				privilege_level = SUPPORTED_CHANNEL_PREFIXES[i];
+				break ;
+			}
+	channel.send_msg(privilege_level, msg, *this);
 }

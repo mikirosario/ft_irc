@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/28 14:49:22 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/02 18:06:23 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,15 @@ bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::
 ** @return	A pointer to the client with the nickname @a nick if one exists,
 **			otherwise a NULL pointer.
 */
-IRC_Server::Client *	IRC_Server::find_client_by_nick(std::string const & nick)
+IRC_Server::Client *		IRC_Server::find_client_by_nick(std::string const & nick)
+{
+	for (int i = 0; i < _connections; ++i)
+		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
+			return (&_clients[i]);
+	return (NULL);
+}
+
+IRC_Server::Client const *	IRC_Server::find_client_by_nick(std::string const & nick) const
 {
 	for (int i = 0; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
@@ -695,13 +703,19 @@ bool	IRC_Server::find_channel(std::string const & channel_name)
 
 void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name)
 {
-	_channels[channel_name].removeClient(client);
+	t_Channel_Map::iterator it = _channels.find(channel_name);
+	if  (it != _channels.end())
+		it->second.removeMember(client.get_nick());
+	//_channels[channel_name].removeClient(client);
 }
 
-void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg)
-{
-	_channels[channel_name].removeClient(client, msg);
-}
+// void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg)
+// {
+// 	t_Channel_Map::iterator it = _channels.find(channel_name);
+// 	if  (it != _channels.end())
+// 		it->second.removeMember(client.get_nick(), msg);
+// 	//_channels[channel_name].removeClient(client, msg);
+// }
 
 
 /*!
@@ -790,6 +804,12 @@ std::string	IRC_Server::get_datetime(void)
 */
 void	IRC_Server::server_loop(void)
 {
+	//debug
+	Client	test_client;
+	test_client.set_nick("miki");
+	Channel	test_channel(test_client, std::string("cutre"));
+	add_channel(test_channel);
+	//debug
 	while (_state == State(ONLINE))
 	{
 		int	poll_count = poll(_pfds, _connections, -1);
