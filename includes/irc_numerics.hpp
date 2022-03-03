@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 15:56:21 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/03 21:52:28 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@
 #define ERR_INVITEONLYCHAN "473"
 #define ERR_BANNEDFROMCHAN "474"
 #define ERR_BADCHANNELKEY "475"
+#define ERR_BADCHANMASK	"476"
 
 
 
