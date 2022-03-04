@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 15:22:03 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/04 16:18:07 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@
 bool					nick_is_valid(std::string const & str) const;
 bool					username_is_valid(std::string const & username) const;
 bool					channel_name_is_valid(std::string const & channel_name) const;
-static std::string		trim(std::string const & str, std::string const & unwanted_chars);
+static std::string &	trim(std::string & str, std::string const & unwanted_chars);
+static std::string &	remove_duplicates(std::string & str, char c);
 
 
 //interpreting

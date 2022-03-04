@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 15:25:55 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/04 16:27:49 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,16 +83,33 @@ bool	IRC_Server::channel_name_is_valid(std::string const & channel_name) const
 ** @param	unwanted_chars	The leading and trailing characters to be
 **							eliminated from @a str.
 */
-std::string	IRC_Server::trim(std::string const & str, std::string const & unwanted_chars)
+std::string	& IRC_Server::trim(std::string & str, std::string const & unwanted_chars)
 {
-	std::string str_cpy;
-	size_t		nbytes;
-	size_t		start_pos;
+	//std::string str_cpy;
+	//size_t		nbytes;
+	//size_t		start_pos;
 
-	start_pos = str.find_first_not_of(unwanted_chars);
-	nbytes = str.find_last_not_of(unwanted_chars) + 1 - start_pos;
-	str_cpy.append(str, start_pos, nbytes);
-	return str_cpy;
+	str.erase(str.find_last_not_of(unwanted_chars) + 1);
+	str.erase(0, str.find_first_not_of(unwanted_chars));
+	// start_pos = str.find_first_not_of(unwanted_chars);
+	// nbytes = str.find_last_not_of(unwanted_chars) + 1 - start_pos;
+	// str_cpy.append(str, start_pos, nbytes);
+	return str;
+}
+
+std::string & IRC_Server::remove_duplicates(std::string & str, char c)
+{
+	std::string::iterator		it = str.begin();
+	std::string::const_iterator end = str.end();
+
+	while (it + 1 != end)
+	{
+		if (*it == c && *it == *(it + 1))
+			it = str.erase(it);
+		else
+			++it;
+	}
+	return str;
 }
 
 /*!
@@ -364,7 +381,8 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		std::string				target;
 		Client * 				usr_recipient;
 		t_Channel_Map::iterator	ch_recipient;
-		std::stringstream		raw_target_list(trim(argv[1], std::string(1, ',')));
+		//std::string				trimmed_target_list = trim(argv[1], std::string(1, ','));
+		std::stringstream		raw_target_list(remove_duplicates(trim(const_cast<std::string &>(argv[1]), std::string(1, ',')), ','));
 
 		do
 		{
