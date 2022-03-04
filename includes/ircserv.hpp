@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/02 17:57:58 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/03 19:31:10 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ class IRC_Server
 		void	remove_flagged_clients(void);
 		
 		//Channel controls
-		void	add_channel(Channel const & new_channel);
+		bool	add_channel(Channel const & new_channel);
 		void	remove_channel(std::string const & channel_name);
 		bool	find_channel(std::string const & channel_name);
 		void	remove_user_from_channel(Client const &client, std::string const & channel_name);

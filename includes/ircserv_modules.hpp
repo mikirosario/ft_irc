@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/02 13:58:10 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/03 21:57:15 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 //parsing
 bool	nick_is_valid(std::string const & str) const;
 bool	username_is_valid(std::string const & username) const;
+bool	channel_name_is_valid(std::string const & channel_name) const;
 
 
 //interpreting
@@ -80,6 +81,7 @@ void		send_err_NOTREGISTERED(Client const & recipient, std::string const & descr
 void		send_err_NOTEXTTOSEND(Client const & recipient, std::string const & description) const;
 void		send_err_NORECIPIENT(Client const & recipient, std::string const & description) const;
 void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const;
+void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
 
 
 

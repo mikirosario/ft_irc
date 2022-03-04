@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/02 18:06:23 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/03 19:32:28 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -684,9 +684,9 @@ void	IRC_Server::remove_flagged_clients(void)
 }
 
 // ---- CHANNEL CONTROL ---- //
-void	IRC_Server::add_channel(Channel const & new_channel)
+bool	IRC_Server::add_channel(Channel const & new_channel)
 {
-	_channels.insert(std::make_pair(new_channel.getChannelName(), new_channel));
+	return ((_channels.insert(std::make_pair(new_channel.getChannelName(), new_channel))).second);
 }
 
 void	IRC_Server::remove_channel(std::string const & channel_name)

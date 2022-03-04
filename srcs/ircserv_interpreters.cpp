@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/02 22:24:31 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/04 12:39:50 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,24 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 			if (std::strchr("\r\n @\0", username[i]) != NULL)
 				return (false);
 	return (true);
+}
+
+/*!
+** @brief	Determines validity of @a channel_name as a channel name.
+**
+** @details	A channel name must start with '&', '#', '+' or '!' and be between
+**			2 and 50 bytes long, and may not contain ' ', '\a', ',' or '0'.
+** @param	channel_name	A string proposed as a channel name.
+** @return	true of @a channel_name is a valid channel name, otherwise false
+*/
+bool	IRC_Server::channel_name_is_valid(std::string const & channel_name) const
+{
+	if (channel_name.size() < 2
+		|| channel_name.size() > MAX_CHANNELNAME_SIZE
+		|| std::strchr("&#+!", channel_name[0]) == NULL
+		|| channel_name.find_first_of(" \a,") != std::string::npos)
+		return false;
+	return true;
 }
 
 /*!
@@ -297,27 +315,26 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 			
 			if (raw_target_list.fail() == true)
 				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
-			else //pre-parse
+			else
 			{
 				size_t		hash_pos = target.find_first_of("#");
-				if (hash_pos != std::string::npos) //it's a channel
+				if (hash_pos != std::string::npos) 								//it's a channel
 				{
 					size_t		chname_pos;
 					if ((chname_pos = target.find_first_not_of("#", hash_pos)) == std::string::npos ||
-						(ch_recipient = _channels.find(target.substr(chname_pos))) == _channels.end())	//it's a channel, but with an empty name OR it's a channel that does not exist in _channels
-						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");	//Don't know why but RFC says use NOSUCHNICK, not NOSUCHCHANNEL, in PRIVMSG
-					else
-						std::string	prefixes = target.substr(0, hash_pos); //get the pre-hash-pos prefixes, if any!!!!
-						
-						//will need to send prefixes before hash to the overload to send to specified privilege levels!!!
-						send_rpl_PRIVMSG(ch_recipient->second, sender, std::string(), argv[2]); //need to make this overload
-						//std::cerr << "under construction" << std::endl;
+						(ch_recipient = _channels.find(target.substr(chname_pos))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
+						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");			//Don't know why, but RFC says use NOSUCHNICK, not NOSUCHCHANNEL, in this case!
+					else																				//it's a channel and it exists in _channels
+					{
+						std::string	prefixes = target.substr(0, hash_pos);									//get the pre-hash-pos prefixes, if any!!!!
+						send_rpl_PRIVMSG(ch_recipient->second, sender, prefixes, argv[2]);
+					}
 					
 				}
-				else if((usr_recipient = find_client_by_nick(target)) == NULL) //it's a user, but no such nick //debug // will need to parse target for prefixes, suffixes and a whole host of crap; id as nick or channel? can channel have same name as client??? we send to both in that case???? consult RFC.
+				else if((usr_recipient = find_client_by_nick(target)) == NULL)	//it's a user, but no such nick
 					send_err_NOSUCHNICK(sender, target, "No such nick");
-				else
-					send_rpl_PRIVMSG(*usr_recipient, sender, argv[2]);			//it's a user, and we found nick
+				else															//it's a user, and we found nick
+					send_rpl_PRIVMSG(*usr_recipient, sender, argv[2]);
 			}
 		}
 		while (raw_target_list.eof() == false);
@@ -349,6 +366,63 @@ std::vector<std::string> ft_parseStringToVector(std::string const &str, std::str
 }
 
 // TODO: Reduce the size of this function
+// when is NOSUCHCHANNEL thrown?? NOSUCHCHANNEL doesn't always mean CHANNEL created?
+// void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::string> const & argv)
+// {
+// 	if (argv.size() < 2)
+// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+// 	else if (argv[1] == "0")
+// 	{
+// 		//Leave all currently joined channels.
+// 	}
+// 	else						//try to process
+// 	{
+// 			std::stringstream	raw_channel_list(argv[1]);	//get raw channel list
+// 			std::stringstream	raw_key_list;
+// 			if (argv.size() > 2)							//get raw key list, if any
+// 				raw_key_list << argv[2];
+// 			do								//get channels
+// 			{
+// 				std::string				channel;
+// 				std::string 			key;
+// 				t_Channel_Map::iterator chan_it;
+// 				int						ret; // 1 == success, -1 bad password, -2 bad privilege syntax, 0 bad_alloc or other errors
+
+// 				key.clear();	//we want to clear this string after raw_key_list.eof()
+// 				std::getline(raw_channel_list, channel, ',');
+// 				std::getline(raw_key_list, key, ',');			//eof flag will be set when done, and key will no longer be updated
+// 				if (raw_channel_list.fail() == true)
+// 				{
+// 					ret = 0;
+// 					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
+// 				}
+// 				else if (channel_name_is_valid(channel) == false)
+// 				{
+// 					ret = 0;
+// 					//BADCHANMASK?? UNKNOWN ERROR??
+// 				}
+// 				else if ((chan_it = _channels.find(channel)) != _channels.end())	//channel exists, sender joins channel
+// 					// membership restriction checks go in addMember, coded in return value; check if banned, etc.
+// 					ret = chan_it->second.addMember(sender, key, 0); //key will be empty if there is none associated; 0 is for user level. 
+// 				else																//channel doesn't exist, sender creates channel
+// 					ret = add_channel(Channel(sender, channel, key));				//bool is int-casted here, true == 1, false == 0
+// 				if (ret == 1)			//success case
+// 				{
+// 					//send_rpl_JOIN()
+// 				}
+// 				else if (ret == -1)		//bad key case
+// 				{
+// 					//send_err_BADCHANNELKEY()
+// 				}
+// 				else if (ret == -2)
+// 				{
+// 					//send_err_UNKNOWN()?? bad syntax??
+// 				}
+				
+// 			}
+// 			while (raw_channel_list.eof() == false);
+// 	}
+// }
 
 void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
 {
@@ -492,10 +566,27 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
 
 	size_t argv_size = argv.size();
-
+	
 	if (argv_size < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	//bool existChannel = this->findChannel(argv[1]);
+	
+	bool existChannel = this->find_channel(argv[1]);
+	if(!existChannel)
+		send_err_NOSUCHCHANNEL(sender, argv[1], "Channel not found");
+	else if(argv_size == 2)
+	{
+		//Aqui leemos en topic del canal y se lo mandamos a sender
+	}
+	else
+	{
+		// Si el primer char != ':' buscar que error mandar y mandarlo a sender
+
+		// Si es valido, comprobar los permisos de sender. Tiene truco, pues con mode +t se hace que solo los op/hops puedan poner el topic
+
+			// Si sender en un "operario del canal/rango neceserio", setTopic a el mensaje (coger todos los argv[i] hasta que i == argv_size)
+
+			// Si sender no tiene los permisos necesarios, mandamos el error correspondiente
+	}
 
 }
 
@@ -503,35 +594,47 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 			NAMES COMMAND
 *****************************************/
 
+
+/*
+
+	Con names, cualquier usuario puede ver los usuarios conectados a un canal siempre que no esten en modo invisible (+i)
+
+*/
+
 void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv)
 {
-	size_t argv_size = argv.size();
-	std::string msg;
-	std::vector<std::string> stringVector;
 
-	
-	if (argv_size < 1)
-		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	if (argv_size == 1)
+	if (argv.size() == 1)
 	{
-		//funcion para recibir todos los canales y usuarios del servidor. Use send_rpl_ENDOFNAMES at the end of an active channel
-		return ;
+		// List all channels and users inside
 	}
-
-	stringVector = ft_parseStringToVector(argv[1], ",");
-	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+	else if (argv.size() == 2)						
 	{
-		std::string expectsString(*it);
+			std::stringstream	raw_channel_list(argv[1]);
+			do
+			{
+				std::string				channel;
+				t_Channel_Map::iterator chan_it;
 
-		bool existChannel = find_channel(expectsString);
-		if (!existChannel)
-			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel not found");
-		else
-		{
-			// Aqui recibimos todos los miembros pertenecientes al canal siempre que esten publicos
-			continue;
-		}
-		
+				std::getline(raw_channel_list, channel, ',');
+				if (raw_channel_list.fail() == true)
+					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
+				else if (channel_name_is_valid(channel) == false)
+				{
+					//BADCHANMASK?? UNKNOWN ERROR??
+				}
+				else if ((chan_it = _channels.find(channel)) != _channels.end())
+				{
+					// Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
+
+					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
+				}
+			}
+			while (raw_channel_list.eof() == false);
+	}
+	else
+	{
+		//	Enviar error por demasiados argumentos
 	}
 }
 
@@ -539,35 +642,54 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 			LIST COMMAND
 *****************************************/
 
+
+//	exec_cmd_LIST imitando el uso de stringstrem en la version de JOIN de Miki
+
 void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv)
 {
-	size_t argv_size = argv.size();
-	std::string msg;
-	std::vector<std::string> stringVector;
-
-	
-	if (argv_size < 1)
+	if (argv.size() < 1)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	if (argv_size == 1)
+	else if (argv.size() == 1)
 	{
-		//	Show all channels
-		return ;
+		// List all channels as return to sender
 	}
-
-	stringVector = ft_parseStringToVector(argv[1], ",");
-	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+	else if (argv.size() == 2)						
 	{
-		std::string expectsString(*it);
+			std::stringstream	raw_channel_list(argv[1]);
+			do
+			{
+				std::string				channel;
+				t_Channel_Map::iterator chan_it;
+				int						ret; // 0 bad_alloc or other errors
 
-		bool existChannel = find_channel(expectsString);
-		if (!existChannel)
-			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel not found");
-		else
-		{
-			// Aqui simplemente le respondemos con el nombre del canal
-			continue;
-		}
-		
+				std::getline(raw_channel_list, channel, ',');
+				if (raw_channel_list.fail() == true)
+				{
+					ret = 0;
+					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
+				}
+				else if (channel_name_is_valid(channel) == false)
+				{
+					ret = 0;
+					//BADCHANMASK?? UNKNOWN ERROR??
+				}
+				else if ((chan_it = _channels.find(channel)) != _channels.end())
+				{
+					// Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
+
+					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
+				}
+				else
+				{
+					//Mensaje de error como que el canal no existe
+				}
+				
+			}
+			while (raw_channel_list.eof() == false);
+	}
+	else
+	{
+		//	Enviar error por demasiados argumentos
 	}
 }
 
@@ -588,9 +710,25 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 
 void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv)
 {
-	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
-	(void) sender;
-	(void) argv;
+	if (argv.size() < 3)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (!find_channel(argv[1]))
+		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+	else
+	{
+
+	//	Comprobacion de que el usuario pertenece al canal del que busca eliminar a alguien. Error: ERR_NOTONCHANNEL
+
+	// Comprobacion de si el usuario tiene permisos suficientes para ejecutar el kick. Error: ERR_CHANOPRIVSNEEDED
+
+	// Comprobacion de si el usuario usuario buscado realmente existe en el canal. Error: ERR_USERNOTINCHANNEL
+
+	// ¡Posibilidad!	¿Tenemos que comprobar si un ops/hops esta intentando eliminar un ops/hops de mayor o igual rango?
+
+	// Eliminamos al usuario. De tener mas de tres argumentos depuramos el mensaje al igual que hacemos en TOPIC, con la diferencia de que
+	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
+
+	}
 }
 
 /********************************************************************************
