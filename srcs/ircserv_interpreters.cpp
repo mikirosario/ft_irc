@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 16:27:49 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/04 16:39:38 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,27 +77,29 @@ bool	IRC_Server::channel_name_is_valid(std::string const & channel_name) const
 }
 
 /*!
-** @brief	Returns a copy of @a str trimmed of any leading or trailing
-**			@a unwanted_chars.
+** @brief	Trims @a str of any leading or trailing @a unwanted_chars.
 ** @param	str				The string to trim.
 ** @param	unwanted_chars	The leading and trailing characters to be
 **							eliminated from @a str.
+** @return	A reference to @a str.
 */
 std::string	& IRC_Server::trim(std::string & str, std::string const & unwanted_chars)
 {
-	//std::string str_cpy;
-	//size_t		nbytes;
-	//size_t		start_pos;
-
 	str.erase(str.find_last_not_of(unwanted_chars) + 1);
 	str.erase(0, str.find_first_not_of(unwanted_chars));
-	// start_pos = str.find_first_not_of(unwanted_chars);
-	// nbytes = str.find_last_not_of(unwanted_chars) + 1 - start_pos;
-	// str_cpy.append(str, start_pos, nbytes);
 	return str;
 }
 
-std::string & IRC_Server::remove_duplicates(std::string & str, char c)
+/*!
+** @brief	Removes any adjacent instances of @a c from @a str.
+**
+** @details	A string @a bccdaaaaadccaad, where 'a' is the character to remove,
+**			becomes: @a bccdadccad.
+** @param	str	The string from which to remove consecutive instances of @a c.
+** @param	c	The character to be removed from @a str if next to a duplicate.
+** @return	A reference to @a str.
+*/
+std::string & IRC_Server::remove_adjacent_duplicates(std::string & str, char c)
 {
 	std::string::iterator		it = str.begin();
 	std::string::const_iterator end = str.end();
@@ -382,7 +384,7 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		Client * 				usr_recipient;
 		t_Channel_Map::iterator	ch_recipient;
 		//std::string				trimmed_target_list = trim(argv[1], std::string(1, ','));
-		std::stringstream		raw_target_list(remove_duplicates(trim(const_cast<std::string &>(argv[1]), std::string(1, ',')), ','));
+		std::stringstream		raw_target_list(remove_adjacent_duplicates(trim(const_cast<std::string &>(argv[1]), std::string(1, ',')), ','));
 
 		do
 		{
