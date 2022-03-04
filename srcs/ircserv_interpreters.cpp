@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 12:39:50 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/04 13:02:13 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -533,11 +533,14 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 		std::string password = "";
 		std::string expectsString(*it);
 
+		//	Error encontrado. Find channel nos devuelve siempre 0 si ejecutamos "PART canalAleatorioInventado"
+		
 		bool existChannel = find_channel(expectsString);
 		if(!existChannel)
-			send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+			send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 		else
 		{
+			//send_err_NOSUCHCHANNEL(sender, argv[0], "Debug error");
 			if (argv_size == 2)
 				remove_user_from_channel(sender, expectsString);
 			// else
