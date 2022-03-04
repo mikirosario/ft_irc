@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 13:02:13 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/04 14:06:55 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ bool	IRC_Server::register_client(Client & client)
 **			@a sender reprimanding them and they are banished from the Realm.
 ** @param	sender	A reference to the client who who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
-**					and its arguments (argv[...]) in a string vector.
+**					and its arguments (argv[1,...]) in a string vector.
 */
 void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv)
 {
@@ -252,7 +252,7 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 **			try to register @a sender.
 ** @param	sender	A reference to the client who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
-**					and its arguments (argv[...]) in a string vector.
+**					and its arguments (argv[1,...]) in a string vector.
 */
 void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const & argv)
 {
@@ -280,20 +280,58 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 
 		//(std::string() += "blah").size(); //debug //normal
 		//(std::ostringstream() << "No recipient given (" << argv[0] << ")").str(); //debug //why not compiler????
-//debug; ban channel names with channel prefixes CHANNEL_PREFIXES (see constants.hpp)
-//debug; TON of unresolved questions:
-	//sender == recipient is allowed?								sí				//hecho
-	//user_nick == channel_nick allowed?							#channel always
-	//what if getline fails, UNKNOWN error?							sí				//hecho
-	//treat user_nick same as channel_nick?							no
-	//what the hell to do with all the prefixes and suffixes???		parse
-	//very basic still xD!!!!
+/*!
+** @brief	Executes a PRIVMSG command originating from @a sender.
+**
+** @details	Attempts to send the text at argv[2] to the targets listed at
+**			argv[1], wherein targets are separated by a ','.
+**
+**			If less than 3 parameters (cmd, targets, message) are present in
+**			@a argv a NEEDMOREPARAMS error is sent back to @a sender.
+**
+**			Otherwise, if there are no targets in @a argv, a NORECIPIENT error
+**			is sent back to @a sender.
+**
+**			Otherwise, if there is no text at argv[2], a NOTEXTTOSEND error is
+**			sent back to @a sender.
+**
+**			Otherwise, we attempt to retrieve each target from the target list
+**			using std::getline() with ',' as a delimiter. If that fails for any
+**			reason, an UNKNOWN error is sent back to @a sender.
+**
+**			Any failure of std::getline(), such as due to end of file or badbit,
+**			will cause the while condition to be false, aborting any subsequent
+**			retrieval attempts. Thus, only one UNKNOWN error will be sent back
+**			to @a sender, even if there were more errors in the stream.
+**
+**			If a provided target nick or channel name is not found, a NOSUCHNICK
+**			error will be sent back to @a sender. Multiple such errors may be
+**			sent for a single command.
+**
+**			If the target is a user, the text at argv[2] will be sent directly
+**			to the user as a private message.
+**
+**			The target is considered a channel if it is preceded by '#'. If the
+**			target is a channel, the text at argv[2] will be sent to each member
+**			of the channel at or above the privilege level specified by the
+**			prefixes preceding '#'. No prefixes signifies the lowest privilege
+**			level and will be sent to all channel members, '%' signifies halfop
+**			level, '@' signifies chanop level and '~' signifies owner level.
+**
+**			Any other prefix will not be accepted. 				//debug //currently implemented in channel object, maybe move logic here
+**
+**			If multiple prefixes are sent, the one with the lowest privilege
+**			level will be used. For example: "@~%#" == "%#".	//debug // currently implemented in channel object, maybe move logic here
+** @param	sender	A reference to the client who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[1,...]) in a string vector.
+*/
 void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv)
 {
 
 	if (argv.size() < 3) //we need cmd target{,target} :message
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (argv[1].empty() == true)
+	else if (argv[1].empty() == true) //eliminate any commas before checking this
 	{
 		std::ostringstream ss;
 		ss << "No recipient given (" << argv[0] << ")";
@@ -337,12 +375,9 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 					send_rpl_PRIVMSG(*usr_recipient, sender, argv[2]);
 			}
 		}
-		while (raw_target_list.eof() == false);
+		while (raw_target_list.goodbit == true);
 	}
-
-	//
 }
-
 
 /****************************************
 			JOIN COMMAND
