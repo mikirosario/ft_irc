@@ -2,6 +2,10 @@
 
 # Conectar a servidor
 
+telnet localhost 6651
+PASS pass 
+NICK acortes
+USER acortes 0 * :Not a bot
 # Probar a conectarse al servidor o registrarse si falla
 
 #Lo siguiente consistira en un bucle que mire los canales activos y se intente conectar
@@ -21,3 +25,5 @@ do
 	fi
 	sleep 0.5s
 done
+
+
