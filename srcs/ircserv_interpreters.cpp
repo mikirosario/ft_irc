@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 14:06:55 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/04 15:25:55 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,25 @@ bool	IRC_Server::channel_name_is_valid(std::string const & channel_name) const
 		|| channel_name.find_first_of(" \a,") != std::string::npos)
 		return false;
 	return true;
+}
+
+/*!
+** @brief	Returns a copy of @a str trimmed of any leading or trailing
+**			@a unwanted_chars.
+** @param	str				The string to trim.
+** @param	unwanted_chars	The leading and trailing characters to be
+**							eliminated from @a str.
+*/
+std::string	IRC_Server::trim(std::string const & str, std::string const & unwanted_chars)
+{
+	std::string str_cpy;
+	size_t		nbytes;
+	size_t		start_pos;
+
+	start_pos = str.find_first_not_of(unwanted_chars);
+	nbytes = str.find_last_not_of(unwanted_chars) + 1 - start_pos;
+	str_cpy.append(str, start_pos, nbytes);
+	return str_cpy;
 }
 
 /*!
@@ -345,7 +364,7 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		std::string				target;
 		Client * 				usr_recipient;
 		t_Channel_Map::iterator	ch_recipient;
-		std::stringstream		raw_target_list(argv[1]);
+		std::stringstream		raw_target_list(trim(argv[1], std::string(1, ',')));
 
 		do
 		{
@@ -366,8 +385,7 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 					{
 						std::string	prefixes = target.substr(0, hash_pos);									//get the pre-hash-pos prefixes, if any!!!!
 						send_rpl_PRIVMSG(ch_recipient->second, sender, prefixes, argv[2]);
-					}
-					
+					}	
 				}
 				else if((usr_recipient = find_client_by_nick(target)) == NULL)	//it's a user, but no such nick
 					send_err_NOSUCHNICK(sender, target, "No such nick");
@@ -375,7 +393,7 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 					send_rpl_PRIVMSG(*usr_recipient, sender, argv[2]);
 			}
 		}
-		while (raw_target_list.goodbit == true);
+		while (raw_target_list.eof() == false);
 	}
 }
 

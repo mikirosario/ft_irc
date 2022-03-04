@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/03 21:57:15 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/04 15:22:03 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,10 @@
 # define IRCMODULES_H
 
 //parsing
-bool	nick_is_valid(std::string const & str) const;
-bool	username_is_valid(std::string const & username) const;
-bool	channel_name_is_valid(std::string const & channel_name) const;
+bool					nick_is_valid(std::string const & str) const;
+bool					username_is_valid(std::string const & username) const;
+bool					channel_name_is_valid(std::string const & channel_name) const;
+static std::string		trim(std::string const & str, std::string const & unwanted_chars);
 
 
 //interpreting
