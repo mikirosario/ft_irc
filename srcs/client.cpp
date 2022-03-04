@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/02 16:03:07 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/04 18:22:37 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -482,27 +482,40 @@ void	IRC_Server::Client::set_state_registered(void)
 	_state = IRC_Server::Client::State(REGISTERED);
 }
 
-// /*!
-// ** @brief	Records channel membership in client object.
-// **
-// ** @param	channel_iterator	An iterator to the channel of which the client
-// **								has become a member.
-// */
-// void	IRC_Server::Client::set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
-// {
-// 	_channels.insert(std::make_pair(channel_iterator->second.getChannelName(), channel_iterator));
-// }
+/*!
+** @brief	Records channel membership in client object.
+**
+** @param	channel_iterator	An iterator to the channel of which the client
+**								has become a member.
+** @return	true if successful, false if unsuccessful for any reason (memory,
+**			duplicate name, etc.)
+*/
+bool	IRC_Server::Client::set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
+{
+	bool ret;
 
-// /*!
-// ** @brief	Removes channel membership from client object.
-// **
-// ** @param	channel_iterator	An iterator to the channel of which the client's
-// **								membership is being removed.
-// */
-// void	IRC_Server::Client::remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
-// {
-// 	_channels.erase(channel_iterator->second.getChannelName());
-// }
+	try
+	{
+		ret = _channels.insert(std::make_pair(channel_iterator->second.getChannelName(), channel_iterator)).second;
+	}
+	catch (std::exception & e)
+	{
+		std::cerr << e.what() << std::endl;
+		return (false);
+	}
+	return (ret);
+}
+
+/*!
+** @brief	Removes channel membership from client object.
+**
+** @param	channel_iterator	An iterator to the channel of which the client's
+**								membership is being removed.
+*/
+void	IRC_Server::Client::remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
+{
+	_channels.erase(channel_iterator->second.getChannelName());
+}
 
 /*!
 ** @brief	Clears all Client data.
@@ -568,6 +581,19 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 }
 
 /*!
+** @brief	Client will remove itself from channel pointed to by @a channel_it.
+**
+** @details	NOTE: Behaviour is undefined for invalid channel_it!
+** @param	channel_it	An iterator to the channel from which the client will
+**						remove itself.
+*/
+void	IRC_Server::Client::leave_channel(t_ChanMap::iterator & channel_it)
+{
+	channel_it->second->second.removeMember(get_nick());
+	_channels.erase(channel_it);
+}
+
+/*!
 ** @brief	Determines whether or not a message is ready to be reaped.
 **
 ** @details	In practice, this is an alias for msg_buf_is_crlf_terminated, as
@@ -598,6 +624,34 @@ bool		IRC_Server::Client::is_registered(void) const
 void		IRC_Server::Client::send_msg(std::string const & msg) const
 {
 	send(_sockfd, msg.data(), msg.size(), 0);
+}
+
+/*!
+** @brief	Attempts to leave @a channel_name channel, returning true if
+**			successful and false otherwise.
+**
+** @details	If @a channel_name is not present in the client's @a _channels map,
+**			nothing is done. If the client leaves the channel, both the client
+**			and channel will be	updated to reflect this.
+** @param	channel_name	The name of the channel the client will leave, NOT
+**							including any prefixes ('&', '#', etc.)
+** @return	true if successful, false if channel_name is not present in the
+**			client's @a _channels map.
+*/
+bool		IRC_Server::Client::leave_channel(std::string const & channel_name)
+{
+	t_ChanMap::iterator it = _channels.find(channel_name);
+	
+	if (it == _channels.end())
+		return false;
+	leave_channel(it);
+	return true;
+}
+
+void		IRC_Server::Client::leave_all_channels(void)
+{
+	for (t_ChanMap::iterator it = _channels.begin(), end = _channels.end(); it != end; ++it) //map.erase() should preserve range integrity
+		leave_channel(it);
 }
 
 /* GETTERS */
@@ -865,6 +919,26 @@ size_t						IRC_Server::Client::get_pos(void) const
 bool						IRC_Server::Client::get_pass_validated(void) const
 {
 	return (_pass_validated);
+}
+
+/*!
+** @brief	Returns a pair containing an iterator to @a channel_name as first
+**			element and a bool set to true as second element if the client is a
+**			member of @a channel_name. If the client is not a member, an
+**			iterator to client._channels.end() will be returned, and the bool
+**			will be set to false. Don't try to dereference without checking the
+**			bool first.
+**
+** @param	channel_name	The name of the channel to check for client
+**							membership.
+** @return	A pair containing an iterator to @a channel_name and true if the
+**			client is a member of @a channel_name, otherwise an iterator to
+**			client._channels.end() and false.
+*/
+std::pair<IRC_Server::Client::t_ChanMap::iterator, bool>	IRC_Server::Client::get_joined_channel(std::string const & channel_name)
+{
+	IRC_Server::Client::t_ChanMap::iterator	it = _channels.find(channel_name);
+	return (std::make_pair(it, (it == _channels.end() ? false : true)));
 }
 
 /*!

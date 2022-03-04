@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 16:35:36 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/04 19:25:55 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ void		send_err_NOTEXTTOSEND(Client const & recipient, std::string const & descri
 void		send_err_NORECIPIENT(Client const & recipient, std::string const & description) const;
 void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const;
 void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
-
+void		send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const;
 
 
 	// Me quedo aqui hoy
@@ -93,7 +93,7 @@ void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel
 
 void		send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const;
-void		send_err_BADCHANNELKEY(Client const & recipient, std::string const & command, std::string const & description) const;
+
 void		send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_CHANNELISFULL (Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
@@ -104,7 +104,8 @@ void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & comm
 void		non_numeric_reply_end(std::string & reply, std::string const & last_param) const;
 void		send_rpl_NICK(Client const & recipient, std::string const & old_source) const;
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
-void		send_rpl_PRIVMSG(Channel const & channel, Client const & source, std::string const & privileges, std::string const & message) const;
+void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
+void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 
 // Auxiliar methods
 

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/02/28 16:24:26 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/04 18:59:52 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,18 +210,19 @@ void	IRC_Server::send_err_TOOMANYCHANNELS(Client const & recipient, std::string 
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_BADCHANNELKEY);
 
-	msg += command;
+	msg += "#" + channel.getChannelName();
+	msg += " ";
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
 
 void	IRC_Server::send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const
 {
-	std::string msg = numeric_reply_start(recipient, ERR_BADCHANNELKEY);
+	std::string msg = numeric_reply_start(recipient, ERR_BANNEDFROMCHAN);
 
 	msg += command;
 	numeric_reply_end(msg, description);
