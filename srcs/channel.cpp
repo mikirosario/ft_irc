@@ -154,10 +154,25 @@ void IRC_Server::Channel::setOwner(Client const & client)
     _owner = client.get_nick(); //se puede cambiar de owner? al cambiar, el antiguo owner sigue siendo miembro del canal?
 }
 
-std::string IRC_Server::Channel::getOwner() const
+std::string const & IRC_Server::Channel::getOwner(void) const
 {
     return(_owner);
-};
+}
+
+IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getChanops(void) const
+{
+	return (_chanops);
+}
+
+IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getHalfops(void) const
+{
+	return (_halfops);
+}
+
+IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getUsers(void) const
+{
+	return (_users);
+}
 
 // -miki
     // single-element insert devuelve un pair en el que 'second' es un bool que
@@ -315,3 +330,18 @@ bool	IRC_Server::Channel::send_msg(char privilege_level, std::string const & mes
 	}
 }
 
+/*!
+** @brief	Returns the total number of channel members.
+**
+** @return	The total number of channel members.
+*/
+size_t	IRC_Server::Channel::size(void) const
+{
+	size_t memberc = 0;
+
+	memberc += _owner.empty() ? 0 : 1;
+	memberc += _chanops.size();
+	memberc += _halfops.size();
+	memberc += _users.size();
+	return memberc;
+}

@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 19:25:55 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/05 22:54:36 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ bool					username_is_valid(std::string const & username) const;
 bool					channel_name_is_valid(std::string const & channel_name) const;
 static std::string &	trim(std::string & str, std::string const & unwanted_chars);
 static std::string &	remove_adjacent_duplicates(std::string & str, char c);
+static std::string &	preprocess_list_param(std::string & str, char delimiter);
 
 
 //interpreting
@@ -31,18 +32,18 @@ void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 
 	//-adrian
-void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
-void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
+
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
-
 
 
 
@@ -57,9 +58,12 @@ void		send_rpl_YOURHOST(Client const & recipient);
 void		send_rpl_CREATED(Client const & recipient);
 void		send_rpl_MYINFO(Client const & recipient);
 void		send_rpl_ISUPPORT(Client const & recipient);
+void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
+void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
+
 
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
-void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & command);
+
 
 // Esto no lo considero neceserio
 

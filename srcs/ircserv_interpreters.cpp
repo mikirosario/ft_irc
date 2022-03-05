@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 20:17:56 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/05 23:05:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,8 +93,8 @@ std::string	& IRC_Server::trim(std::string & str, std::string const & unwanted_c
 /*!
 ** @brief	Removes any adjacent instances of @a c from @a str.
 **
-** @details	A string @a bccdaaaaadccaad, where 'a' is the character to remove,
-**			becomes: @a bccdadccad.
+** @details	A string @a bccd,,,,,dcc,,d, where ',' is the character to remove,
+**			becomes: @a bccd,dcc,d .
 ** @param	str	The string from which to remove consecutive instances of @a c.
 ** @param	c	The character to be removed from @a str if next to a duplicate.
 ** @return	A reference to @a str.
@@ -112,6 +112,24 @@ std::string & IRC_Server::remove_adjacent_duplicates(std::string & str, char c)
 			++it;
 	}
 	return str;
+}
+
+/*!
+** @brief	Trims leading, trailing and consecutive adjacent @a delimiter
+**			characters from @a str. Use to preprocess any parameters sent in
+**			list format (foo,{foo,}) before sending to std::getline(), as it is
+**			intolerant of the errata that this function eliminates.
+**
+** @details	A string @a ,,,bccd,,,,,,dcc,,d, where ',' is the @a delimiter
+**			becomes: @a bccd,dcc,d .
+** @param	str			The string to preprocess. May not be const; const_cast
+**						if needed.
+** @param	delimiter	The delimiter to trim.
+** @return	A reference to the trimmed @a str.
+*/
+std::string &	IRC_Server::preprocess_list_param(std::string & str, char delimiter)
+{
+	return (remove_adjacent_duplicates(trim(str, std::string(1, delimiter)), delimiter));
 }
 
 /*!
@@ -383,7 +401,8 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		std::string				target;
 		Client * 				usr_recipient;
 		t_Channel_Map::iterator	ch_recipient;
-		std::stringstream		raw_target_list(remove_adjacent_duplicates(trim(const_cast<std::string &>(argv[1]), std::string(1, ',')), ','));
+		//std::stringstream		raw_target_list(remove_adjacent_duplicates(trim(const_cast<std::string &>(argv[1]), std::string(1, ',')), ','));
+		std::stringstream		raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
 
 		do
 		{
@@ -416,6 +435,7 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 	}
 }
 
+
 /****************************************
 			JOIN COMMAND
 *****************************************/
@@ -440,7 +460,7 @@ std::vector<std::string> ft_parseStringToVector(std::string const &str, std::str
 // TODO: Reduce the size of this function
 // DUDAS
 // 	- when is NOSUCHCHANNEL thrown?? NOSUCHCHANNEL doesn't always mean CHANNEL created?
-// 	- qué mensaje enviar si channel_name es inválido???
+// 	- qué mensaje enviar si channel_name es inválido??? BADCHANMASK o UNKNOWN???
 void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::string> const & argv)
 {
 	if (argv.size() < 2)
@@ -449,16 +469,16 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 		sender.leave_all_channels();
 	else						//try to process
 	{
-			std::stringstream	raw_channel_list(argv[1]);	//get raw channel list
+			std::stringstream	raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));	//get raw channel list
 			std::stringstream	raw_key_list;
 			if (argv.size() > 2)							//get raw key list, if any
-				raw_key_list << argv[2];
+				raw_key_list << preprocess_list_param(const_cast<std::string &>(argv[2]), ',');
 			do								//get channels
 			{
 				std::string				channel;
 				std::string 			key;
 				t_Channel_Map::iterator chan_it;
-				int						ret = 0; // 1 == success, -1 bad password, -2 bad privilege syntax, 0 bad_alloc or other errors
+				int						ret = 0; // 1 == success, -1 bad password, -2 bad privilege syntax, 0 bad_alloc, bad chname or other errors
 
 				key.clear();	//we want to clear this string after raw_key_list.eof()
 				std::getline(raw_channel_list, channel, ',');
@@ -487,6 +507,7 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 				if (ret == 1) //somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
 				{
 					send_rpl_JOIN(chan_it->second, sender);
+					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
 					// membership restriction checks go in addMember, coded in return value; check if banned, etc.
 					//key will be empty if there is none associated; 0 is for user level. 
@@ -675,16 +696,41 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 
 */
 
+
+/*!
+** @brief	Executes a NAMES command originating from @a sender.
+**
+** @details	The @a sender receives a list of members of each channel listed in
+**			argv[1]. Channels must be delimited by commas: channel1,channel2...
+**
+**			As in all lists of this kind, we preprocess the parameter to clean
+**			up trailing, leading or duplicate delimiters.
+**
+**			If the member list for a channel does not fit in MSG_BUF_SIZE, it
+**			will be split into several NAMREPLY messages. NAMREPLY will send
+**			ENDOFNAMES when it has finished sending all members.
+**
+**			If no channel name is sent, only an ENDOFNAMES reply is sent with
+**			an asterisk in place of a channel name.
+**
+**			If any channel name is invalid or not found, only an ENDOFNAMES
+**			reply is sent with the invalid channel name.
+**
+**			If garden gnomes attack std::getline(), UNKNOWNERROR error reply is
+**			sent.
+**
+**			//debug //invisible user modes and private channel modes not yet implemented!!
+** @param	sender	A reference to the client who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[1,...]) in a string vector.
+*/
 void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv)
 {
-
-	if (argv.size() == 1)
-	{
-		// List all channels and users inside
-	}
+	if (argv.size() < 2)
+		send_rpl_ENDOFNAMES(sender, "*");
 	else if (argv.size() == 2)						
 	{
-			std::stringstream	raw_channel_list(argv[1]);
+			std::stringstream	raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
 			do
 			{
 				std::string				channel;
@@ -697,18 +743,17 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 				{
 					//BADCHANMASK?? UNKNOWN ERROR??
 				}
-				else if ((chan_it = _channels.find(channel)) != _channels.end())
+				else if ((chan_it = _channels.find(channel)) == _channels.end())	//didn't find channel
+					send_rpl_ENDOFNAMES(sender, channel);
+				else																//found channel
 				{
-					// Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
-
+					//debug / error // Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
 					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
+
+					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
 			}
 			while (raw_channel_list.eof() == false);
-	}
-	else
-	{
-		//	Enviar error por demasiados argumentos
 	}
 }
 
