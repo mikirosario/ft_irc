@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/05 22:48:14 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/05 23:37:27 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -220,6 +220,7 @@ void		IRC_Server::send_rpl_NAMREPLY(Client const & recipient, Channel const & ch
 				member_list += *user_it + " ";
 			numeric_reply_end(msg_cpy, member_list);
 			recipient.send_msg(msg_cpy);
+			//msg_cpy.erase(msg_cpy.begin() + msg.size(), msg_cpy.end()); alternative, but is it more efficient than msg_cpy = msg?? ;)
 		}
 	}
 	send_rpl_ENDOFNAMES(recipient, channel.getChannelName());
