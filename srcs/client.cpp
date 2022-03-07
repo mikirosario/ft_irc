@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/07 20:56:07 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/07 21:05:08 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,11 +283,8 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 		_message.assign(_msg_buf);																			//first part of message in _msg_buf; if _msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
 		_message.append(incoming_data, 0, (message_overflows_buffer ? msg_buf_bytes_available : end_pos)); 	//append last part of message from incoming_data; if message would overflow buffer, append up to available bytes in the buffer and truncate rest, otherwise append entire message
 		_message.append("\r\n");																			//i have so little trust in people i don't even let the client crlf-terminate its own message xD
-		if (_message[0] == ':')																				//if the message contains a source as first argument, remove it
-		{
-			_message.erase(0, _message.find_first_of(" \r\n"));
-			_message.erase(0, _message.find_first_not_of(' '));
-		}
+		if (_message[0] == ':')																				//if the message contains a source as first argument
+			remove_source(_message);																		//remove it
 		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);											//find first character after crlf-termination, or npos if it's the end of the string
 		incoming_data.erase(0, end_pos);																	//flush the part of the incoming data pertaining to the appended message (including any truncated bits)
 		_msg_buf.assign(incoming_data);																		//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course

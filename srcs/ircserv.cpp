@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/04 20:09:11 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/07 21:05:02 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,12 @@ IRC_Server::Client const *	IRC_Server::find_client_by_nick(std::string const & n
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
 			return (&_clients[i]);
 	return (NULL);
+}
+
+void		IRC_Server::remove_source(std::string & message)
+{
+	message.erase(0, message.find_first_of(" \r\n"));
+	message.erase(0, message.find_first_not_of(' '));	
 }
 
 	// -- SERVER INITIALIZATION -- //

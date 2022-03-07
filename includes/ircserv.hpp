@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/04 20:04:00 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/07 21:05:02 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ class IRC_Server
 		bool			case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const;
 		Client *		find_client_by_nick(std::string const & nick);
 		Client const *	find_client_by_nick(std::string const & nick) const;
+		static void		remove_source(std::string & message);
 		//int			find_client_pos_by_nick(std::string const & nick); still undefined
 
 		//Server initialization
