@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/03 19:31:10 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/04 20:04:00 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,9 @@ struct case_insensitive_less : std::binary_function<std::string, std::string, bo
 
 class IRC_Server
 {
+	class Channel;
+	public:
+		typedef std::map<std::string, Channel, case_insensitive_less> t_Channel_Map;
 	private:
 		enum State
 		{
@@ -66,9 +69,6 @@ class IRC_Server
 		#include "channel.hpp"
 		#include "database.hpp"
 		#include "ircserv_modules.hpp"
-
-		typedef std::map<std::string, Channel, case_insensitive_less> t_Channel_Map;
-
 		std::string						_nethost; //no longer needed?? what??
 		std::string						_netport;
 		std::string						_netpass;
@@ -125,7 +125,8 @@ class IRC_Server
 		void	remove_flagged_clients(void);
 		
 		//Channel controls
-		bool	add_channel(Channel const & new_channel);
+		//bool	add_channel(Channel const & new_channel); //debug //remove once overload below confirmed working
+		t_Channel_Map::iterator	add_channel(Client & creator, std::string const & channel_name, std::string const & key);
 		void	remove_channel(std::string const & channel_name);
 		bool	find_channel(std::string const & channel_name);
 		void	remove_user_from_channel(Client const &client, std::string const & channel_name);

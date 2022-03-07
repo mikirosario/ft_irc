@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/02 18:19:49 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/04 20:19:48 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,12 +76,12 @@ void	IRC_Server::send_rpl_NICK(Client const & recipient, std::string const & old
 }
 
 /*!
-** @brief	Builds and sends @a message from @a source to @a recipient following
-**			successful PRIVMSG command when @a recipient is a Client.
+** @brief	Builds and sends a reply message from @a source to @a recipient
+**			following successful PRIVMSG command when @a recipient is a Client.
 **
 ** @param	recipient	The message recipient.
 ** @param	source		The message sender.
-** @param	message		The text message being sent.
+** @param	message		The message text input by the user @a source.
 */
 void		IRC_Server::send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const
 {
@@ -94,21 +94,25 @@ void		IRC_Server::send_rpl_PRIVMSG(Client const & recipient, Client const & sour
 }
 
 /*!
-** @brief	Builds and sends @a message from @a source to all members of
-**			@a channel with @a privileges.
+** @brief	Builds and sends a reply message from @a source to all members of
+**			Channel @a recipient with @a privileges following successful PRIVMSG
+**			command when @a recipient is a Channel.
 **
-** @param	channel		The target channel of the message.
+** @details	Valid @a privileges are: '~' Founder/Owner, '@' Chanop, '%' Halfop,
+**			or those included in SUPPORTED_CHANNEL_PREFIXES. An empty string is
+**			interpreted as 'All', or the lowest privilege level.
+** @param	recipient	The target channel of the message.
 ** @param	source		The message sender.
-** @param	privileges	The minimum allowed privilege level of recipients ('~' Founder/Owner, '@' Chanop, '%' Halfop, '' All)
-** @param	message		The text message being sent.
+** @param	privileges	The minimum allowed privilege level of recipients.
+** @param	message		The message text input by the user @a source.
 */
-void		IRC_Server::send_rpl_PRIVMSG(Channel const & channel, Client const & source, std::string const & privileges, std::string const & message) const
+void		IRC_Server::send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const
 {
 	char		privilege_level = 0;
 	std::string msg = source.get_source() + " ";
 
 	msg += "PRIVMSG ";
-	msg += "#" + channel.getChannelName();
+	msg += recipient.getChannelName();
 	non_numeric_reply_end(msg, message);
 	if (privileges.size() > 0) //find lowest privilege level
 		for (size_t i = sizeof(SUPPORTED_CHANNEL_PREFIXES) - 1; i > 0; )
@@ -117,5 +121,25 @@ void		IRC_Server::send_rpl_PRIVMSG(Channel const & channel, Client const & sourc
 				privilege_level = SUPPORTED_CHANNEL_PREFIXES[i];
 				break ;
 			}
-	channel.send_msg(privilege_level, msg, *this);
+	recipient.send_msg(privilege_level, msg, *this);
+}
+
+/*!
+** @brief	Builds and sends a reply message from @a source to all members of
+**			Channel @a recipient following successful JOIN command.
+**
+** @param	recipient	The target channel of the message.
+** @param	source		The message sender.
+*/
+void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source) const
+{
+	std::string msg = source.get_nick() + ": ";
+
+	msg += "JOIN ";
+	msg += recipient.getChannelName();
+	non_numeric_reply_end(msg, std::string());
+	//debug
+		std::cout << msg << std::endl;
+	//debug
+	recipient.send_msg(0, msg, *this);
 }

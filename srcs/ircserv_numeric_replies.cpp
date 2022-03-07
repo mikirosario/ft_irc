@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/01 14:02:57 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/05 23:37:27 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ void		IRC_Server::send_rpl_YOURHOST(Client const & recipient)
 	yourhost_msg += "Your host is ";
 	yourhost_msg += _servername;
 	yourhost_msg += ", running version ";
-	yourhost_msg += VERSION; //debug
+	yourhost_msg += VERSION; //debug //currently derived from git tag and passed through clang
 	numeric_reply_end(msg, yourhost_msg);
 	recipient.send_msg(msg);
 }
@@ -173,15 +173,64 @@ void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & c
 
 }
 
+//debug //if user invisibility is implemented, we will need to account for this!!
+/*!
+** @brief	Builds and sends a NAMREPLY reply to @a recipient containing a list
+**			of all members of @a channel and terminates with an ENDOFNAMES reply
+**			when finished.
+**
+** @details If the NAMREPLY reply would overflow MSG_BUF_SIZE bytes, it will be
+**			split into separate replies fitting into MSG_BUF_SIZE bytes.
+**
+** @param	recipient	The client to whom the reply will be sent.
+** @param	channel		The channel regarding which member information was sent.
+*/
+void		IRC_Server::send_rpl_NAMREPLY(Client const & recipient, Channel const & channel)
+{
+	typedef IRC_Server::Channel::t_ChannelMemberSet::const_iterator chan_it;
+
+	if (channel.size() > 0)
+	{
+		std::string msg = numeric_reply_start(recipient, RPL_NAMREPLY);
+		std::string member_list;
+
+		//will want channel to give us this
+		msg += "= "; //debug //get channel status (= public, @ secret, *private), currently unimplemented so all channels are public
+		msg += channel.getChannelName();
+
+		member_list.reserve(MSG_BUF_SIZE * 2);
+		for (size_t memberc = channel.size(); memberc > 0; ) //main loop
+		{
+			std::string	msg_cpy;
+			size_t		bytes_used;
+			size_t		owneri = 0;
+			chan_it		chanops_it = channel.getChanops().begin();
+			chan_it		halfops_it = channel.getHalfops().begin();
+			chan_it 	user_it = channel.getUsers().begin();
+
+			msg_cpy = msg;
+			bytes_used = msg.size() + 4; //bytes used out of message buffer are current bytes occupied plus 4 for prepending " :" and appending "crlf".
+			for ( ; owneri < !channel.getOwner().empty() && bytes_used + channel.getOwner().size() + 2 < MSG_BUF_SIZE; ++owneri, bytes_used += channel.getOwner().size() + 2, --memberc)
+				member_list += "~" + channel.getOwner() + " ";
+			for ( ; chanops_it != channel.getChanops().end() && bytes_used + chanops_it->size() + 2 < MSG_BUF_SIZE; ++chanops_it, bytes_used += chanops_it->size() + 2, --memberc)
+				member_list += "@" + *chanops_it + " ";
+			for ( ; halfops_it != channel.getHalfops().end() && bytes_used + halfops_it->size() + 2 < MSG_BUF_SIZE; ++halfops_it, bytes_used += halfops_it->size() + 2, --memberc)
+				member_list += "%" + *halfops_it + " ";
+			for ( ; user_it != channel.getUsers().end() && bytes_used + user_it->size() + 1 < MSG_BUF_SIZE; ++user_it, bytes_used += user_it->size() + 1, --memberc)
+				member_list += *user_it + " ";
+			numeric_reply_end(msg_cpy, member_list);
+			recipient.send_msg(msg_cpy);
+			//msg_cpy.erase(msg_cpy.begin() + msg.size(), msg_cpy.end()); alternative, but is it more efficient than msg_cpy = msg?? ;)
+		}
+	}
+	send_rpl_ENDOFNAMES(recipient, channel.getChannelName());
+}
+
 void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channelName)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_TOPIC);
-	std::string	end_msg;
+	std::string msg = numeric_reply_start(recipient, RPL_ENDOFNAMES);
 
-	end_msg += recipient.get_username();
-	end_msg += " ";
-	end_msg += channelName;
-	end_msg += ":End of /NAMES list";
-	numeric_reply_end(msg, end_msg);
+	msg += channelName;
+	numeric_reply_end(msg, "End of /NAMES list");
 	recipient.send_msg(msg);
 }

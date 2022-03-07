@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/02 16:03:17 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/04 18:21:21 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 class Client
 {
-	//typedef std::set<std::string, IRC_Server::t_Channel_Map::iterator, case_insensitive_less>	t_ChanMap;
+	typedef std::map<std::string, IRC_Server::t_Channel_Map::iterator, case_insensitive_less>	t_ChanMap;
 	private:
 		enum State
 		{
@@ -39,12 +39,13 @@ class Client
 		//std::string	_longname;		//Client's name in format nickname!username@hostname. maybe replace build_source with this
 		std::string	_msg_buf;
 		std::string	_message;
-		//t_ChanMap	_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
+		t_ChanMap	_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
 
 		/* PRIVATE UTILS */
 		size_t		get_param_count(void) const;
 		std::string	get_cmd(void) const;
 		bool		msg_buf_is_crlf_terminated(void) const;
+		void		leave_channel(t_ChanMap::iterator & channel_it);
 	public:
 		Client(void);
 		~Client(void);
@@ -61,7 +62,8 @@ class Client
 		bool		is_registered(void) const;
 		bool		reg_pass_attempt(void);
 		void		send_msg(std::string const & msg) const;
-		//bool		check_channel_membership(std::) const;
+		bool		leave_channel(std::string const & channel_name);
+		void		leave_all_channels(void);
 
 		/* SETTERS */
 		void	flush_msg_buf(size_t stop);
@@ -74,26 +76,27 @@ class Client
 		void	set_hostname(std::string const & hostname);
 		void	set_pass_validated(bool state);
 		void	set_state_registered(void);
-		//void	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
-		//void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
+		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
+		void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 
 		void	clear(void);
 
-		/* GETTERS */
-		std::vector<std::string>	get_message(void);
-		std::string					get_source(void) const;
-		std::string const &			get_serveraddr(void) const;
-		std::string const &			get_nick(void) const;
-		std::string const &			get_username(void) const;
-		std::string const &			get_realname(void) const;
-		std::string const &			get_hostname(void) const;
-		std::string const &			get_clientaddr(void) const;
-		int							get_sockfd(void) const;
-		int							get_pass_attempts(void) const;
-		size_t						get_pos(void) const;
-		bool						get_pass_validated(void) const;
-		std::string const &			see_next_message(void) const;
-		std::string const &			see_msg_buf(void) const;
+		/* GETTERS */			
+		std::vector<std::string>				get_message(void);
+		std::string								get_source(void) const;
+		std::string const &						get_serveraddr(void) const;
+		std::string const &						get_nick(void) const;
+		std::string const &						get_username(void) const;
+		std::string const &						get_realname(void) const;
+		std::string const &						get_hostname(void) const;
+		std::string const &						get_clientaddr(void) const;
+		int										get_sockfd(void) const;
+		int										get_pass_attempts(void) const;
+		size_t									get_pos(void) const;
+		bool									get_pass_validated(void) const;
+		std::pair<t_ChanMap::iterator, bool>	get_joined_channel(std::string const & channel_name);
+		std::string const &						see_next_message(void) const;
+		std::string const &						see_msg_buf(void) const;
 
 };
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/03 21:57:15 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/05 22:54:36 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,12 @@
 # define IRCMODULES_H
 
 //parsing
-bool	nick_is_valid(std::string const & str) const;
-bool	username_is_valid(std::string const & username) const;
-bool	channel_name_is_valid(std::string const & channel_name) const;
+bool					nick_is_valid(std::string const & str) const;
+bool					username_is_valid(std::string const & username) const;
+bool					channel_name_is_valid(std::string const & channel_name) const;
+static std::string &	trim(std::string & str, std::string const & unwanted_chars);
+static std::string &	remove_adjacent_duplicates(std::string & str, char c);
+static std::string &	preprocess_list_param(std::string & str, char delimiter);
 
 
 //interpreting
@@ -29,18 +32,18 @@ void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 
 	//-adrian
-void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
-void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
+
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
-
 
 
 
@@ -55,9 +58,12 @@ void		send_rpl_YOURHOST(Client const & recipient);
 void		send_rpl_CREATED(Client const & recipient);
 void		send_rpl_MYINFO(Client const & recipient);
 void		send_rpl_ISUPPORT(Client const & recipient);
+void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
+void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
+
 
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
-void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & command);
+
 
 // Esto no lo considero neceserio
 
@@ -82,7 +88,7 @@ void		send_err_NOTEXTTOSEND(Client const & recipient, std::string const & descri
 void		send_err_NORECIPIENT(Client const & recipient, std::string const & description) const;
 void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const;
 void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
-
+void		send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const;
 
 
 	// Me quedo aqui hoy
@@ -91,7 +97,7 @@ void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel
 
 void		send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const;
-void		send_err_BADCHANNELKEY(Client const & recipient, std::string const & command, std::string const & description) const;
+
 void		send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_CHANNELISFULL (Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
@@ -102,7 +108,8 @@ void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & comm
 void		non_numeric_reply_end(std::string & reply, std::string const & last_param) const;
 void		send_rpl_NICK(Client const & recipient, std::string const & old_source) const;
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
-void		send_rpl_PRIVMSG(Channel const & channel, Client const & source, std::string const & privileges, std::string const & message) const;
+void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
+void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 
 // Auxiliar methods
 

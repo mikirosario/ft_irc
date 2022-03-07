@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/03 19:32:28 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/04 20:09:11 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -684,9 +684,53 @@ void	IRC_Server::remove_flagged_clients(void)
 }
 
 // ---- CHANNEL CONTROL ---- //
-bool	IRC_Server::add_channel(Channel const & new_channel)
+// bool	IRC_Server::add_channel(Channel const & new_channel)
+// {
+// 	return ((_channels.insert(std::make_pair(new_channel.getChannelName(), new_channel))).second);
+// }
+
+/*!
+** @brief	Attempts to add a channel named @a channel_name with key @a key and
+**			owner @a creator to the server.
+**
+** @details	We try to insert the new channel. A grammar check of @a channel_name
+**			must be performed before calling this function.
+**
+**			If an exception is thrown, it is printed server-side and false is
+**			returned.
+**
+**			If the new channel could not be inserted but an exception was not
+**			returned, false is returned.
+**
+**			If the new channel was inserted but channel_membership could not
+**			successfully be registered in the client object, the new channel is
+**			deleted and false is returned.
+** @param	creator			The client creating the new channel.
+** @param	channel_name	The channel_name. This should be parsed beforehand
+**							for correctness.
+** @param	key				The channel password, if any. An empty string if
+**							there is none.
+** @return	if successful, an iterator to the added channel, otherwise
+**			_channels.end().
+*/
+IRC_Server::t_Channel_Map::iterator	IRC_Server::add_channel(Client & creator, std::string const & channel_name, std::string const & key)
 {
-	return ((_channels.insert(std::make_pair(new_channel.getChannelName(), new_channel))).second);
+	Channel										new_channel(creator, channel_name, key);
+	std::pair<t_Channel_Map::iterator, bool>	chan_insert_result;
+	
+	try
+	{
+		chan_insert_result = _channels.insert(std::make_pair(new_channel.getChannelName(), new_channel));
+	}
+	catch (std::exception & e)
+	{
+		std::cerr << e.what() << std::endl;
+		return _channels.end();
+	}
+	bool	did_insert = chan_insert_result.second;
+	if (did_insert != false && (did_insert &= creator.set_channel_membership(chan_insert_result.first)) == false)
+		_channels.erase(chan_insert_result.first);
+	return (did_insert == false ? _channels.end() : chan_insert_result.first);
 }
 
 void	IRC_Server::remove_channel(std::string const & channel_name)
@@ -804,12 +848,12 @@ std::string	IRC_Server::get_datetime(void)
 */
 void	IRC_Server::server_loop(void)
 {
-	//debug
-	Client	test_client;
-	test_client.set_nick("miki");
-	Channel	test_channel(test_client, std::string("cutre"));
-	add_channel(test_channel);
-	//debug
+	// //debug
+	// Client	test_client;
+	// test_client.set_nick("miki");
+	// Channel	test_channel(test_client, std::string("cutre"));
+	// add_channel(test_channel);
+	// //debug
 	while (_state == State(ONLINE))
 	{
 		int	poll_count = poll(_pfds, _connections, -1);

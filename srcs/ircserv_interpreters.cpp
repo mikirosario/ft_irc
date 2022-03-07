@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 13:02:13 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/05 23:05:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,62 @@ bool	IRC_Server::channel_name_is_valid(std::string const & channel_name) const
 }
 
 /*!
+** @brief	Trims @a str of any leading or trailing @a unwanted_chars.
+** @param	str				The string to trim.
+** @param	unwanted_chars	The leading and trailing characters to be
+**							eliminated from @a str.
+** @return	A reference to @a str.
+*/
+std::string	& IRC_Server::trim(std::string & str, std::string const & unwanted_chars)
+{
+	str.erase(str.find_last_not_of(unwanted_chars) + 1);
+	str.erase(0, str.find_first_not_of(unwanted_chars));
+	return str;
+}
+
+/*!
+** @brief	Removes any adjacent instances of @a c from @a str.
+**
+** @details	A string @a bccd,,,,,dcc,,d, where ',' is the character to remove,
+**			becomes: @a bccd,dcc,d .
+** @param	str	The string from which to remove consecutive instances of @a c.
+** @param	c	The character to be removed from @a str if next to a duplicate.
+** @return	A reference to @a str.
+*/
+std::string & IRC_Server::remove_adjacent_duplicates(std::string & str, char c)
+{
+	std::string::iterator		it = str.begin();
+	std::string::const_iterator end = str.end();
+
+	while (it + 1 != end)
+	{
+		if (*it == c && *it == *(it + 1))
+			it = str.erase(it);
+		else
+			++it;
+	}
+	return str;
+}
+
+/*!
+** @brief	Trims leading, trailing and consecutive adjacent @a delimiter
+**			characters from @a str. Use to preprocess any parameters sent in
+**			list format (foo,{foo,}) before sending to std::getline(), as it is
+**			intolerant of the errata that this function eliminates.
+**
+** @details	A string @a ,,,bccd,,,,,,dcc,,d, where ',' is the @a delimiter
+**			becomes: @a bccd,dcc,d .
+** @param	str			The string to preprocess. May not be const; const_cast
+**						if needed.
+** @param	delimiter	The delimiter to trim.
+** @return	A reference to the trimmed @a str.
+*/
+std::string &	IRC_Server::preprocess_list_param(std::string & str, char delimiter)
+{
+	return (remove_adjacent_duplicates(trim(str, std::string(1, delimiter)), delimiter));
+}
+
+/*!
 ** @brief	Attempts to register @a client on the server, sending the
 **			appropriate replies to the client depending on whether the attempt
 **			was or was not successful.
@@ -129,7 +185,7 @@ bool	IRC_Server::register_client(Client & client)
 **			@a sender reprimanding them and they are banished from the Realm.
 ** @param	sender	A reference to the client who who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
-**					and its arguments (argv[...]) in a string vector.
+**					and its arguments (argv[1,...]) in a string vector.
 */
 void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv)
 {
@@ -252,7 +308,7 @@ void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const &
 **			try to register @a sender.
 ** @param	sender	A reference to the client who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
-**					and its arguments (argv[...]) in a string vector.
+**					and its arguments (argv[1,...]) in a string vector.
 */
 void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const & argv)
 {
@@ -280,20 +336,58 @@ void	IRC_Server::exec_cmd_USER(Client & sender, std::vector<std::string> const &
 
 		//(std::string() += "blah").size(); //debug //normal
 		//(std::ostringstream() << "No recipient given (" << argv[0] << ")").str(); //debug //why not compiler????
-//debug; ban channel names with channel prefixes CHANNEL_PREFIXES (see constants.hpp)
-//debug; TON of unresolved questions:
-	//sender == recipient is allowed?								sí				//hecho
-	//user_nick == channel_nick allowed?							#channel always
-	//what if getline fails, UNKNOWN error?							sí				//hecho
-	//treat user_nick same as channel_nick?							no
-	//what the hell to do with all the prefixes and suffixes???		parse
-	//very basic still xD!!!!
+/*!
+** @brief	Executes a PRIVMSG command originating from @a sender.
+**
+** @details	Attempts to send the text at argv[2] to the targets listed at
+**			argv[1], wherein targets are separated by a ','.
+**
+**			If less than 3 parameters (cmd, targets, message) are present in
+**			@a argv a NEEDMOREPARAMS error is sent back to @a sender.
+**
+**			Otherwise, if there are no targets in @a argv, a NORECIPIENT error
+**			is sent back to @a sender.
+**
+**			Otherwise, if there is no text at argv[2], a NOTEXTTOSEND error is
+**			sent back to @a sender.
+**
+**			Otherwise, we attempt to retrieve each target from the target list
+**			using std::getline() with ',' as a delimiter. If that fails for any
+**			reason, an UNKNOWN error is sent back to @a sender.
+**
+**			Any failure of std::getline(), such as due to end of file or badbit,
+**			will cause the while condition to be false, aborting any subsequent
+**			retrieval attempts. Thus, only one UNKNOWN error will be sent back
+**			to @a sender, even if there were more errors in the stream.
+**
+**			If a provided target nick or channel name is not found, a NOSUCHNICK
+**			error will be sent back to @a sender. Multiple such errors may be
+**			sent for a single command.
+**
+**			If the target is a user, the text at argv[2] will be sent directly
+**			to the user as a private message.
+**
+**			The target is considered a channel if it is preceded by '#'. If the
+**			target is a channel, the text at argv[2] will be sent to each member
+**			of the channel at or above the privilege level specified by the
+**			prefixes preceding '#'. No prefixes signifies the lowest privilege
+**			level and will be sent to all channel members, '%' signifies halfop
+**			level, '@' signifies chanop level and '~' signifies owner level.
+**
+**			Any other prefix will not be accepted. 				//debug //currently implemented in channel object, maybe move logic here
+**
+**			If multiple prefixes are sent, the one with the lowest privilege
+**			level will be used. For example: "@~%#" == "%#".	//debug // currently implemented in channel object, maybe move logic here
+** @param	sender	A reference to the client who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[1,...]) in a string vector.
+*/
 void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv)
 {
 
 	if (argv.size() < 3) //we need cmd target{,target} :message
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (argv[1].empty() == true)
+	else if (argv[1].empty() == true) //eliminate any commas before checking this
 	{
 		std::ostringstream ss;
 		ss << "No recipient given (" << argv[0] << ")";
@@ -307,7 +401,8 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		std::string				target;
 		Client * 				usr_recipient;
 		t_Channel_Map::iterator	ch_recipient;
-		std::stringstream		raw_target_list(argv[1]);
+		//std::stringstream		raw_target_list(remove_adjacent_duplicates(trim(const_cast<std::string &>(argv[1]), std::string(1, ',')), ','));
+		std::stringstream		raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
 
 		do
 		{
@@ -322,14 +417,13 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 				{
 					size_t		chname_pos;
 					if ((chname_pos = target.find_first_not_of("#", hash_pos)) == std::string::npos ||
-						(ch_recipient = _channels.find(target.substr(chname_pos))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
+						(ch_recipient = _channels.find(target.substr(chname_pos - 1))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
 						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");			//Don't know why, but RFC says use NOSUCHNICK, not NOSUCHCHANNEL, in this case!
 					else																				//it's a channel and it exists in _channels
 					{
 						std::string	prefixes = target.substr(0, hash_pos);									//get the pre-hash-pos prefixes, if any!!!!
 						send_rpl_PRIVMSG(ch_recipient->second, sender, prefixes, argv[2]);
-					}
-					
+					}	
 				}
 				else if((usr_recipient = find_client_by_nick(target)) == NULL)	//it's a user, but no such nick
 					send_err_NOSUCHNICK(sender, target, "No such nick");
@@ -339,8 +433,6 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		}
 		while (raw_target_list.eof() == false);
 	}
-
-	//
 }
 
 
@@ -366,153 +458,153 @@ std::vector<std::string> ft_parseStringToVector(std::string const &str, std::str
 }
 
 // TODO: Reduce the size of this function
-// when is NOSUCHCHANNEL thrown?? NOSUCHCHANNEL doesn't always mean CHANNEL created?
-// void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::string> const & argv)
-// {
-// 	if (argv.size() < 2)
-// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-// 	else if (argv[1] == "0")
-// 	{
-// 		//Leave all currently joined channels.
-// 	}
-// 	else						//try to process
-// 	{
-// 			std::stringstream	raw_channel_list(argv[1]);	//get raw channel list
-// 			std::stringstream	raw_key_list;
-// 			if (argv.size() > 2)							//get raw key list, if any
-// 				raw_key_list << argv[2];
-// 			do								//get channels
-// 			{
-// 				std::string				channel;
-// 				std::string 			key;
-// 				t_Channel_Map::iterator chan_it;
-// 				int						ret; // 1 == success, -1 bad password, -2 bad privilege syntax, 0 bad_alloc or other errors
-
-// 				key.clear();	//we want to clear this string after raw_key_list.eof()
-// 				std::getline(raw_channel_list, channel, ',');
-// 				std::getline(raw_key_list, key, ',');			//eof flag will be set when done, and key will no longer be updated
-// 				if (raw_channel_list.fail() == true)
-// 				{
-// 					ret = 0;
-// 					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
-// 				}
-// 				else if (channel_name_is_valid(channel) == false)
-// 				{
-// 					ret = 0;
-// 					//BADCHANMASK?? UNKNOWN ERROR??
-// 				}
-// 				else if ((chan_it = _channels.find(channel)) != _channels.end())	//channel exists, sender joins channel
-// 					// membership restriction checks go in addMember, coded in return value; check if banned, etc.
-// 					ret = chan_it->second.addMember(sender, key, 0); //key will be empty if there is none associated; 0 is for user level. 
-// 				else																//channel doesn't exist, sender creates channel
-// 					ret = add_channel(Channel(sender, channel, key));				//bool is int-casted here, true == 1, false == 0
-// 				if (ret == 1)			//success case
-// 				{
-// 					//send_rpl_JOIN()
-// 				}
-// 				else if (ret == -1)		//bad key case
-// 				{
-// 					//send_err_BADCHANNELKEY()
-// 				}
-// 				else if (ret == -2)
-// 				{
-// 					//send_err_UNKNOWN()?? bad syntax??
-// 				}
-				
-// 			}
-// 			while (raw_channel_list.eof() == false);
-// 	}
-// }
-
-void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
-{
-	std::vector<std::string> stringVector;
-	std::vector<std::string> stringVector2;
-	size_t	pos;
-	bool	havePasswords;
-	size_t it_size;
-
-	//   JOIN 0    	; Leave all currently joined channels.
-
-	if (argv.size() == 2 && argv[1] == "0")
-	{
-		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
-	}
-	stringVector = ft_parseStringToVector(argv[1], ",");
-	havePasswords = false;
-	if (argv.size() == 3)
-	{	
-		stringVector2 = ft_parseStringToVector(argv[2], ",");
-		havePasswords = true;
-	}
-	pos = 0;
-	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
-	{
-		std::string password;;
-		std::string expectsString(*it);
-		it_size = it->size();
-		if (havePasswords && pos < stringVector2.size())
-			password = stringVector2[pos];
-		if (it_size > MAX_CHANNELNAME_SIZE)
-			send_err_INPUTTOOLONG(sender, "Channel name to long");
-		else if (it_size <= 1)
-			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel name to short");
-		else if (expectsString[0] != '&' && expectsString[0] != '#' && expectsString[0] != '+' && expectsString[0] != '!')
-			send_err_UNKNOWNERROR(sender, expectsString, "Channel first char invalid. Use '&', '#', '+' or '!'");
-		for(size_t i = 1; i < it_size; i++)
-		{
-			if(expectsString[i] == ' ' || expectsString[i] == ',' || expectsString[i] == ':')
-				send_err_UNKNOWNERROR(sender, expectsString, "Invalid symbol used in the creation of the channel name");
-		}
-
-		bool existChannel = find_channel(expectsString);
-		if(!existChannel)
-		{
-			if (pos < stringVector2.size())
-			{
-				Channel new_channel(sender, expectsString);
-				add_channel(new_channel);
-			}
-			else
-			{
-				Channel new_channel(sender, expectsString, password);
-				add_channel(new_channel);
-			}
-			return ;
-		}
-
-		if (pos < stringVector2.size())
-		{
-			t_Channel_Map::iterator it = _channels.find(expectsString);
-			int addClientReturn = it->second.addMember(sender, password, 0);
-			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
-
-			if (addClientReturn == INVALID_PASSWORD_RETURN)
-				send_err_PASSWDMISMATCH(sender, "Incorrect password");
-			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-		}
-		// else
-		// {
-		// 	t_Channel_Map::iterator it = _channels.find(expectsString);
-		// 	int addClientReturn = it->second.addMember(sender, 0);
-		// 	//int addClientReturn = _channels[expectsString].addNewClient(sender);
-		// 	if (addClientReturn == INVALID_PASSWORD_RETURN)
-		// 		send_err_PASSWDMISMATCH(sender, "This channel need a password");
-		// 	else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-		// 		send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-		// }
-		pos++;
-	}
-}
-
-void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv)
+// DUDAS
+// 	- when is NOSUCHCHANNEL thrown?? NOSUCHCHANNEL doesn't always mean CHANNEL created?
+// 	- qué mensaje enviar si channel_name es inválido??? BADCHANMASK o UNKNOWN???
+void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::string> const & argv)
 {
 	if (argv.size() < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else
-		exec_join(sender, argv);
+	else if (argv[1] == "0")
+		sender.leave_all_channels();
+	else						//try to process
+	{
+			std::stringstream	raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));	//get raw channel list
+			std::stringstream	raw_key_list;
+			if (argv.size() > 2)							//get raw key list, if any
+				raw_key_list << preprocess_list_param(const_cast<std::string &>(argv[2]), ',');
+			do								//get channels
+			{
+				std::string				channel;
+				std::string 			key;
+				t_Channel_Map::iterator chan_it;
+				int						ret = 0; // 1 == success, -1 bad password, -2 bad privilege syntax, 0 bad_alloc, bad chname or other errors
+
+				key.clear();	//we want to clear this string after raw_key_list.eof()
+				std::getline(raw_channel_list, channel, ',');
+				std::getline(raw_key_list, key, ',');			//eof flag will be set when done, and key will no longer be updated
+				if (raw_channel_list.fail() == true)
+					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
+				else if (channel_name_is_valid(channel) == false)
+				{
+					//BADCHANMASK?? UNKNOWN ERROR??
+				}
+				else if ((chan_it = _channels.find(channel)) == _channels.end())	//channel doesn't exist, sender creates channel
+				{
+					if ((chan_it = add_channel(sender, channel, key)) == _channels.end())	//map insert failure, probably bad_alloc or something
+						send_err_UNKNOWNERROR(sender, argv[0], "Server error: could not add channel");
+					else
+						ret = 1;															//map insert success
+				}
+				else if	((ret = chan_it->second.addMember(sender, key, 0)) != 1)	//channel exists, sender attempts to join channel...
+				{																	//but failed, because...
+					if (ret == -1)													//it gave the wrong key
+						send_err_BADCHANNELKEY(sender, chan_it->second, "Cannot join channel (+k)");
+					if (ret == 0)													//garden gnomes interfered; probably memory-related
+						send_err_UNKNOWNERROR(sender, argv[0], "Server error: could not add channel");
+				}
+				//SEND_RPL
+				if (ret == 1) //somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
+				{
+					send_rpl_JOIN(chan_it->second, sender);
+					send_rpl_NAMREPLY(sender, chan_it->second);
+				}
+					// membership restriction checks go in addMember, coded in return value; check if banned, etc.
+					//key will be empty if there is none associated; 0 is for user level. 
+			}
+			while (raw_channel_list.eof() == false);
+	}
 }
+
+// void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
+// {
+// 	std::vector<std::string> stringVector;
+// 	std::vector<std::string> stringVector2;
+// 	size_t	pos;
+// 	bool	havePasswords;
+// 	size_t it_size;
+
+// 	//   JOIN 0    	; Leave all currently joined channels.
+
+// 	if (argv.size() == 2 && argv[1] == "0")
+// 	{
+// 		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
+// 	}
+// 	stringVector = ft_parseStringToVector(argv[1], ",");
+// 	havePasswords = false;
+// 	if (argv.size() == 3)
+// 	{	
+// 		stringVector2 = ft_parseStringToVector(argv[2], ",");
+// 		havePasswords = true;
+// 	}
+// 	pos = 0;
+// 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+// 	{
+// 		std::string password;;
+// 		std::string expectsString(*it);
+// 		it_size = it->size();
+// 		if (havePasswords && pos < stringVector2.size())
+// 			password = stringVector2[pos];
+// 		if (it_size > MAX_CHANNELNAME_SIZE)
+// 			send_err_INPUTTOOLONG(sender, "Channel name to long");
+// 		else if (it_size <= 1)
+// 			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel name to short");
+// 		else if (expectsString[0] != '&' && expectsString[0] != '#' && expectsString[0] != '+' && expectsString[0] != '!')
+// 			send_err_UNKNOWNERROR(sender, expectsString, "Channel first char invalid. Use '&', '#', '+' or '!'");
+// 		for(size_t i = 1; i < it_size; i++)
+// 		{
+// 			if(expectsString[i] == ' ' || expectsString[i] == ',' || expectsString[i] == ':')
+// 				send_err_UNKNOWNERROR(sender, expectsString, "Invalid symbol used in the creation of the channel name");
+// 		}
+
+// 		bool existChannel = find_channel(expectsString);
+// 		if(!existChannel)
+// 		{
+// 			if (pos < stringVector2.size())
+// 			{
+// 				Channel new_channel(sender, expectsString);
+// 				add_channel(new_channel);
+// 			}
+// 			else
+// 			{
+// 				Channel new_channel(sender, expectsString, password);
+// 				add_channel(new_channel);
+// 			}
+// 			return ;
+// 		}
+
+// 		if (pos < stringVector2.size())
+// 		{
+// 			t_Channel_Map::iterator it = _channels.find(expectsString);
+// 			int addClientReturn = it->second.addMember(sender, password, 0);
+// 			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
+
+// 			if (addClientReturn == INVALID_PASSWORD_RETURN)
+// 				send_err_PASSWDMISMATCH(sender, "Incorrect password");
+// 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+// 				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
+// 		}
+// 		// else
+// 		// {
+// 		// 	t_Channel_Map::iterator it = _channels.find(expectsString);
+// 		// 	int addClientReturn = it->second.addMember(sender, 0);
+// 		// 	//int addClientReturn = _channels[expectsString].addNewClient(sender);
+// 		// 	if (addClientReturn == INVALID_PASSWORD_RETURN)
+// 		// 		send_err_PASSWDMISMATCH(sender, "This channel need a password");
+// 		// 	else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
+// 		// 		send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
+// 		// }
+// 		pos++;
+// 	}
+// }
+
+// void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv)
+// {
+// 	if (argv.size() < 2)
+// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+// 	else
+// 		exec_join(sender, argv);
+// }
 
 
 /****************************************
@@ -604,16 +696,41 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 
 */
 
+
+/*!
+** @brief	Executes a NAMES command originating from @a sender.
+**
+** @details	The @a sender receives a list of members of each channel listed in
+**			argv[1]. Channels must be delimited by commas: channel1,channel2...
+**
+**			As in all lists of this kind, we preprocess the parameter to clean
+**			up trailing, leading or duplicate delimiters.
+**
+**			If the member list for a channel does not fit in MSG_BUF_SIZE, it
+**			will be split into several NAMREPLY messages. NAMREPLY will send
+**			ENDOFNAMES when it has finished sending all members.
+**
+**			If no channel name is sent, only an ENDOFNAMES reply is sent with
+**			an asterisk in place of a channel name.
+**
+**			If any channel name is invalid or not found, only an ENDOFNAMES
+**			reply is sent with the invalid channel name.
+**
+**			If garden gnomes attack std::getline(), UNKNOWNERROR error reply is
+**			sent.
+**
+**			//debug //invisible user modes and private channel modes not yet implemented!!
+** @param	sender	A reference to the client who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[1,...]) in a string vector.
+*/
 void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv)
 {
-
-	if (argv.size() == 1)
-	{
-		// List all channels and users inside
-	}
+	if (argv.size() < 2)
+		send_rpl_ENDOFNAMES(sender, "*");
 	else if (argv.size() == 2)						
 	{
-			std::stringstream	raw_channel_list(argv[1]);
+			std::stringstream	raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
 			do
 			{
 				std::string				channel;
@@ -626,18 +743,17 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 				{
 					//BADCHANMASK?? UNKNOWN ERROR??
 				}
-				else if ((chan_it = _channels.find(channel)) != _channels.end())
+				else if ((chan_it = _channels.find(channel)) == _channels.end())	//didn't find channel
+					send_rpl_ENDOFNAMES(sender, channel);
+				else																//found channel
 				{
-					// Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
-
+					//debug / error // Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
 					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
+
+					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
 			}
 			while (raw_channel_list.eof() == false);
-	}
-	else
-	{
-		//	Enviar error por demasiados argumentos
 	}
 }
 

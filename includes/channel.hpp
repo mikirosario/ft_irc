@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/02 18:00:13 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/05 21:05:05 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,12 +59,9 @@ class Channel
 		bool removeMember(std::string const & client_nick);
 		//bool removeMember(Client const &client, std::string const &msg);
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);
-		std::string const & getChannelName() const;
-		std::string const & getTopic() const;
-
+		
 		void setOwner(Client const &OwnerUser2);
 		void setTopic(std::string const &Topic);
-		std::string getOwner() const;
 		bool findClient(Client const &client);
 		bool	is_empty(void) const;
 
@@ -83,8 +80,18 @@ class Channel
 			return (_channelName != other._channelName);
 		}
 
+		size_t	size(void) const;
+
 		//typedef std::map<std::string, User_Privileges, case_insensitive_less>	t_ChannelMemberMap; //debug //remove
 		typedef std::set<std::string, case_insensitive_less>					t_ChannelMemberSet;
+		
+		/* GETTERS */
+		std::string const &			getChannelName(void) const;
+		std::string const & 		getTopic(void) const;
+		std::string const & 		getOwner(void) const;
+		t_ChannelMemberSet const &	getChanops(void) const;
+		t_ChannelMemberSet const &	getHalfops(void) const;
+		t_ChannelMemberSet const &	getUsers(void) const;
 	private:
 		Channel(void);
 
