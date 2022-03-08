@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/05 23:05:32 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/08 07:51:50 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -516,97 +516,6 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 	}
 }
 
-// void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
-// {
-// 	std::vector<std::string> stringVector;
-// 	std::vector<std::string> stringVector2;
-// 	size_t	pos;
-// 	bool	havePasswords;
-// 	size_t it_size;
-
-// 	//   JOIN 0    	; Leave all currently joined channels.
-
-// 	if (argv.size() == 2 && argv[1] == "0")
-// 	{
-// 		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
-// 	}
-// 	stringVector = ft_parseStringToVector(argv[1], ",");
-// 	havePasswords = false;
-// 	if (argv.size() == 3)
-// 	{	
-// 		stringVector2 = ft_parseStringToVector(argv[2], ",");
-// 		havePasswords = true;
-// 	}
-// 	pos = 0;
-// 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
-// 	{
-// 		std::string password;;
-// 		std::string expectsString(*it);
-// 		it_size = it->size();
-// 		if (havePasswords && pos < stringVector2.size())
-// 			password = stringVector2[pos];
-// 		if (it_size > MAX_CHANNELNAME_SIZE)
-// 			send_err_INPUTTOOLONG(sender, "Channel name to long");
-// 		else if (it_size <= 1)
-// 			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel name to short");
-// 		else if (expectsString[0] != '&' && expectsString[0] != '#' && expectsString[0] != '+' && expectsString[0] != '!')
-// 			send_err_UNKNOWNERROR(sender, expectsString, "Channel first char invalid. Use '&', '#', '+' or '!'");
-// 		for(size_t i = 1; i < it_size; i++)
-// 		{
-// 			if(expectsString[i] == ' ' || expectsString[i] == ',' || expectsString[i] == ':')
-// 				send_err_UNKNOWNERROR(sender, expectsString, "Invalid symbol used in the creation of the channel name");
-// 		}
-
-// 		bool existChannel = find_channel(expectsString);
-// 		if(!existChannel)
-// 		{
-// 			if (pos < stringVector2.size())
-// 			{
-// 				Channel new_channel(sender, expectsString);
-// 				add_channel(new_channel);
-// 			}
-// 			else
-// 			{
-// 				Channel new_channel(sender, expectsString, password);
-// 				add_channel(new_channel);
-// 			}
-// 			return ;
-// 		}
-
-// 		if (pos < stringVector2.size())
-// 		{
-// 			t_Channel_Map::iterator it = _channels.find(expectsString);
-// 			int addClientReturn = it->second.addMember(sender, password, 0);
-// 			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
-
-// 			if (addClientReturn == INVALID_PASSWORD_RETURN)
-// 				send_err_PASSWDMISMATCH(sender, "Incorrect password");
-// 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-// 				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-// 		}
-// 		// else
-// 		// {
-// 		// 	t_Channel_Map::iterator it = _channels.find(expectsString);
-// 		// 	int addClientReturn = it->second.addMember(sender, 0);
-// 		// 	//int addClientReturn = _channels[expectsString].addNewClient(sender);
-// 		// 	if (addClientReturn == INVALID_PASSWORD_RETURN)
-// 		// 		send_err_PASSWDMISMATCH(sender, "This channel need a password");
-// 		// 	else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-// 		// 		send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-// 		// }
-// 		pos++;
-// 	}
-// }
-
-// void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv)
-// {
-// 	if (argv.size() < 2)
-// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-// 	else
-// 		exec_join(sender, argv);
-// }
-
-
 /****************************************
 			PART COMMAND
 *****************************************/
@@ -852,11 +761,82 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 
 /********************************************************************************
 
-		TODO - Existe el commando MODE...pero me niego a hacerlo
+ * 				MODE
 		
 *********************************************************************************/
 
+void IRC_Server::ft_add_mode(Client const &sender, std::string const &channelName, std::string const &modes)
+{
+	t_Channel_Map::iterator chan_it;
+	const std::string valid_modes = "is";
+	
+	chan_it = _channels.find(channelName);
+	for(size_t i = 1; i < modes.size(); i++) 
+	{
+    	if(valid_modes.find(modes.at(i)) != std::string::npos)
+		{
+				//	Add this mode to channel if not added
+		}
+		else
+		{
+			send_err_ERR_UNKNOWNMODE(sender, modes[i], "is unknown mode char to me");
+		}
+	}
+	
 
+}
+
+void IRC_Server::ft_remove_mode(Client const &sender, std::string const &channelName, std::string const &modes)
+{
+	t_Channel_Map::iterator chan_it;
+	const std::string valid_modes = "is";
+
+	chan_it = _channels.find(channelName);
+	for(size_t i = 1; i < modes.size(); i++) 
+	{
+    	if(valid_modes.find(modes.at(i)) != std::string::npos)
+		{
+				//	Remove this mode to channel if not added	
+		}
+		else
+		{
+			send_err_ERR_UNKNOWNMODE(sender, modes[i], "is unknown mode char to me");
+		}
+	}
+	
+}
+
+
+void	IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &argv)
+{
+	if (argv.size() < 3)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (argv[1].front() == '+' || argv[1].front() == '&')
+		send_err_UNKNOWNERROR(sender, argv[0], "Unsupported channel prefixes");
+	else if (argv[1].front() == '#' || argv[1].front() == '!')
+	{
+		if(!find_channel(argv[1]))
+			send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+		else
+		{
+			if (argv[2].front() == '+' )
+			{
+				ft_add_mode(sender, argv[1], argv[2]);
+			}
+			else if(argv[2].front() == '-')
+			{
+				ft_remove_mode(sender, argv[1], argv[2]);
+			}
+			else
+			{
+				send_err_UNKNOWNERROR(sender, argv[0], " + or - required to give/remove modes");
+			}
+
+		}
+	}
+	else if (!find_channel(argv[1]))
+		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+}
 
 /*!
 ** @brief	Takes the message from the Client as an argument vector, identifies

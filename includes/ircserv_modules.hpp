@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/05 22:54:36 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/08 07:52:51 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,7 @@ void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
-
-
+void	exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv);
 
 //numeric replies
 std::string	numeric_reply_start(Client const & client, char const * numeric) const;
@@ -76,6 +75,7 @@ void		send_rpl_namReply(Client const & recipient, std::string const & command, s
 
 void		send_err_UNKNOWNERROR(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_UNKNOWNCOMMAND(Client const & recipient, std::string const & command, std::string const & description) const;
+void		send_err_ERR_UNKNOWNMODE(Client const & recipient, char const &command, std::string const & description) const;
 void		send_err_ALREADYREGISTERED(Client const & recipient, std::string const & description) const;
 void		send_err_NEEDMOREPARAMS(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_NONICKNAMEGIVEN(Client const & recipient, std::string const & description) const;
@@ -113,6 +113,8 @@ void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 
 // Auxiliar methods
 
-void	exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv);
+void	exec_join(Client & sender, std::vector<std::string> const & argv);
+void 	ft_add_mode(Client const &sender, std::string const &channelName, std::string const &modes);
+void	ft_remove_mode(Client const &sender, std::string const &channelName, std::string const &modes);
 
 #endif
