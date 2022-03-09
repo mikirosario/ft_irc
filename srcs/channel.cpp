@@ -262,7 +262,8 @@ int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::i
 
 /*!
 ** @brief	Removes @a client_nick from this channel, if @a client_nick is a
-**			member.
+**			member. Destroys channel if client_nick was the last member of the
+**			channel.
 **
 ** @details	If @a client_nick is the owner, the channel becomes ownerless.
 **			Otherwise, we search for @a client in each of the privilege levels
@@ -270,12 +271,13 @@ int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::i
 ** @param	client_nick	Nick of the member to remove from the channel.
 ** @return	true if member was removed, false if @a client_nick was not a member
 */
-bool IRC_Server::Channel::removeMember(std::string const & client_nick) 
+bool IRC_Server::Channel::removeMember(std::string const & client_nick, IRC_Server & parent)
 {
+	bool	member_was_removed = false;
 	if (_owner == client_nick)
 	{
 		_owner.clear();
-		return (true);
+		member_was_removed = true;
 	}
 	else
 	{
@@ -283,9 +285,26 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 	
 		for (size_t i = 0, ret = 0; i < 3; ++i)
 			if ((ret = pMemberSet[i]->erase(client_nick)) > 0)
-				return (true);
-		return (false);
+				member_was_removed = true;
 	}
+	if (member_was_removed == true && size() == 0)
+		parent.remove_channel(getChannelName());
+	return (member_was_removed);
+}
+
+void	IRC_Server::Channel::removeAllMembers(IRC_Server & parent)
+{
+	t_ChannelMemberSet::iterator	it;
+	size_t							owneri = 0;
+
+	for ( ; owneri < !getOwner().empty(); ++owneri)
+		removeMember(getOwner(), parent);
+	for (it = getChanops().begin(); it != getChanops().end(); ++it)
+		removeMember(*it, parent);
+	for (it = getHalfops().begin(); it != getHalfops().end(); ++it)
+		removeMember(*it, parent);
+	for (it = getUsers().begin(); it != getUsers().end(); ++it)
+		removeMember(*it, parent);
 }
 
 // bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)

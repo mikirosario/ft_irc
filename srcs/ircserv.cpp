@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 22:00:11 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/09 23:22:35 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -443,6 +443,7 @@ void	IRC_Server::add_connection(int fd, char const * remoteIP)
 */
 void	IRC_Server::remove_connection(int index)
 {
+	_clients[index].leave_all_channels(*this);
 	close_connection(_pfds[index].fd);
 	_pfds[index] = _pfds[_connections - 1];
 	_clients[index].move(_clients[_connections - 1]);		//move references of last client to this position
@@ -741,7 +742,12 @@ IRC_Server::t_Channel_Map::iterator	IRC_Server::add_channel(Client & creator, st
 
 void	IRC_Server::remove_channel(std::string const & channel_name)
 {
-	_channels.erase(channel_name);
+	t_Channel_Map::iterator	it = _channels.find(channel_name);
+	if (it != _channels.end())
+	{
+		it->second.removeAllMembers(*this);
+		_channels.erase(channel_name);
+	}
 }
 
 bool	IRC_Server::find_channel(std::string const & channel_name)
@@ -755,7 +761,7 @@ void	IRC_Server::remove_user_from_channel(Client const &client, std::string cons
 {
 	t_Channel_Map::iterator it = _channels.find(channel_name);
 	if  (it != _channels.end())
-		it->second.removeMember(client.get_nick());
+		it->second.removeMember(client.get_nick(), *this);
 	//_channels[channel_name].removeClient(client);
 }
 

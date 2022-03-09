@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 22:27:52 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/09 23:00:43 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -594,12 +594,12 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 ** @param	channel_it	An iterator to the channel from which the client will
 **						remove itself.
 */
-void	IRC_Server::Client::leave_channel(t_ChanMap::iterator & channel_it)
+void	IRC_Server::Client::leave_channel(t_ChanMap::iterator & channel_it, IRC_Server & parent)
 {
 	//debug
 	bool ret_rmember;
 	//debug
-	ret_rmember = channel_it->second->second.removeMember(get_nick());
+	ret_rmember = channel_it->second->second.removeMember(get_nick(), parent);
 	_channels.erase(channel_it);
 	//debug
 	std::cout << "leave channel result: " << ret_rmember << std::endl;
@@ -651,20 +651,20 @@ void		IRC_Server::Client::send_msg(std::string const & msg) const
 ** @return	true if successful, false if channel_name is not present in the
 **			client's @a _channels map.
 */
-bool		IRC_Server::Client::leave_channel(std::string const & channel_name)
+bool		IRC_Server::Client::leave_channel(std::string const & channel_name, IRC_Server & parent)
 {
 	t_ChanMap::iterator it = _channels.find(channel_name);
 	
 	if (it == _channels.end())
 		return false;
-	leave_channel(it);
+	leave_channel(it, parent);
 	return true;
 }
 
-void		IRC_Server::Client::leave_all_channels(void)
+void		IRC_Server::Client::leave_all_channels(IRC_Server & parent)
 {
 	for (t_ChanMap::iterator it = _channels.begin(), end = _channels.end(); it != end; ++it) //map.erase() should preserve range integrity
-		leave_channel(it);
+		leave_channel(it, parent);
 }
 
 /* GETTERS */

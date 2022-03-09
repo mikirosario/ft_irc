@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 22:11:36 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/09 23:29:25 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,14 +56,15 @@ class Channel
 		// int addNewClient(Client const &client, std::string const & privileges);
 		// int addNewClient(Client const &client, std::string const &password);
 		int	addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
-		bool removeMember(std::string const & client_nick);
+		bool removeMember(std::string const & client_nick, IRC_Server & parent);
+		void	removeAllMembers(IRC_Server & parent);
 		//bool removeMember(Client const &client, std::string const &msg);
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);
 		
 		void setOwner(Client const &OwnerUser2);
 		void setTopic(std::string const &Topic);
 		bool findClient(Client const &client);
-		bool	is_empty(void) const;
+		//bool	is_empty(void) const;
 
 
 		bool 	send_msg(char privilege_level, std::string const & message, IRC_Server const & parent) const;
