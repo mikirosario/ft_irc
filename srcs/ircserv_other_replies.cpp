@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/04 20:19:48 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/09 21:30:26 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,4 +142,20 @@ void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source
 		std::cout << msg << std::endl;
 	//debug
 	recipient.send_msg(0, msg, *this);
+}
+
+void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const
+{
+	std::string msg_recipient = get_source() + " PART ";
+	std::string msg_channel = recipient.get_source() + " PART ";
+
+	msg_recipient += channel.getChannelName();
+	msg_channel += channel.getChannelName();
+	non_numeric_reply_end(msg_recipient, part_message);
+	non_numeric_reply_end(msg_channel, part_message);
+	recipient.send_msg(msg_recipient);
+	channel.send_msg(0, msg_channel, *this);
+
+	// if (part_message.empty() == true)
+	// 	part_message = recipient.get_nick();
 }

@@ -210,21 +210,27 @@ IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getUsers(vo
 **			There can only be one _owner, so a replaced _owner is downgraded to
 **			_chanop.
 **
+**			If a channel is added to the client's channel list but the client
+**			could not be added to the channel's client list, the channel entry
+**			in the client channel list will be deleted.
 ** @param	client			The member to be added.
 ** @param	password		The password provided by the client.
 ** @param	privilege_level	The member's privilege level in the channel.
 **							@see SUPPORTED_CHANNEL_PREFIXESÇ
-** @return	1 if the member was successfully added. Otherwise, -1 if the
-**			client's password was wrong, -2 if the client's privilege_level was
-**			not understood, and 0 if the member was not successfully added for
-**			any other reason.
+** @return	1 if the member was successfully added to the channel's member list
+**			AND the channel was successfully added to the client's channel list.
++*			Otherwise, -1 if the client's password was wrong, -2 if the client's
+**			privilege_level was not understood, and 0 if the member was not
+**			successfully added for any other reason.
 */
-int IRC_Server::Channel::addMember(Client & client, std::string const &password, char privilege_level)
+int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const &password, char privilege_level)
 {
     if (_channelPassword != password)
 		return(INVALID_PASSWORD_RETURN);
 	else if (std::strchr(SUPPORTED_CHANNEL_PREFIXES, privilege_level) == NULL)
 		return(-2); //BAD PREFIX
+	else if (client.set_channel_membership(chan_it) == false)						//channel membership predicated on client member channel iterator set
+		return (0);
 	std::pair<t_ChannelMemberSet::iterator, bool> ret;
 	ret.second = false;
 	if (privilege_level == 0)														//lowest privilege level
@@ -236,7 +242,8 @@ int IRC_Server::Channel::addMember(Client & client, std::string const &password,
 	else if (privilege_level == '~' &&
 			((ret.second = _owner.empty()) == true || (ret = _chanops.insert(_owner)).second == 1))	//owner privilege level; if there is no owner, or existing owner is successfully downgraded to chanops, replace owner
 		_owner = client.get_nick();
-	
+	if (ret.second == false)
+		client.remove_channel_membership(chan_it);
     return (ret.second);
 }
 

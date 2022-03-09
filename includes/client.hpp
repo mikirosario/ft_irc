@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/04 18:21:21 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/09 22:27:42 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@ class Client
 		void	set_state_registered(void);
 		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
+		void	remove_channel_membership(t_ChanMap::iterator const & channel_iterator);
 
 		void	clear(void);
 

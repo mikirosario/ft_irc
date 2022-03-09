@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/05 22:54:36 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/09 21:06:08 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ void		send_err_NORECIPIENT(Client const & recipient, std::string const & descrip
 void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const;
 void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
 void		send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const;
+void		send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const;
 
 
 	// Me quedo aqui hoy
@@ -110,6 +111,7 @@ void		send_rpl_NICK(Client const & recipient, std::string const & old_source) co
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
+void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
 
 // Auxiliar methods
 

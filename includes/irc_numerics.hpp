@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/03/03 21:52:28 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/09 19:54:31 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@
 #define ERR_NONICKNAMEGIVEN "431"
 #define ERR_ERRONEOUSNICKNAME "432"
 #define ERR_NICKNAMEINUSE "433"
+#define ERR_NOTONCHANNEL "442"
 #define ERR_NOTREGISTERED "451"
 #define ERR_NEEDMOREPARAMS "461"
 #define ERR_ALREADYREGISTERED "462"

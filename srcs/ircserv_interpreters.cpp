@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 19:10:34 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/09 22:12:08 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -440,27 +440,8 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 			JOIN COMMAND
 *****************************************/
 
-std::vector<std::string> ft_parseStringToVector(std::string const &str, std::string const &delimiter)
-{
-	std::vector<std::string> stringVector;
-	size_t	pos;
-	std::string token;
-
-	std::string str_copy = str;
-	pos = 0;
-	while ((pos = str_copy.find(delimiter)) != std::string::npos) 
-	{
-		token = str_copy.substr(0, pos);
-		stringVector.push_back(token);
-		str_copy.erase(0, pos + delimiter.length());
-	}
-	return(stringVector);
-}
-
-// TODO: Reduce the size of this function
 // DUDAS
 // 	- when is NOSUCHCHANNEL thrown?? NOSUCHCHANNEL doesn't always mean CHANNEL created?
-// 	- qué mensaje enviar si channel_name es inválido??? BADCHANMASK o UNKNOWN???
 void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::string> const & argv)
 {
 	if (argv.size() < 2)
@@ -494,7 +475,7 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 					else
 						ret = 1;															//map insert success
 				}
-				else if	((ret = chan_it->second.addMember(sender, key, 0)) != 1)	//channel exists, sender attempts to join channel...
+				else if	((ret = chan_it->second.addMember(sender, chan_it, key, 0)) != 1)	//channel exists, sender attempts to join channel...
 				{																	//but failed, because...
 					if (ret == -1)													//it gave the wrong key
 						send_err_BADCHANNELKEY(sender, chan_it->second, "Cannot join channel (+k)");
@@ -514,140 +495,80 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 	}
 }
 
-// void	IRC_Server::exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv)
-// {
-// 	std::vector<std::string> stringVector;
-// 	std::vector<std::string> stringVector2;
-// 	size_t	pos;
-// 	bool	havePasswords;
-// 	size_t it_size;
-
-// 	//   JOIN 0    	; Leave all currently joined channels.
-
-// 	if (argv.size() == 2 && argv[1] == "0")
-// 	{
-// 		// Aqui haremos un recorrido por todos los canales en que el Cliente esta y le vamos sacando. Parte no implementada en cliente
-// 	}
-// 	stringVector = ft_parseStringToVector(argv[1], ",");
-// 	havePasswords = false;
-// 	if (argv.size() == 3)
-// 	{	
-// 		stringVector2 = ft_parseStringToVector(argv[2], ",");
-// 		havePasswords = true;
-// 	}
-// 	pos = 0;
-// 	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
-// 	{
-// 		std::string password;;
-// 		std::string expectsString(*it);
-// 		it_size = it->size();
-// 		if (havePasswords && pos < stringVector2.size())
-// 			password = stringVector2[pos];
-// 		if (it_size > MAX_CHANNELNAME_SIZE)
-// 			send_err_INPUTTOOLONG(sender, "Channel name to long");
-// 		else if (it_size <= 1)
-// 			send_err_NOSUCHCHANNEL(sender, expectsString, "Channel name to short");
-// 		else if (expectsString[0] != '&' && expectsString[0] != '#' && expectsString[0] != '+' && expectsString[0] != '!')
-// 			send_err_UNKNOWNERROR(sender, expectsString, "Channel first char invalid. Use '&', '#', '+' or '!'");
-// 		for(size_t i = 1; i < it_size; i++)
-// 		{
-// 			if(expectsString[i] == ' ' || expectsString[i] == ',' || expectsString[i] == ':')
-// 				send_err_UNKNOWNERROR(sender, expectsString, "Invalid symbol used in the creation of the channel name");
-// 		}
-
-// 		bool existChannel = find_channel(expectsString);
-// 		if(!existChannel)
-// 		{
-// 			if (pos < stringVector2.size())
-// 			{
-// 				Channel new_channel(sender, expectsString);
-// 				add_channel(new_channel);
-// 			}
-// 			else
-// 			{
-// 				Channel new_channel(sender, expectsString, password);
-// 				add_channel(new_channel);
-// 			}
-// 			return ;
-// 		}
-
-// 		if (pos < stringVector2.size())
-// 		{
-// 			t_Channel_Map::iterator it = _channels.find(expectsString);
-// 			int addClientReturn = it->second.addMember(sender, password, 0);
-// 			//int addClientReturn = _channels[expectsString].addNewClient(sender, password);
-
-// 			if (addClientReturn == INVALID_PASSWORD_RETURN)
-// 				send_err_PASSWDMISMATCH(sender, "Incorrect password");
-// 			else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-// 				send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-// 		}
-// 		// else
-// 		// {
-// 		// 	t_Channel_Map::iterator it = _channels.find(expectsString);
-// 		// 	int addClientReturn = it->second.addMember(sender, 0);
-// 		// 	//int addClientReturn = _channels[expectsString].addNewClient(sender);
-// 		// 	if (addClientReturn == INVALID_PASSWORD_RETURN)
-// 		// 		send_err_PASSWDMISMATCH(sender, "This channel need a password");
-// 		// 	else if (addClientReturn == CLIENT_ALREADY_EXIST_RETURN)
-// 		// 		send_err_UNKNOWNERROR(sender, expectsString, "User already exist in this channel");
-// 		// }
-// 		pos++;
-// 	}
-// }
-
-// void	IRC_Server::exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv)
-// {
-// 	if (argv.size() < 2)
-// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-// 	else
-// 		exec_join(sender, argv);
-// }
-
-
 /****************************************
 			PART COMMAND
 *****************************************/
 
 void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const & argv)
 {
-	size_t argv_size = argv.size();
-	std::vector<std::string> stringVector;
+	//size_t argv_size = argv.size();
+	//std::vector<std::string> stringVector;
 	
-	if (argv_size < 2)
+	if (argv.size() < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-
-	stringVector = ft_parseStringToVector(argv[1], ",");
-	for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+	else
 	{
-		std::string password = "";
-		std::string expectsString(*it);
-
-		//	Error encontrado. Find channel nos devuelve siempre 0 si ejecutamos "PART canalAleatorioInventado"
-		
-		bool existChannel = find_channel(expectsString);
-		if(!existChannel)
-			send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-		else
+		t_Channel_Map::iterator	ch_recipient;
+		std::stringstream		raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
+		std::string				channel;
+		do
 		{
-			//send_err_NOSUCHCHANNEL(sender, argv[0], "Debug error");
-			if (argv_size == 2)
-				remove_user_from_channel(sender, expectsString);
-			// else
-			// {
-			// 	size_t i = 2;
-			// 	std::string tmp_msg;
-
-			// 	while (i < argv_size)
-			// 	{
-			// 		tmp_msg += argv[i];
-			// 		tmp_msg += " ";
-			// 		i++;
-			// 	}
-			// 	remove_user_from_channel(sender, expectsString, tmp_msg);
-			// }
+			
+			std::getline(raw_channel_list, channel, ',');
+			
+			if (raw_channel_list.fail() == true)
+				send_err_UNKNOWNERROR(sender, argv[0], "Invalid channel passed to std::getline()");
+			
+			else
+			{
+				size_t		hash_pos = channel.find_first_of("#");
+				if (hash_pos != std::string::npos) 								//it's a channel
+				{
+					size_t		chname_pos;
+					if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
+						(ch_recipient = _channels.find(channel.substr(chname_pos - 1))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
+						send_err_NOSUCHCHANNEL(sender, "PART", "No such channel");
+					else if (sender.leave_channel(ch_recipient->second.getChannelName()) == false)
+						send_err_NOTONCHANNEL(sender, ch_recipient->second, "You're not on that channel");
+					else																				//it's a channel and it exists in _channels
+						send_rpl_PART(sender, ch_recipient->second, (argv.size() > 2 ? argv[2] : sender.get_nick()));
+				}
+				else
+					send_err_NOSUCHCHANNEL(sender, "PART", "No such channel");
+			}
 		}
+		while (raw_channel_list.eof() == false);
 	}
+	// for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+	// {
+	// 	std::string password = "";
+	// 	std::string expectsString(*it);
+
+	// 	//	Error encontrado. Find channel nos devuelve siempre 0 si ejecutamos "PART canalAleatorioInventado"
+		
+	// 	bool existChannel = find_channel(expectsString);
+	// 	if(!existChannel)
+	// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	// 	else
+	// 	{
+	// 		//send_err_NOSUCHCHANNEL(sender, argv[0], "Debug error");
+	// 		if (argv_size == 2)
+	// 			remove_user_from_channel(sender, expectsString);
+	// 		// else
+	// 		// {
+	// 		// 	size_t i = 2;
+	// 		// 	std::string tmp_msg;
+
+	// 		// 	while (i < argv_size)
+	// 		// 	{
+	// 		// 		tmp_msg += argv[i];
+	// 		// 		tmp_msg += " ";
+	// 		// 		i++;
+	// 		// 	}
+	// 		// 	remove_user_from_channel(sender, expectsString, tmp_msg);
+	// 		// }
+	// 	}
+	// }
 }
 
 /****************************************

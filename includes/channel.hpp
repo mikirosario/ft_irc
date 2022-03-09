@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/05 21:05:05 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/09 22:11:36 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ class Channel
 
 		// int addNewClient(Client const &client, std::string const & privileges);
 		// int addNewClient(Client const &client, std::string const &password);
-		int	addMember(Client & client, std::string const & password, char privilege_level);
+		int	addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
 		bool removeMember(std::string const & client_nick);
 		//bool removeMember(Client const &client, std::string const &msg);
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);

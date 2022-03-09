@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 19:09:02 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/09 21:31:00 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void		IRC_Server::send_err_UNKNOWNERROR(Client const & recipient, std::string co
 */
 void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string const & command, std::string const & description) const
 {
-	std::string msg = numeric_reply_start(std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNCOMMAND);  
+	std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNCOMMAND);
 	msg += recipient.get_source() + " ";
 
 	msg += command;
@@ -238,8 +238,17 @@ void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, Channel const 
 	std::string msg = numeric_reply_start(recipient, ERR_BADCHANNELKEY); 
 	msg += recipient.get_source() + " ";
 
-	msg += "#" + channel.getChannelName();
-	msg += " ";
+	msg += channel.getChannelName();
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_NOTONCHANNEL);
+	msg += recipient.get_source() + " ";
+
+	msg += channel.getChannelName();
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
