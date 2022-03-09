@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/05 23:37:27 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/09 19:07:11 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,8 @@ void		IRC_Server::numeric_reply_end(std::string & reply, std::string const & des
 
 void		IRC_Server::send_rpl_WELCOME(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_WELCOME);
+	std::string msg = numeric_reply_start(recipient, RPL_WELCOME); 
+	msg += recipient.get_source() + " ";
 
 	std::string	welcome_msg;
 
@@ -98,7 +99,8 @@ void		IRC_Server::send_rpl_WELCOME(Client const & recipient)
 
 void		IRC_Server::send_rpl_YOURHOST(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_YOURHOST);
+	std::string msg = numeric_reply_start(recipient, RPL_YOURHOST); 
+	msg += recipient.get_source() + " ";
 
 	std::string	yourhost_msg;
 
@@ -112,7 +114,8 @@ void		IRC_Server::send_rpl_YOURHOST(Client const & recipient)
 
 void		IRC_Server::send_rpl_CREATED(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_CREATED);
+	std::string msg = numeric_reply_start(recipient, RPL_CREATED); 
+	msg += recipient.get_source() + " ";
 
 	std::string created_msg;
 
@@ -125,7 +128,8 @@ void		IRC_Server::send_rpl_CREATED(Client const & recipient)
 //debug //finish these
 void		IRC_Server::send_rpl_MYINFO(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_MYINFO);
+	std::string msg = numeric_reply_start(recipient, RPL_MYINFO); 
+	msg += recipient.get_source() + " ";
 
 	std::string	myinfo_msg;
 	myinfo_msg += _servername + " ";
@@ -135,7 +139,8 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 {
 	(void)recipient;
 	std::ostringstream	ss;
-	std::string msg = numeric_reply_start(recipient, RPL_ISUPPORT);
+	std::string msg = numeric_reply_start(recipient, RPL_ISUPPORT); 
+	msg += recipient.get_source() + " ";
 	
 	std::string 		isupport_msg;
 	
@@ -160,7 +165,8 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 
 void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic )
 {
-	std::string msg = numeric_reply_start(recipient, RPL_TOPIC);
+	std::string msg = numeric_reply_start(recipient, RPL_TOPIC); 
+	msg += recipient.get_source() + " ";
 	std::string	welcome_msg;
 
 	welcome_msg += recipient.get_username();
@@ -191,7 +197,8 @@ void		IRC_Server::send_rpl_NAMREPLY(Client const & recipient, Channel const & ch
 
 	if (channel.size() > 0)
 	{
-		std::string msg = numeric_reply_start(recipient, RPL_NAMREPLY);
+		std::string msg = numeric_reply_start(recipient, RPL_NAMREPLY); 
+	msg += recipient.get_source() + " ";
 		std::string member_list;
 
 		//will want channel to give us this
@@ -228,7 +235,8 @@ void		IRC_Server::send_rpl_NAMREPLY(Client const & recipient, Channel const & ch
 
 void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channelName)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_ENDOFNAMES);
+	std::string msg = numeric_reply_start(recipient, RPL_ENDOFNAMES); 
+	msg += recipient.get_source() + " ";
 
 	msg += channelName;
 	numeric_reply_end(msg, "End of /NAMES list");

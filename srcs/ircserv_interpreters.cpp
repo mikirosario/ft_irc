@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/07 20:04:17 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/09 19:10:34 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -486,9 +486,7 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 				if (raw_channel_list.fail() == true)
 					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
 				else if (channel_name_is_valid(channel) == false)
-				{
-					//BADCHANMASK?? UNKNOWN ERROR??
-				}
+					send_err_BADCHANMASK(sender, channel, ":Bad Channel Mask");
 				else if ((chan_it = _channels.find(channel)) == _channels.end())	//channel doesn't exist, sender creates channel
 				{
 					if ((chan_it = add_channel(sender, channel, key)) == _channels.end())	//map insert failure, probably bad_alloc or something
@@ -739,10 +737,6 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 				std::getline(raw_channel_list, channel, ',');
 				if (raw_channel_list.fail() == true)
 					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
-				else if (channel_name_is_valid(channel) == false)
-				{
-					//BADCHANMASK?? UNKNOWN ERROR??
-				}
 				else if ((chan_it = _channels.find(channel)) == _channels.end())	//didn't find channel
 					send_rpl_ENDOFNAMES(sender, channel);
 				else																//found channel
