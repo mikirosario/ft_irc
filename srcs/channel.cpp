@@ -290,8 +290,26 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 				member_was_removed = true;
 	}
 	if (member_was_removed == true && size() == 0)
-		_parent_server.remove_channel(getChannelName()); //mark for removal, like clients
+		_parent_server.remove_channel(getChannelName());
 	return (member_was_removed);
+}
+
+/*!
+** @brief	This DANGEROUS overload emoves @a member from this channel. Destroys
+**			channel if client_nick was the last member of the channel. Use for
+**			efficiency IF member iterator and set are already positively known.
+**			If @a member is NOT really in @a member_set, UNDEFINED BEHAVIOUR
+**			will result.
+**
+** @details This DANGEROUS overload cannot remove the owner.
+** @param	member		Iterator to the member to remove from the channel.
+** @param	memebr_set	The member set in which @a member is located.
+*/
+void IRC_Server::Channel::removeMember(t_ChannelMemberSet::iterator const & member, IRC_Server::Channel::t_ChannelMemberSet & member_set)
+{
+	member_set.erase(member);
+	if (size() == 0)
+		_parent_server.remove_channel(getChannelName());
 }
 
 void	IRC_Server::Channel::removeAllMembers(void)
@@ -301,12 +319,12 @@ void	IRC_Server::Channel::removeAllMembers(void)
 
 	for ( ; owneri < !getOwner().empty(); ++owneri)
 		removeMember(getOwner());
-	for (it = getChanops().begin(); it != getChanops().end(); ++it)
-		removeMember(*it);
-	for (it = getHalfops().begin(); it != getHalfops().end(); ++it)
-		removeMember(*it);
-	for (it = getUsers().begin(); it != getUsers().end(); ++it)
-		removeMember(*it);
+	for (it = getChanops().begin(); it != getChanops().end(); )
+		removeMember(it++, _chanops);
+	for (it = getHalfops().begin(); it != getHalfops().end(); )
+		removeMember(it++, _halfops);
+	for (it = getUsers().begin(); it != getUsers().end(); )
+		removeMember(it++, _users);
 }
 
 // bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)

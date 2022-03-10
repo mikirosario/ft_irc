@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 18:14:26 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 19:28:44 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,13 @@ class Channel
 			return(*this);
 		};
 
+		typedef std::set<std::string, case_insensitive_less>					t_ChannelMemberSet;
+
 		// int addNewClient(Client const &client, std::string const & privileges);
 		// int addNewClient(Client const &client, std::string const &password);
 		int	addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
 		bool removeMember(std::string const & client_nick);
+		void removeMember(t_ChannelMemberSet::iterator const & member, t_ChannelMemberSet & member_set);
 		void	removeAllMembers(void);
 		//bool removeMember(Client const &client, std::string const &msg);
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);
@@ -84,7 +87,6 @@ class Channel
 		size_t	size(void) const;
 
 		//typedef std::map<std::string, User_Privileges, case_insensitive_less>	t_ChannelMemberMap; //debug //remove
-		typedef std::set<std::string, case_insensitive_less>					t_ChannelMemberSet;
 		
 		/* GETTERS */
 		std::string const &			getChannelName(void) const;
