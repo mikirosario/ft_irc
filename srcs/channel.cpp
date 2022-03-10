@@ -97,16 +97,17 @@ bool	IRC_Server::Channel::User_Privileges::privilege_is_set(char membership_pref
 	return false;
 }
 
-IRC_Server::Channel::Channel(Client const & creator, std::string const &chName) : _channelName(chName), _owner(creator.get_nick())
-{
-}
+// IRC_Server::Channel::Channel(Client const & creator, std::string const &chName) : _channelName(chName), _owner(creator.get_nick())
+// {
+// }
 
-IRC_Server::Channel::Channel(Client const & creator, std::string const &chName, std::string const &password) : _channelName(chName), _channelPassword(password), _owner(creator.get_nick())
+IRC_Server::Channel::Channel(Client const & creator, IRC_Server & parent_server, std::string const &chName, std::string const &password) : _parent_server(parent_server), _channelName(chName), _channelPassword(password), _owner(creator.get_nick())
 {
 }
 
 IRC_Server::Channel::Channel(Channel const &other)
 :
+		_parent_server(other._parent_server),
     	_channelName(other._channelName),
 		_channelPassword(other._channelPassword),
 		_owner(other._owner),
@@ -132,7 +133,8 @@ IRC_Server::Channel::Channel(Channel const &other)
 // }
 
 IRC_Server::Channel::~Channel(void)
-{}
+{
+}
 
 std::string const & IRC_Server::Channel::getChannelName() const
 {
@@ -271,7 +273,7 @@ int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::i
 ** @param	client_nick	Nick of the member to remove from the channel.
 ** @return	true if member was removed, false if @a client_nick was not a member
 */
-bool IRC_Server::Channel::removeMember(std::string const & client_nick, IRC_Server & parent)
+bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 {
 	bool	member_was_removed = false;
 	if (_owner == client_nick)
@@ -288,23 +290,23 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick, IRC_Serv
 				member_was_removed = true;
 	}
 	if (member_was_removed == true && size() == 0)
-		parent.remove_channel(getChannelName());
+		_parent_server.remove_channel(getChannelName()); //mark for removal, like clients
 	return (member_was_removed);
 }
 
-void	IRC_Server::Channel::removeAllMembers(IRC_Server & parent)
+void	IRC_Server::Channel::removeAllMembers(void)
 {
 	t_ChannelMemberSet::iterator	it;
 	size_t							owneri = 0;
 
 	for ( ; owneri < !getOwner().empty(); ++owneri)
-		removeMember(getOwner(), parent);
+		removeMember(getOwner());
 	for (it = getChanops().begin(); it != getChanops().end(); ++it)
-		removeMember(*it, parent);
+		removeMember(*it);
 	for (it = getHalfops().begin(); it != getHalfops().end(); ++it)
-		removeMember(*it, parent);
+		removeMember(*it);
 	for (it = getUsers().begin(); it != getUsers().end(); ++it)
-		removeMember(*it, parent);
+		removeMember(*it);
 }
 
 // bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)

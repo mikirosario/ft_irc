@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 23:22:35 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/10 17:58:11 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::
 */
 IRC_Server::Client *		IRC_Server::find_client_by_nick(std::string const & nick)
 {
-	for (int i = 0; i < _connections; ++i)
+	for (int i = 1; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
 			return (&_clients[i]);
 	return (NULL);
@@ -152,7 +152,7 @@ IRC_Server::Client *		IRC_Server::find_client_by_nick(std::string const & nick)
 
 IRC_Server::Client const *	IRC_Server::find_client_by_nick(std::string const & nick) const
 {
-	for (int i = 0; i < _connections; ++i)
+	for (int i = 1; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
 			return (&_clients[i]);
 	return (NULL);
@@ -443,7 +443,6 @@ void	IRC_Server::add_connection(int fd, char const * remoteIP)
 */
 void	IRC_Server::remove_connection(int index)
 {
-	_clients[index].leave_all_channels(*this);
 	close_connection(_pfds[index].fd);
 	_pfds[index] = _pfds[_connections - 1];
 	_clients[index].move(_clients[_connections - 1]);		//move references of last client to this position
@@ -651,6 +650,48 @@ void	IRC_Server::remove_client_from_server(Client const & client)
 	remove_client_from_server(client.get_pos());
 }
 
+// /*!
+// ** @brief	Safely flags the Channel @a channel for removal from the server.
+// **
+// ** @details	The Channel @a channel will be marked for removal at the next
+// **			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
+// **			Channel from the server.
+// **
+// **			Queries the @a _channels vector for an iterator pointing to
+// **			@a channel and stores it in @a  _chan_remove_list. If @a channel is
+// **			is not present in the @a _channels vector, nothing is done, though
+// **			this should not be possible. :p
+// ** @param	channel	The Channel to be removed from the server.
+// */
+// void	IRC_Server::remove_channel_from_server(Channel & channel)
+// {
+// 	t_Channel_Map::iterator	it(_channels.find(channel.getChannelName()));
+
+// 	if (it != _channels.end())
+// 		_chan_remove_list.push_back(it);
+// }
+
+// /*!
+// ** @brief	Safely flags the Channel @a channel for removal from the server.
+// **
+// ** @details	The Channel @a channel will be marked for removal at the next
+// **			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
+// **			Channel from the server.
+// **
+// **			This overload queries the @a _channels vector for an iterator
+// **			pointing to @a channel using the provided channel_name. The iterator
+// **			is stored in @a _chan_remove_list. If @a channel_name is not present
+// **			in the @a _channels vector, nothing is done.
+// ** @param	channel	The Channel to be removed from the server.
+// */
+// void	IRC_Server::remove_channel_from_server(std::string & channel_name)
+// {
+// 	t_Channel_Map::iterator	it(_channels.find(channel_name));
+
+// 	if (it != _channels.end())
+// 		_chan_remove_list.push_back(it);
+// }
+
 /*!
 ** @brief	Removes all Clients flagged for removal from the server.
 **
@@ -681,6 +722,7 @@ void	IRC_Server::remove_flagged_clients(void)
 	{
 		if (_remove_list[i] == true)
 		{
+			_clients[i].leave_all_channels();
 			remove_connection(i);
 			--remove_count;
 		}
@@ -689,6 +731,15 @@ void	IRC_Server::remove_flagged_clients(void)
 	}
 	_remove_list.reset();
 }
+
+// void	IRC_Server::remove_flagged_channels(void)
+// {
+// 	for (std::vector<t_Channel_Map::iterator>::iterator it = _chan_remove_list.begin(), end = _chan_remove_list.end(); it != end; ++it)
+// 	{
+// 		(*it)->second.removeAllMembers();
+// 		_channels.erase(*it);
+// 	}
+// }
 
 // ---- CHANNEL CONTROL ---- //
 // bool	IRC_Server::add_channel(Channel const & new_channel)
@@ -722,7 +773,7 @@ void	IRC_Server::remove_flagged_clients(void)
 */
 IRC_Server::t_Channel_Map::iterator	IRC_Server::add_channel(Client & creator, std::string const & channel_name, std::string const & key)
 {
-	Channel										new_channel(creator, channel_name, key);
+	Channel										new_channel(creator, *this, channel_name, key);
 	std::pair<t_Channel_Map::iterator, bool>	chan_insert_result;
 	
 	try
@@ -745,7 +796,7 @@ void	IRC_Server::remove_channel(std::string const & channel_name)
 	t_Channel_Map::iterator	it = _channels.find(channel_name);
 	if (it != _channels.end())
 	{
-		it->second.removeAllMembers(*this);
+		it->second.removeAllMembers();
 		_channels.erase(channel_name);
 	}
 }
@@ -761,7 +812,7 @@ void	IRC_Server::remove_user_from_channel(Client const &client, std::string cons
 {
 	t_Channel_Map::iterator it = _channels.find(channel_name);
 	if  (it != _channels.end())
-		it->second.removeMember(client.get_nick(), *this);
+		it->second.removeMember(client.get_nick());
 	//_channels[channel_name].removeClient(client);
 }
 

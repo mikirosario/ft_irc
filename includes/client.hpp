@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 23:00:43 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/10 15:42:56 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class Client
 		size_t		get_param_count(void) const;
 		std::string	get_cmd(void) const;
 		bool		msg_buf_is_crlf_terminated(void) const;
-		void		leave_channel(t_ChanMap::iterator & channel_it, IRC_Server & parent);
+		void		leave_channel(t_ChanMap::iterator & channel_it);
 	public:
 		Client(void);
 		~Client(void);
@@ -62,8 +62,8 @@ class Client
 		bool		is_registered(void) const;
 		bool		reg_pass_attempt(void);
 		void		send_msg(std::string const & msg) const;
-		bool		leave_channel(std::string const & channel_name, IRC_Server & parent);
-		void		leave_all_channels(IRC_Server & parent);
+		bool		leave_channel(std::string const & channel_name);
+		void		leave_all_channels(void);
 
 		/* SETTERS */
 		void	flush_msg_buf(size_t stop);

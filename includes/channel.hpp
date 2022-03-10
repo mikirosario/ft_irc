@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 23:29:25 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/10 15:36:54 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,14 +33,14 @@ class Channel
 	};
 	public:
 
-		Channel(Client const & creator, std::string const &chName);
-		Channel(Client const & creator, std::string const &chName,std::string const &password);
+		//Channel(Client const & creator, std::string const &chName);
+		Channel(Client const & creator, IRC_Server & parent_server, std::string const &chName, std::string const &password);
 		Channel(Channel const &other);
 		~Channel(void);
 
 		Channel &operator=(Channel const &other)
 		{
-			if (*this == other)
+			if (*this == other || &_parent_server != &other._parent_server)
 				return(*this);
 			_channelPassword = other._channelPassword;
 			_channelName = other._channelName;
@@ -56,8 +56,8 @@ class Channel
 		// int addNewClient(Client const &client, std::string const & privileges);
 		// int addNewClient(Client const &client, std::string const &password);
 		int	addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
-		bool removeMember(std::string const & client_nick, IRC_Server & parent);
-		void	removeAllMembers(IRC_Server & parent);
+		bool removeMember(std::string const & client_nick);
+		void	removeAllMembers(void);
 		//bool removeMember(Client const &client, std::string const &msg);
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);
 		
@@ -96,6 +96,7 @@ class Channel
 	private:
 		Channel(void);
 
+		IRC_Server &		_parent_server;
 		std::string 		_channelName;
 		std::string			_channelPassword;
 		//t_ChannelMemberMap allClients; //debug //remove

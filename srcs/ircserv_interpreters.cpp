@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 22:57:39 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/10 17:55:49 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -447,7 +447,7 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 	if (argv.size() < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else if (argv[1] == "0")
-		sender.leave_all_channels(*this);
+		sender.leave_all_channels();
 	else						//try to process
 	{
 			std::stringstream	raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));	//get raw channel list
@@ -528,10 +528,14 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 					if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
 						(ch_recipient = _channels.find(channel.substr(chname_pos - 1))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
 						send_err_NOSUCHCHANNEL(sender, "PART", "No such channel");
-					else if (sender.leave_channel(ch_recipient->second.getChannelName(), *this) == false)
+					//else if (sender.leave_channel(ch_recipient->second.getChannelName()) == false)
+					else if (sender.get_joined_channel(ch_recipient->second.getChannelName()).second == false)
 						send_err_NOTONCHANNEL(sender, ch_recipient->second, "You're not on that channel");
 					else																				//it's a channel and it exists in _channels
+					{
 						send_rpl_PART(sender, ch_recipient->second, (argv.size() > 2 ? argv[2] : sender.get_nick()));
+						sender.leave_channel(ch_recipient->second.getChannelName());
+					}
 				}
 				else
 					send_err_NOSUCHCHANNEL(sender, "PART", "No such channel");

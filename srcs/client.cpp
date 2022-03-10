@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 23:00:43 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/10 17:14:50 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED
 	_msg_buf.reserve(MSG_BUF_SIZE);
 	_message.reserve(MSG_BUF_SIZE);
 }
-
 
 IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 {
@@ -594,16 +593,17 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 ** @param	channel_it	An iterator to the channel from which the client will
 **						remove itself.
 */
-void	IRC_Server::Client::leave_channel(t_ChanMap::iterator & channel_it, IRC_Server & parent)
+void	IRC_Server::Client::leave_channel(t_ChanMap::iterator & channel_it)
 {
-	//debug
-	bool ret_rmember;
-	//debug
-	ret_rmember = channel_it->second->second.removeMember(get_nick(), parent);
+	// //debug
+	// bool ret_rmember;
+	// //debug
+	//ret_rmember = channel_it->second->second.removeMember(get_nick());
+	channel_it->second->second.removeMember(get_nick());
 	_channels.erase(channel_it);
-	//debug
-	std::cout << "leave channel result: " << ret_rmember << std::endl;
-	//debug
+	// //debug
+	// std::cout << "leave channel result: " << ret_rmember << std::endl;
+	// //debug
 }
 
 /*!
@@ -651,20 +651,20 @@ void		IRC_Server::Client::send_msg(std::string const & msg) const
 ** @return	true if successful, false if channel_name is not present in the
 **			client's @a _channels map.
 */
-bool		IRC_Server::Client::leave_channel(std::string const & channel_name, IRC_Server & parent)
+bool		IRC_Server::Client::leave_channel(std::string const & channel_name)
 {
 	t_ChanMap::iterator it = _channels.find(channel_name);
 	
 	if (it == _channels.end())
 		return false;
-	leave_channel(it, parent);
+	leave_channel(it);
 	return true;
 }
 
-void		IRC_Server::Client::leave_all_channels(IRC_Server & parent)
+void		IRC_Server::Client::leave_all_channels(void)
 {
 	for (t_ChanMap::iterator it = _channels.begin(), end = _channels.end(); it != end; ++it) //map.erase() should preserve range integrity
-		leave_channel(it, parent);
+		leave_channel(it);
 }
 
 /* GETTERS */

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 22:50:27 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/10 17:47:30 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,19 +69,20 @@ class IRC_Server
 		#include "channel.hpp"
 		#include "database.hpp"
 		#include "ircserv_modules.hpp"
-		std::string						_nethost; //no longer needed?? what??
-		std::string						_netport;
-		std::string						_netpass;
-		std::string						_servport; 
-		std::string						_servpass;
-		std::string						_networkname;
-		std::string						_servername;
-		std::string						_serveraddr;
-		std::string const				_server_creation_time;
-		struct pollfd					_pfds[MAX_CONNECTIONS];
-		Client							_clients[MAX_CONNECTIONS];
-		std::bitset<MAX_CONNECTIONS>	_remove_list;
-		int								_connections;
+		std::string								_nethost; //no longer needed?? what??
+		std::string								_netport;
+		std::string								_netpass;
+		std::string								_servport; 
+		std::string								_servpass;
+		std::string								_networkname;
+		std::string								_servername;
+		std::string								_serveraddr;
+		std::string const						_server_creation_time;
+		struct pollfd							_pfds[MAX_CONNECTIONS];
+		Client									_clients[MAX_CONNECTIONS];
+		std::bitset<MAX_CONNECTIONS>			_remove_list;
+		std::vector<t_Channel_Map::iterator>	_chan_remove_list;
+		int										_connections;
 
 		t_Channel_Map						_channels;
 		
@@ -123,7 +124,10 @@ class IRC_Server
 		void	process_client_message(Client & client);
 		void	remove_client_from_server(size_t pos);
 		void	remove_client_from_server(Client const & client);
+		// void	remove_channel_from_server(Channel & channel);
+		// void	remove_channel_from_server(std::string & channel_name);
 		void	remove_flagged_clients(void);
+		// void	remove_flagged_channels(void);
 		
 		//Channel controls
 		//bool	add_channel(Channel const & new_channel); //debug //remove once overload below confirmed working

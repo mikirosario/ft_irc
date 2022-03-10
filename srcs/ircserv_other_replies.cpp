@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 21:30:26 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/10 17:12:49 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,4 @@ void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channe
 	recipient.send_msg(msg_recipient);
 	channel.send_msg(0, msg_channel, *this);
 
-	// if (part_message.empty() == true)
-	// 	part_message = recipient.get_nick();
 }
