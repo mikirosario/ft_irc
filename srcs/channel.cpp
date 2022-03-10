@@ -295,15 +295,15 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 }
 
 /*!
-** @brief	This DANGEROUS overload emoves @a member from this channel. Destroys
-**			channel if client_nick was the last member of the channel. Use for
-**			efficiency IF member iterator and set are already positively known.
-**			If @a member is NOT really in @a member_set, UNDEFINED BEHAVIOUR
-**			will result.
+** @brief	This DANGEROUS overload removes @a member from this channel.
+**			Destroys channel if client_nick was the last member of the channel.
+**			Use for efficiency IF member iterator and set are already positively
+**			known. If @a member is NOT really in @a member_set, UNDEFINED
+**			BEHAVIOUR will result.
 **
 ** @details This DANGEROUS overload cannot remove the owner.
 ** @param	member		Iterator to the member to remove from the channel.
-** @param	memebr_set	The member set in which @a member is located.
+** @param	member_set	The member set in which @a member is located.
 */
 void IRC_Server::Channel::removeMember(t_ChannelMemberSet::iterator const & member, IRC_Server::Channel::t_ChannelMemberSet & member_set)
 {
