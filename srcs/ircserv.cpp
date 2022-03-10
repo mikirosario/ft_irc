@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 17:58:11 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 18:30:54 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,7 +408,6 @@ void	IRC_Server::close_connection(int const fd)
 */
 void	IRC_Server::add_connection(int fd, char const * remoteIP)
 {
-	
 	_pfds[_connections].fd = fd;
 	_pfds[_connections].events = POLLIN; //report ready to read on incoming connection
 	_clients[_connections].set_clientaddr(remoteIP);

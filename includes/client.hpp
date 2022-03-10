@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 15:42:56 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 18:42:48 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class Client
 		size_t		get_param_count(void) const;
 		std::string	get_cmd(void) const;
 		bool		msg_buf_is_crlf_terminated(void) const;
-		void		leave_channel(t_ChanMap::iterator & channel_it);
+		void		leave_channel(t_ChanMap::iterator const & channel_it);
 	public:
 		Client(void);
 		~Client(void);

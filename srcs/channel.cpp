@@ -332,25 +332,37 @@ void	IRC_Server::Channel::removeAllMembers(void)
 //     }
 // }
 
-bool	IRC_Server::Channel::send_msg(char privilege_level, std::string const & message, IRC_Server const & parent) const
+/*!
+** @brief	If @a sender is a NULL pointer, then @a message will be sent to all
+**			channel members at or above @a privilege_level, otherwise it will be
+**			sent to all channel members at or above @a privilege_level EXCEPT
+**			@a sender.
+**
+** @param	sender			Address of the client instance that sent the message, or
+**							NULL.
+** @param	privilege_level	The lowest desired privilege_level of message
+**							recipients.
+** @param	message			The message to send to recipients.
+*/
+bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message, IRC_Server const & parent) const
 {
 	IRC_Server::Client const *	recipient = NULL;
 	switch (privilege_level)
 	{
 		case 0 :
 			for (t_ChannelMemberSet::iterator it = _users.begin(), end = _users.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+				if ((recipient = parent.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '%' :
 			for (t_ChannelMemberSet::iterator it = _halfops.begin(), end = _halfops.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+				if ((recipient = parent.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '@' :
 			for (t_ChannelMemberSet::iterator it = _chanops.begin(), end = _chanops.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+				if ((recipient = parent.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '~' :
-			if ((recipient = parent.find_client_by_nick(_owner)) != NULL)
+			if ((recipient = parent.find_client_by_nick(_owner)) != NULL && recipient != sender)
 				recipient->send_msg(message);
 			return true;
 		default :

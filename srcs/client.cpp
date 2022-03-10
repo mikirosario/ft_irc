@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/10 17:14:50 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 18:45:57 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -593,7 +593,7 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 ** @param	channel_it	An iterator to the channel from which the client will
 **						remove itself.
 */
-void	IRC_Server::Client::leave_channel(t_ChanMap::iterator & channel_it)
+void	IRC_Server::Client::leave_channel(t_ChanMap::iterator const & channel_it)
 {
 	// //debug
 	// bool ret_rmember;
@@ -663,8 +663,8 @@ bool		IRC_Server::Client::leave_channel(std::string const & channel_name)
 
 void		IRC_Server::Client::leave_all_channels(void)
 {
-	for (t_ChanMap::iterator it = _channels.begin(), end = _channels.end(); it != end; ++it) //map.erase() should preserve range integrity
-		leave_channel(it);
+	for (t_ChanMap::iterator it = _channels.begin(), end = _channels.end(); it != end; )
+		leave_channel(it++); //map.erase() should preserve range integrity, but not deleted iterator integrity of course. unless it's a Mac and does evil magics. xD
 }
 
 /* GETTERS */
