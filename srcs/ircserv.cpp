@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 18:30:54 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 18:49:36 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -582,12 +582,12 @@ void	IRC_Server::process_client_message(Client & client)
 				send_err_INPUTTOOLONG(client, "Input line was too long");
 			//do stuff
 
-			//debug
-			for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
-				if (static_cast<size_t>(j) != client.get_pos()) //do not send to self
-					if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
-						std::cerr << "send error" << std::endl;
-			//debug
+			// //debug
+			// for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
+			// 	if (static_cast<size_t>(j) != client.get_pos()) //do not send to self
+			// 		if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
+			// 			std::cerr << "send error" << std::endl;
+			// //debug
 
 			while (client.msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
 				interpret_msg(client);
