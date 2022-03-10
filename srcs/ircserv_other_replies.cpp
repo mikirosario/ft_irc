@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 18:20:11 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 19:39:15 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ void		IRC_Server::send_rpl_PRIVMSG(Channel const & recipient, Client const & sou
 				privilege_level = SUPPORTED_CHANNEL_PREFIXES[i];
 				break ;
 			}
-	recipient.send_msg(&source, privilege_level, msg, *this);
+	recipient.send_msg(&source, privilege_level, msg);
 }
 
 /*!
@@ -141,7 +141,7 @@ void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source
 	//debug
 		std::cout << msg << std::endl;
 	//debug
-	recipient.send_msg(NULL, 0, msg, *this);
+	recipient.send_msg(NULL, 0, msg);
 }
 
 void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const
@@ -154,6 +154,6 @@ void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channe
 	non_numeric_reply_end(msg_recipient, part_message);
 	non_numeric_reply_end(msg_channel, part_message);
 	recipient.send_msg(msg_recipient);
-	channel.send_msg(&recipient, 0, msg_channel, *this);
+	channel.send_msg(&recipient, 0, msg_channel);
 
 }

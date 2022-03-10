@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 19:28:44 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 19:38:30 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ class Channel
 		//bool	is_empty(void) const;
 
 
-		bool 	send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message, IRC_Server const & parent) const;
+		bool 	send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message) const;
 		// - miki
 			//USA case_insensitive_ascii_compare()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

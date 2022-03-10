@@ -362,25 +362,25 @@ void	IRC_Server::Channel::removeAllMembers(void)
 **							recipients.
 ** @param	message			The message to send to recipients.
 */
-bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message, IRC_Server const & parent) const
+bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message) const
 {
 	IRC_Server::Client const *	recipient = NULL;
 	switch (privilege_level)
 	{
 		case 0 :
 			for (t_ChannelMemberSet::iterator it = _users.begin(), end = _users.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL && recipient != sender)
+				if ((recipient = _parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '%' :
 			for (t_ChannelMemberSet::iterator it = _halfops.begin(), end = _halfops.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL && recipient != sender)
+				if ((recipient = _parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '@' :
 			for (t_ChannelMemberSet::iterator it = _chanops.begin(), end = _chanops.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL && recipient != sender)
+				if ((recipient = _parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '~' :
-			if ((recipient = parent.find_client_by_nick(_owner)) != NULL && recipient != sender)
+			if ((recipient = _parent_server.find_client_by_nick(_owner)) != NULL && recipient != sender)
 				recipient->send_msg(message);
 			return true;
 		default :
