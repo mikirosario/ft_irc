@@ -356,11 +356,15 @@ void	IRC_Server::Channel::removeAllMembers(void)
 **			sent to all channel members at or above @a privilege_level EXCEPT
 **			@a sender.
 **
-** @param	sender			Address of the client instance that sent the message, or
-**							NULL.
+** @details	The privilege levels are '%' for half-ops and above, '&' for chanops
+**			and above, '~' for owner and 0 for everyone. If an invalid
+**			privilege_level is passed, nothing will be done.
+** @param	sender			Address of the client instance that sent the message
+**							or NULL.
 ** @param	privilege_level	The lowest desired privilege_level of message
 **							recipients.
 ** @param	message			The message to send to recipients.
+** @return	true if message was sent, false if privilege_level was invalid
 */
 bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message) const
 {
