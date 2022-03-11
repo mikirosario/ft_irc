@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   constants.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/08 07:36:29 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/01 18:47:30 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@
 #define CLIENT_ALREADY_EXIST_RETURN	0
 #define INVALID_PASSWORD_RETURN	-1
 
-#define CHANNEL_MODES "is"		//We need to discuss about the possible channel modes
 
 
 #endif

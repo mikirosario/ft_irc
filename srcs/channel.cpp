@@ -97,16 +97,17 @@ bool	IRC_Server::Channel::User_Privileges::privilege_is_set(char membership_pref
 	return false;
 }
 
-IRC_Server::Channel::Channel(Client const & creator, std::string const &chName) : _channelName(chName), _owner(creator.get_nick())
-{
-}
+// IRC_Server::Channel::Channel(Client const & creator, std::string const &chName) : _channelName(chName), _owner(creator.get_nick())
+// {
+// }
 
-IRC_Server::Channel::Channel(Client const & creator, std::string const &chName, std::string const &password) : _channelName(chName), _channelPassword(password), _owner(creator.get_nick())
+IRC_Server::Channel::Channel(Client const & creator, IRC_Server & parent_server, std::string const &chName, std::string const &password) : _parent_server(parent_server), _channelName(chName), _channelPassword(password), _owner(creator.get_nick())
 {
 }
 
 IRC_Server::Channel::Channel(Channel const &other)
 :
+		_parent_server(other._parent_server),
     	_channelName(other._channelName),
 		_channelPassword(other._channelPassword),
 		_owner(other._owner),
@@ -132,7 +133,8 @@ IRC_Server::Channel::Channel(Channel const &other)
 // }
 
 IRC_Server::Channel::~Channel(void)
-{}
+{
+}
 
 std::string const & IRC_Server::Channel::getChannelName() const
 {
@@ -210,21 +212,27 @@ IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getUsers(vo
 **			There can only be one _owner, so a replaced _owner is downgraded to
 **			_chanop.
 **
+**			If a channel is added to the client's channel list but the client
+**			could not be added to the channel's client list, the channel entry
+**			in the client channel list will be deleted.
 ** @param	client			The member to be added.
 ** @param	password		The password provided by the client.
 ** @param	privilege_level	The member's privilege level in the channel.
 **							@see SUPPORTED_CHANNEL_PREFIXESÇ
-** @return	1 if the member was successfully added. Otherwise, -1 if the
-**			client's password was wrong, -2 if the client's privilege_level was
-**			not understood, and 0 if the member was not successfully added for
-**			any other reason.
+** @return	1 if the member was successfully added to the channel's member list
+**			AND the channel was successfully added to the client's channel list.
++*			Otherwise, -1 if the client's password was wrong, -2 if the client's
+**			privilege_level was not understood, and 0 if the member was not
+**			successfully added for any other reason.
 */
-int IRC_Server::Channel::addMember(Client & client, std::string const &password, char privilege_level)
+int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const &password, char privilege_level)
 {
     if (_channelPassword != password)
 		return(INVALID_PASSWORD_RETURN);
 	else if (std::strchr(SUPPORTED_CHANNEL_PREFIXES, privilege_level) == NULL)
 		return(-2); //BAD PREFIX
+	else if (client.set_channel_membership(chan_it) == false)						//channel membership predicated on client member channel iterator set
+		return (0);
 	std::pair<t_ChannelMemberSet::iterator, bool> ret;
 	ret.second = false;
 	if (privilege_level == 0)														//lowest privilege level
@@ -236,7 +244,8 @@ int IRC_Server::Channel::addMember(Client & client, std::string const &password,
 	else if (privilege_level == '~' &&
 			((ret.second = _owner.empty()) == true || (ret = _chanops.insert(_owner)).second == 1))	//owner privilege level; if there is no owner, or existing owner is successfully downgraded to chanops, replace owner
 		_owner = client.get_nick();
-	
+	if (ret.second == false)
+		client.remove_channel_membership(chan_it);
     return (ret.second);
 }
 
@@ -255,7 +264,8 @@ int IRC_Server::Channel::addMember(Client & client, std::string const &password,
 
 /*!
 ** @brief	Removes @a client_nick from this channel, if @a client_nick is a
-**			member.
+**			member. Destroys channel if client_nick was the last member of the
+**			channel.
 **
 ** @details	If @a client_nick is the owner, the channel becomes ownerless.
 **			Otherwise, we search for @a client in each of the privilege levels
@@ -263,12 +273,13 @@ int IRC_Server::Channel::addMember(Client & client, std::string const &password,
 ** @param	client_nick	Nick of the member to remove from the channel.
 ** @return	true if member was removed, false if @a client_nick was not a member
 */
-bool IRC_Server::Channel::removeMember(std::string const & client_nick) 
+bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 {
+	bool	member_was_removed = false;
 	if (_owner == client_nick)
 	{
 		_owner.clear();
-		return (true);
+		member_was_removed = true;
 	}
 	else
 	{
@@ -276,9 +287,44 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 	
 		for (size_t i = 0, ret = 0; i < 3; ++i)
 			if ((ret = pMemberSet[i]->erase(client_nick)) > 0)
-				return (true);
-		return (false);
+				member_was_removed = true;
 	}
+	if (member_was_removed == true && size() == 0)
+		_parent_server.remove_channel(getChannelName());
+	return (member_was_removed);
+}
+
+/*!
+** @brief	This DANGEROUS overload removes @a member from this channel.
+**			Destroys channel if client_nick was the last member of the channel.
+**			Use for efficiency IF member iterator and set are already positively
+**			known. If @a member is NOT really in @a member_set, UNDEFINED
+**			BEHAVIOUR will result.
+**
+** @details This DANGEROUS overload cannot remove the owner.
+** @param	member		Iterator to the member to remove from the channel.
+** @param	member_set	The member set in which @a member is located.
+*/
+void IRC_Server::Channel::removeMember(t_ChannelMemberSet::iterator const & member, IRC_Server::Channel::t_ChannelMemberSet & member_set)
+{
+	member_set.erase(member);
+	if (size() == 0)
+		_parent_server.remove_channel(getChannelName());
+}
+
+void	IRC_Server::Channel::removeAllMembers(void)
+{
+	t_ChannelMemberSet::iterator	it;
+	size_t							owneri = 0;
+
+	for ( ; owneri < !getOwner().empty(); ++owneri)
+		removeMember(getOwner());
+	for (it = getChanops().begin(); it != getChanops().end(); )
+		removeMember(it++, _chanops);
+	for (it = getHalfops().begin(); it != getHalfops().end(); )
+		removeMember(it++, _halfops);
+	for (it = getUsers().begin(); it != getUsers().end(); )
+		removeMember(it++, _users);
 }
 
 // bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)
@@ -304,25 +350,41 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 //     }
 // }
 
-bool	IRC_Server::Channel::send_msg(char privilege_level, std::string const & message, IRC_Server const & parent) const
+/*!
+** @brief	If @a sender is a NULL pointer, then @a message will be sent to all
+**			channel members at or above @a privilege_level, otherwise it will be
+**			sent to all channel members at or above @a privilege_level EXCEPT
+**			@a sender.
+**
+** @details	The privilege levels are '%' for half-ops and above, '&' for chanops
+**			and above, '~' for owner and 0 for everyone. If an invalid
+**			privilege_level is passed, nothing will be done.
+** @param	sender			Address of the client instance that sent the message
+**							or NULL.
+** @param	privilege_level	The lowest desired privilege_level of message
+**							recipients.
+** @param	message			The message to send to recipients.
+** @return	true if message was sent, false if privilege_level was invalid
+*/
+bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message) const
 {
 	IRC_Server::Client const *	recipient = NULL;
 	switch (privilege_level)
 	{
 		case 0 :
 			for (t_ChannelMemberSet::iterator it = _users.begin(), end = _users.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+				if ((recipient = _parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '%' :
 			for (t_ChannelMemberSet::iterator it = _halfops.begin(), end = _halfops.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+				if ((recipient = _parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '@' :
 			for (t_ChannelMemberSet::iterator it = _chanops.begin(), end = _chanops.end(); it != end; ++it)
-				if ((recipient = parent.find_client_by_nick(*it)) != NULL)
+				if ((recipient = _parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
 					recipient->send_msg(message);
 		case '~' :
-			if ((recipient = parent.find_client_by_nick(_owner)) != NULL)
+			if ((recipient = _parent_server.find_client_by_nick(_owner)) != NULL && recipient != sender)
 				recipient->send_msg(message);
 			return true;
 		default :

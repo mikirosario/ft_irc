@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/04 20:09:11 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 18:49:36 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::
 */
 IRC_Server::Client *		IRC_Server::find_client_by_nick(std::string const & nick)
 {
-	for (int i = 0; i < _connections; ++i)
+	for (int i = 1; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
 			return (&_clients[i]);
 	return (NULL);
@@ -152,10 +152,16 @@ IRC_Server::Client *		IRC_Server::find_client_by_nick(std::string const & nick)
 
 IRC_Server::Client const *	IRC_Server::find_client_by_nick(std::string const & nick) const
 {
-	for (int i = 0; i < _connections; ++i)
+	for (int i = 1; i < _connections; ++i)
 		if (case_insensitive_ascii_compare(_clients[i].get_nick(), nick) == true)
 			return (&_clients[i]);
 	return (NULL);
+}
+
+void		IRC_Server::remove_source(std::string & message)
+{
+	message.erase(0, message.find_first_of(" \r\n"));
+	message.erase(0, message.find_first_not_of(' '));	
 }
 
 	// -- SERVER INITIALIZATION -- //
@@ -402,7 +408,6 @@ void	IRC_Server::close_connection(int const fd)
 */
 void	IRC_Server::add_connection(int fd, char const * remoteIP)
 {
-	
 	_pfds[_connections].fd = fd;
 	_pfds[_connections].events = POLLIN; //report ready to read on incoming connection
 	_clients[_connections].set_clientaddr(remoteIP);
@@ -577,12 +582,12 @@ void	IRC_Server::process_client_message(Client & client)
 				send_err_INPUTTOOLONG(client, "Input line was too long");
 			//do stuff
 
-			//debug
-			for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
-				if (static_cast<size_t>(j) != client.get_pos()) //do not send to self
-					if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
-						std::cerr << "send error" << std::endl;
-			//debug
+			// //debug
+			// for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
+			// 	if (static_cast<size_t>(j) != client.get_pos()) //do not send to self
+			// 		if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
+			// 			std::cerr << "send error" << std::endl;
+			// //debug
 
 			while (client.msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
 				interpret_msg(client);
@@ -644,6 +649,48 @@ void	IRC_Server::remove_client_from_server(Client const & client)
 	remove_client_from_server(client.get_pos());
 }
 
+// /*!
+// ** @brief	Safely flags the Channel @a channel for removal from the server.
+// **
+// ** @details	The Channel @a channel will be marked for removal at the next
+// **			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
+// **			Channel from the server.
+// **
+// **			Queries the @a _channels vector for an iterator pointing to
+// **			@a channel and stores it in @a  _chan_remove_list. If @a channel is
+// **			is not present in the @a _channels vector, nothing is done, though
+// **			this should not be possible. :p
+// ** @param	channel	The Channel to be removed from the server.
+// */
+// void	IRC_Server::remove_channel_from_server(Channel & channel)
+// {
+// 	t_Channel_Map::iterator	it(_channels.find(channel.getChannelName()));
+
+// 	if (it != _channels.end())
+// 		_chan_remove_list.push_back(it);
+// }
+
+// /*!
+// ** @brief	Safely flags the Channel @a channel for removal from the server.
+// **
+// ** @details	The Channel @a channel will be marked for removal at the next
+// **			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
+// **			Channel from the server.
+// **
+// **			This overload queries the @a _channels vector for an iterator
+// **			pointing to @a channel using the provided channel_name. The iterator
+// **			is stored in @a _chan_remove_list. If @a channel_name is not present
+// **			in the @a _channels vector, nothing is done.
+// ** @param	channel	The Channel to be removed from the server.
+// */
+// void	IRC_Server::remove_channel_from_server(std::string & channel_name)
+// {
+// 	t_Channel_Map::iterator	it(_channels.find(channel_name));
+
+// 	if (it != _channels.end())
+// 		_chan_remove_list.push_back(it);
+// }
+
 /*!
 ** @brief	Removes all Clients flagged for removal from the server.
 **
@@ -674,6 +721,7 @@ void	IRC_Server::remove_flagged_clients(void)
 	{
 		if (_remove_list[i] == true)
 		{
+			_clients[i].leave_all_channels();
 			remove_connection(i);
 			--remove_count;
 		}
@@ -682,6 +730,15 @@ void	IRC_Server::remove_flagged_clients(void)
 	}
 	_remove_list.reset();
 }
+
+// void	IRC_Server::remove_flagged_channels(void)
+// {
+// 	for (std::vector<t_Channel_Map::iterator>::iterator it = _chan_remove_list.begin(), end = _chan_remove_list.end(); it != end; ++it)
+// 	{
+// 		(*it)->second.removeAllMembers();
+// 		_channels.erase(*it);
+// 	}
+// }
 
 // ---- CHANNEL CONTROL ---- //
 // bool	IRC_Server::add_channel(Channel const & new_channel)
@@ -715,7 +772,7 @@ void	IRC_Server::remove_flagged_clients(void)
 */
 IRC_Server::t_Channel_Map::iterator	IRC_Server::add_channel(Client & creator, std::string const & channel_name, std::string const & key)
 {
-	Channel										new_channel(creator, channel_name, key);
+	Channel										new_channel(creator, *this, channel_name, key);
 	std::pair<t_Channel_Map::iterator, bool>	chan_insert_result;
 	
 	try
@@ -735,7 +792,12 @@ IRC_Server::t_Channel_Map::iterator	IRC_Server::add_channel(Client & creator, st
 
 void	IRC_Server::remove_channel(std::string const & channel_name)
 {
-	_channels.erase(channel_name);
+	t_Channel_Map::iterator	it = _channels.find(channel_name);
+	if (it != _channels.end())
+	{
+		it->second.removeAllMembers();
+		_channels.erase(channel_name);
+	}
 }
 
 bool	IRC_Server::find_channel(std::string const & channel_name)

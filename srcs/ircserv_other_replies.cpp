@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/04 20:19:48 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/11 03:31:37 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ void		IRC_Server::send_rpl_PRIVMSG(Channel const & recipient, Client const & sou
 				privilege_level = SUPPORTED_CHANNEL_PREFIXES[i];
 				break ;
 			}
-	recipient.send_msg(privilege_level, msg, *this);
+	recipient.send_msg(&source, privilege_level, msg);
 }
 
 /*!
@@ -141,5 +141,32 @@ void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source
 	//debug
 		std::cout << msg << std::endl;
 	//debug
-	recipient.send_msg(0, msg, *this);
+	recipient.send_msg(NULL, 0, msg);
+}
+
+void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const
+{
+	std::string msg_recipient = get_source() + " PART ";
+	std::string msg_channel = recipient.get_source() + " PART ";
+
+	msg_recipient += channel.getChannelName();
+	msg_channel += channel.getChannelName();
+	non_numeric_reply_end(msg_recipient, part_message);
+	non_numeric_reply_end(msg_channel, part_message);
+	recipient.send_msg(msg_recipient);
+	channel.send_msg(&recipient, 0, msg_channel);
+}
+
+void		IRC_Server::send_rpl_PONG(Client const & recipient, std::string const & token) const
+{
+	std::string msg = get_source() + " ";
+	
+	msg += "PONG ";
+	msg += _servername + " ";
+	msg += token;
+	non_numeric_reply_end(msg, std::string());
+	//debug
+	std::cerr << msg << std::endl;
+	//debug
+	recipient.send_msg(msg);
 }

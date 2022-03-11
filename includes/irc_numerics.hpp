@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/03/08 07:43:16 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/09 19:54:31 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,10 @@
 #define ERR_NOTEXTTOSEND "412"
 #define ERR_INPUTTOOLONG "417"
 #define ERR_UNKNOWNCOMMAND "421"
-#define ERR_UNKNOWNMODE	"472"
 #define ERR_NONICKNAMEGIVEN "431"
 #define ERR_ERRONEOUSNICKNAME "432"
 #define ERR_NICKNAMEINUSE "433"
+#define ERR_NOTONCHANNEL "442"
 #define ERR_NOTREGISTERED "451"
 #define ERR_NEEDMOREPARAMS "461"
 #define ERR_ALREADYREGISTERED "462"

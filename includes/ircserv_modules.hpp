@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/08 07:52:51 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/11 03:31:42 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ static std::string &	preprocess_list_param(std::string & str, char delimiter);
 
 //interpreting
 	//-miki
+void	exec_cmd_BAILA(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
@@ -44,7 +45,8 @@ void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
-void	exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv);
+
+
 
 //numeric replies
 std::string	numeric_reply_start(Client const & client, char const * numeric) const;
@@ -75,7 +77,6 @@ void		send_rpl_namReply(Client const & recipient, std::string const & command, s
 
 void		send_err_UNKNOWNERROR(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_UNKNOWNCOMMAND(Client const & recipient, std::string const & command, std::string const & description) const;
-void		send_err_ERR_UNKNOWNMODE(Client const & recipient, char const &command, std::string const & description) const;
 void		send_err_ALREADYREGISTERED(Client const & recipient, std::string const & description) const;
 void		send_err_NEEDMOREPARAMS(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_NONICKNAMEGIVEN(Client const & recipient, std::string const & description) const;
@@ -89,6 +90,7 @@ void		send_err_NORECIPIENT(Client const & recipient, std::string const & descrip
 void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const;
 void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
 void		send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const;
+void		send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const;
 
 
 	// Me quedo aqui hoy
@@ -110,11 +112,11 @@ void		send_rpl_NICK(Client const & recipient, std::string const & old_source) co
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
+void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
+void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
 
 // Auxiliar methods
 
-void	exec_join(Client & sender, std::vector<std::string> const & argv);
-void 	ft_add_mode(Client const &sender, std::string const &channelName, std::string const &modes);
-void	ft_remove_mode(Client const &sender, std::string const &channelName, std::string const &modes);
+void	exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv);
 
 #endif

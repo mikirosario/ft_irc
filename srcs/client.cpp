@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/04 18:22:37 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/10 18:45:57 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED
 	_msg_buf.reserve(MSG_BUF_SIZE);
 	_message.reserve(MSG_BUF_SIZE);
 }
-
 
 IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 {
@@ -283,6 +282,8 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 		_message.assign(_msg_buf);																			//first part of message in _msg_buf; if _msg_buf is empty, nothing is assigned; i'd love it to be a move, but c++98...
 		_message.append(incoming_data, 0, (message_overflows_buffer ? msg_buf_bytes_available : end_pos)); 	//append last part of message from incoming_data; if message would overflow buffer, append up to available bytes in the buffer and truncate rest, otherwise append entire message
 		_message.append("\r\n");																			//i have so little trust in people i don't even let the client crlf-terminate its own message xD
+		if (_message[0] == ':')																				//if the message contains a source as first argument
+			remove_source(_message);																		//remove it
 		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);											//find first character after crlf-termination, or npos if it's the end of the string
 		incoming_data.erase(0, end_pos);																	//flush the part of the incoming data pertaining to the appended message (including any truncated bits)
 		_msg_buf.assign(incoming_data);																		//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course
@@ -517,6 +518,11 @@ void	IRC_Server::Client::remove_channel_membership(IRC_Server::t_Channel_Map::it
 	_channels.erase(channel_iterator->second.getChannelName());
 }
 
+void	IRC_Server::Client::remove_channel_membership(t_ChanMap::iterator const & channel_iterator)
+{
+	_channels.erase(channel_iterator);
+}
+
 /*!
 ** @brief	Clears all Client data.
 */
@@ -587,10 +593,17 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 ** @param	channel_it	An iterator to the channel from which the client will
 **						remove itself.
 */
-void	IRC_Server::Client::leave_channel(t_ChanMap::iterator & channel_it)
+void	IRC_Server::Client::leave_channel(t_ChanMap::iterator const & channel_it)
 {
+	// //debug
+	// bool ret_rmember;
+	// //debug
+	//ret_rmember = channel_it->second->second.removeMember(get_nick());
 	channel_it->second->second.removeMember(get_nick());
 	_channels.erase(channel_it);
+	// //debug
+	// std::cout << "leave channel result: " << ret_rmember << std::endl;
+	// //debug
 }
 
 /*!
@@ -650,8 +663,8 @@ bool		IRC_Server::Client::leave_channel(std::string const & channel_name)
 
 void		IRC_Server::Client::leave_all_channels(void)
 {
-	for (t_ChanMap::iterator it = _channels.begin(), end = _channels.end(); it != end; ++it) //map.erase() should preserve range integrity
-		leave_channel(it);
+	for (t_ChanMap::iterator it = _channels.begin(), end = _channels.end(); it != end; )
+		leave_channel(it++); //map.erase() should preserve range integrity, but not deleted iterator integrity of course. unless it's a Mac and does evil magics. xD
 }
 
 /* GETTERS */
@@ -742,7 +755,7 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 		}
 		else
 		{
-			ret[0] = cmd;														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
+			ret.push_back(cmd);														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
 		}
 		//is there another message in _msg_buf? if so, get it, otherwise, set state to unready
 		end_pos = _msg_buf.find_first_of("\r\n");
