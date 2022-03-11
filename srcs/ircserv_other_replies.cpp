@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 19:39:15 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/11 03:31:37 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,5 +155,18 @@ void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channe
 	non_numeric_reply_end(msg_channel, part_message);
 	recipient.send_msg(msg_recipient);
 	channel.send_msg(&recipient, 0, msg_channel);
+}
 
+void		IRC_Server::send_rpl_PONG(Client const & recipient, std::string const & token) const
+{
+	std::string msg = get_source() + " ";
+	
+	msg += "PONG ";
+	msg += _servername + " ";
+	msg += token;
+	non_numeric_reply_end(msg, std::string());
+	//debug
+	std::cerr << msg << std::endl;
+	//debug
+	recipient.send_msg(msg);
 }

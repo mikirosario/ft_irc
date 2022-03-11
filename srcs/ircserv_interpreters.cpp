@@ -6,13 +6,24 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/10 17:55:49 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/11 03:40:25 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ircserv.hpp"
 
 /* ---- PARSING ---- */
+
+/*!
+** @brief	The easter egg command.
+*/
+void	IRC_Server::exec_cmd_BAILA(Client & sender, std::vector<std::string> const & argv)
+{
+	if (argv.size() < 2)
+		send_rpl_PRIVMSG(sender, sender, "El servidor baila el chotis");
+	else
+		send_rpl_PRIVMSG(sender, sender, "¿Adónde voy con tanto parámetro?");
+}
 
 /*!
 ** @brief	Determines validity of @a nick as a nickname.
@@ -435,6 +446,20 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 	}
 }
 
+/*!
+** @brief	Executes a PING command originating from @a sender.
+**
+** @param	sender	A reference to the client who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[1,...]) in a string vector.
+*/
+void	IRC_Server::exec_cmd_PING(Client & sender, std::vector<std::string> const & argv)
+{
+	if (argv.size() < 2)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else
+		send_rpl_PONG(sender, argv[1]);
+}
 
 /****************************************
 			JOIN COMMAND
@@ -796,9 +821,7 @@ void	IRC_Server::interpret_msg(Client & client)
 	if (argv.size() < 1) //if somehow the client buffer contained no command, we do nothing with the message
 		return ;
 	std::string &	cmd = argv[0];
-	if (cmd == "BAILA") //debug //this was just a test case, might leave it in as an easter egg though ;)
-		std::cout << "El servidor baila el chotis" << std::endl;
-	else if (cmd == "PASS")
+	if (cmd == "PASS")
 		exec_cmd_PASS(client, argv);
 	else if (cmd == "NICK")
 		exec_cmd_NICK(client, argv);
@@ -808,22 +831,19 @@ void	IRC_Server::interpret_msg(Client & client)
 		send_err_NOTREGISTERED(client, "You must register with the server first");
 	else
 	{
-		if (cmd == "JOIN")
+		if (cmd == "PRIVMSG")	//PRIVMSG será el comando más común probablemente, así que lo dejo el primero y fuera del map
+			exec_cmd_PRIVMSG(client, argv);
+		else if (cmd == "JOIN")
 			exec_cmd_JOIN(client, argv);
 		else if (cmd == "PART")
 			exec_cmd_PART(client, argv);
-		else if (cmd == "TOPIC")
-			exec_cmd_TOPIC(client, argv);
 		else if (cmd == "NAMES")
 			exec_cmd_NAMES(client, argv);
-		else if (cmd == "LIST")
-			exec_cmd_LIST(client, argv);
-		else if (cmd == "INVITE")
-			exec_cmd_LIST(client, argv);
-		else if (cmd == "KICK")
-			exec_cmd_LIST(client, argv);
-		else if (cmd == "PRIVMSG")
-			exec_cmd_PRIVMSG(client, argv);
+		else if (cmd == "PING")
+			exec_cmd_PING(client, argv);
+		else if (cmd == "BAILA") //debug //this was originally just the first test case, might leave it in as an easter egg though ;)
+			exec_cmd_BAILA(client, argv);
+		
 		else
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 	}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 21:06:08 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/11 03:31:42 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ static std::string &	preprocess_list_param(std::string & str, char delimiter);
 
 //interpreting
 	//-miki
+void	exec_cmd_BAILA(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_USER(Client & sender, std::vector<std::string> const & argv);
@@ -112,6 +113,7 @@ void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::str
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
+void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
 
 // Auxiliar methods
 
