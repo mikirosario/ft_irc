@@ -327,6 +327,23 @@ void	IRC_Server::Channel::removeAllMembers(void)
 		removeMember(it++, _users);
 }
 
+void	IRC_Server::Channel::add_mode(char	c)
+{
+	_modes += c;
+}
+
+void	IRC_Server::Channel::remove_mode(char	c)
+{
+	_modes.erase(std::remove(_modes.begin(), _modes.end(), c), _modes.end());
+}
+
+std::string	IRC_Server::Channel::get_mode(void)
+{
+	return(_modes);
+}
+
+
+
 // bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)
 // {
 // 	sendMessageToAllClients(client, msg);

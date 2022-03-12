@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/12 12:40:43 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/12 13:19:28 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -657,6 +657,10 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 					//debug / error // Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
 					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
 
+					// Adrian -->	Hacemos que continue el bucle como si no hubiera pasado nada. Me parece la opción mas limpia
+					if(chan_it->second.get_mode().find('s') != std::string::npos || chan_it->second.get_mode().find('p') != std::string::npos)
+						if (sender.get_joined_channel(chan_it->second.getChannelName()).second == false)
+							continue;
 					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
 			}
@@ -681,6 +685,9 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 	{
 		for (t_Channel_Map::iterator i = _channels.begin(); i != _channels.end(); i++)
 		{
+			if(i->second.get_mode().find('s') != std::string::npos || i->second.get_mode().find('p') != std::string::npos)
+				if (sender.get_joined_channel(i->second.getChannelName()).second == false)
+						continue;
 			send_rpl_LISTSTART(sender);
 			send_rpl_LIST(sender, _channels.find(i->first)->second);
 			send_rpl_LISTEND(sender);
@@ -708,10 +715,12 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 				}
 				else if ((chan_it = _channels.find(channel)) != _channels.end())
 				{
+					if (chan_it->second.get_mode().find('s') != std::string::npos || chan_it->second.get_mode().find('p') != std::string::npos)
+						if (sender.get_joined_channel(chan_it->second.getChannelName()).second == false)
+							continue;
 					send_rpl_LISTSTART(sender);
 					send_rpl_LIST(sender, chan_it->second);
 					send_rpl_LISTEND(sender);
-					// Aqui deberemos modificar en funcion de como queramos que funcione el modo invisible en un canal
 				}
 				else
 					send_err_NOSUCHCHANNEL(sender, channel, "Channel not found");
@@ -772,19 +781,18 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 void IRC_Server::ft_add_mode(Client const &sender, std::string const &channelName, std::string const &modes)
 {
 	t_Channel_Map::iterator chan_it;
-	const std::string valid_modes = "is";
+	const std::string valid_modes = "isp";
 
 	chan_it = _channels.find(channelName);
-	for(size_t i = 1; i < modes.size(); i++) 
+	for (size_t i = 1; i < modes.size(); i++) 
 	{
-    	if(valid_modes.find(modes.at(i)) != std::string::npos)
+    	if (valid_modes.find(modes.at(i)) != std::string::npos)
 		{
-				//	Add this mode to channel if not added
+			if (chan_it->second.get_mode().find(modes[i]) == std::string::npos)
+				chan_it->second.add_mode(modes[i]);
 		}
 		else
-		{
 			send_err_ERR_UNKNOWNMODE(sender, modes[i], "is unknown mode char to me");
-		}
 	}
 
 
@@ -793,19 +801,18 @@ void IRC_Server::ft_add_mode(Client const &sender, std::string const &channelNam
 void IRC_Server::ft_remove_mode(Client const &sender, std::string const &channelName, std::string const &modes)
 {
 	t_Channel_Map::iterator chan_it;
-	const std::string valid_modes = "is";
+	const std::string valid_modes = "isp";
 
 	chan_it = _channels.find(channelName);
 	for(size_t i = 1; i < modes.size(); i++) 
 	{
     	if(valid_modes.find(modes.at(i)) != std::string::npos)
 		{
-				//	Remove this mode to channel if not added	
+			if (chan_it->second.get_mode().find(modes[i]) != std::string::npos)
+				chan_it->second.remove_mode(modes[i]);
 		}
 		else
-		{
 			send_err_ERR_UNKNOWNMODE(sender, modes[i], "is unknown mode char to me");
-		}
 	}
 
 }
@@ -823,18 +830,11 @@ void	IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 		else
 		{
 			if (argv[2].front() == '+' )
-			{
 				ft_add_mode(sender, argv[1], argv[2]);
-			}
 			else if(argv[2].front() == '-')
-			{
 				ft_remove_mode(sender, argv[1], argv[2]);
-			}
 			else
-			{
 				send_err_UNKNOWNERROR(sender, argv[0], " + or - required to give/remove modes");
-			}
-
 		}
 	}
 	else if (!find_channel(argv[1]))
