@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/11 03:31:42 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/12 12:40:32 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv);
 
 
 
@@ -62,6 +63,9 @@ void		send_rpl_ISUPPORT(Client const & recipient);
 void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
 
+void		send_rpl_LISTSTART(Client const & recipient);
+void		send_rpl_LIST(Client const & recipient, Channel const & channel);
+void		send_rpl_LISTEND(Client const & recipient);
 
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
 
@@ -103,6 +107,7 @@ void		send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & com
 void		send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_CHANNELISFULL (Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
+void		send_err_ERR_UNKNOWNMODE(Client const & recipient, char const &command, std::string const & description) const;
 
 
 
@@ -118,5 +123,7 @@ void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
 // Auxiliar methods
 
 void	exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv);
+void 	ft_add_mode(Client const &sender, std::string const &channelName, std::string const &modes);
+void	ft_remove_mode(Client const &sender, std::string const &channelName, std::string const &modes);
 
 #endif

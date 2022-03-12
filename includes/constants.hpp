@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   constants.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/01 18:47:30 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/12 12:37:25 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,10 @@
 #define SUPPORTED_CHANNEL_MODES "qoh" //Founder (q)~ // Operator (o)@ // HalfOp(h)%
 #define UNSUPPORTED_CHANNEL_PREFIXES "&+" //we don't support Protected or Voice
 
+
 #define CLIENT_ALREADY_EXIST_RETURN	0
 #define INVALID_PASSWORD_RETURN	-1
 
-
+#define CHANNEL_MODES "is"
 
 #endif

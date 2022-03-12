@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 21:31:00 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/12 12:39:06 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,15 @@ void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string c
 {
 	std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNCOMMAND);
 	msg += recipient.get_source() + " ";
+
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_err_ERR_UNKNOWNMODE(Client const & recipient, char const &command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNMODE);
 
 	msg += command;
 	numeric_reply_end(msg, description);

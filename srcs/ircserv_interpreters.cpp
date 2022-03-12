@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/11 12:35:48 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/12 12:40:43 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -526,9 +526,6 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 
 void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const & argv)
 {
-	//size_t argv_size = argv.size();
-	//std::vector<std::string> stringVector;
-	
 	if (argv.size() < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else
@@ -587,20 +584,20 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 	if(!existChannel)
 		send_err_NOSUCHCHANNEL(sender, argv[1], "Channel not found");
 	else if(argv_size == 2)
-		send_rpl_TOPIC(sender, argv[1], _channels[argv[1]].getTopic());
+		send_rpl_TOPIC(sender, argv[1], _channels.find(argv[1])->second.getTopic());
 	else
 	{
 		// Faltaria un else if comproovando si el usuario dispone de los permisos necesarios para cambiar el topic. Es decir, que sea op/hop
 
 		if (sender.get_joined_channel(argv[1]).second == false)
-				send_err_NOTONCHANNEL(sender, _channels[argv[1]], "You're not on that channel");
+				send_err_NOTONCHANNEL(sender,  _channels.find(argv[1])->second, "You're not on that channel");
 		else
 		{
 			std::string msg;
 
 			for (size_t i = 3; i < argv_size; i++)
 				msg += argv[i] + " ";
-			_channels[argv[1]].setTopic(msg);
+			_channels.find(argv[1])->second.setTopic(msg);
 			//commando para mandar mensaje sobre que se cambio el topic a todos los miembros del cananl
 			
 		}
@@ -610,14 +607,6 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 /****************************************
 			NAMES COMMAND
 *****************************************/
-
-
-/*
-
-	Con names, cualquier usuario puede ver los usuarios conectados a un canal siempre que no esten en modo invisible (+i)
-
-*/
-
 
 /*!
 ** @brief	Executes a NAMES command originating from @a sender.
@@ -684,13 +673,20 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 
 void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv)
 {
-	if (argv.size() < 1)
+	size_t argv_size = argv.size();
+
+	if (argv_size < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (argv.size() == 1)
+	else if (argv_size == 2)
 	{
-		// List all channels as return to sender
+		for (t_Channel_Map::iterator i = _channels.begin(); i != _channels.end(); i++)
+		{
+			send_rpl_LISTSTART(sender);
+			send_rpl_LIST(sender, _channels.find(i->first)->second);
+			send_rpl_LISTEND(sender);
+		}
 	}
-	else if (argv.size() == 2)						
+	else if (argv_size == 3)						
 	{
 			std::stringstream	raw_channel_list(argv[1]);
 			do
@@ -708,18 +704,17 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 				else if (channel_name_is_valid(channel) == false)
 				{
 					ret = 0;
-					//BADCHANMASK?? UNKNOWN ERROR??
+					send_err_BADCHANMASK(sender, channel, ":Bad Channel Mask");
 				}
 				else if ((chan_it = _channels.find(channel)) != _channels.end())
 				{
-					// Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
-
-					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
+					send_rpl_LISTSTART(sender);
+					send_rpl_LIST(sender, chan_it->second);
+					send_rpl_LISTEND(sender);
+					// Aqui deberemos modificar en funcion de como queramos que funcione el modo invisible en un canal
 				}
 				else
-				{
-					//Mensaje de error como que el canal no existe
-				}
+					send_err_NOSUCHCHANNEL(sender, channel, "Channel not found");
 				
 			}
 			while (raw_channel_list.eof() == false);
@@ -770,11 +765,81 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 
 /********************************************************************************
 
-		TODO - Existe el commando MODE...pero me niego a hacerlo
+ * 									MODE
 		
 *********************************************************************************/
 
+void IRC_Server::ft_add_mode(Client const &sender, std::string const &channelName, std::string const &modes)
+{
+	t_Channel_Map::iterator chan_it;
+	const std::string valid_modes = "is";
 
+	chan_it = _channels.find(channelName);
+	for(size_t i = 1; i < modes.size(); i++) 
+	{
+    	if(valid_modes.find(modes.at(i)) != std::string::npos)
+		{
+				//	Add this mode to channel if not added
+		}
+		else
+		{
+			send_err_ERR_UNKNOWNMODE(sender, modes[i], "is unknown mode char to me");
+		}
+	}
+
+
+}
+
+void IRC_Server::ft_remove_mode(Client const &sender, std::string const &channelName, std::string const &modes)
+{
+	t_Channel_Map::iterator chan_it;
+	const std::string valid_modes = "is";
+
+	chan_it = _channels.find(channelName);
+	for(size_t i = 1; i < modes.size(); i++) 
+	{
+    	if(valid_modes.find(modes.at(i)) != std::string::npos)
+		{
+				//	Remove this mode to channel if not added	
+		}
+		else
+		{
+			send_err_ERR_UNKNOWNMODE(sender, modes[i], "is unknown mode char to me");
+		}
+	}
+
+}
+
+void	IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &argv)
+{
+	if (argv.size() < 3)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (argv[1].front() == '+' || argv[1].front() == '&')
+		send_err_UNKNOWNERROR(sender, argv[0], "Unsupported channel prefixes");
+	else if (argv[1].front() == '#' || argv[1].front() == '!')
+	{
+		if(!find_channel(argv[1]))
+			send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+		else
+		{
+			if (argv[2].front() == '+' )
+			{
+				ft_add_mode(sender, argv[1], argv[2]);
+			}
+			else if(argv[2].front() == '-')
+			{
+				ft_remove_mode(sender, argv[1], argv[2]);
+			}
+			else
+			{
+				send_err_UNKNOWNERROR(sender, argv[0], " + or - required to give/remove modes");
+			}
+
+		}
+	}
+	else if (!find_channel(argv[1]))
+		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+}
 
 /*!
 ** @brief	Takes the message from the Client as an argument vector, identifies

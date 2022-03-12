@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 19:54:31 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/12 12:37:14 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,16 @@
 
 /* -- RPL TO COMMANDS -- */
 
+
+#define RPL_LISTSTART "321"
+#define RPL_LIST "322"
+#define RPL_LISTEND "323"
 #define RPL_TOPIC "332"
 #define RPL_TOPICWHOTIME "333"
 #define RPL_NAMREPLY "353"
 #define RPL_ENDOFNAMES "366"
+#define ERR_UNKNOWNMODE	"472"
+
 
 /* -- ERR NUMERICS -- */
 
