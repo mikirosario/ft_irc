@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/15 15:19:51 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/15 16:25:00 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,4 +273,13 @@ void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
 	msg += recipient.get_source() + " ";
 	numeric_reply_end(msg, ":End of /LIST");
 	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel)
+{
+	std::string msg = numeric_reply_start(sender, RPL_INVITING);
+	msg += client_name + " ";
+	msg += client_nick + " ";
+	msg += channel.getChannelName();
+	sender.send_msg(msg);
 }

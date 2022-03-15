@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/12 13:01:12 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/15 16:56:48 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ class Channel
 		// int addNewClient(Client const &client, std::string const & privileges);
 		// int addNewClient(Client const &client, std::string const &password);
 		int	addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
+		void addInvitedMember(Client & client);
 		bool removeMember(std::string const & client_nick);
 		void removeMember(t_ChannelMemberSet::iterator const & member, t_ChannelMemberSet & member_set);
 		void	removeAllMembers(void);

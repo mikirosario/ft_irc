@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/15 15:00:43 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/15 16:58:48 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -500,6 +500,11 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 					else
 						ret = 1;															//map insert success
 				}
+				else if (chan_it->second.get_mode().find('i') != std::string::npos)
+				{
+					send_err_INVITEONLYCHAN(sender,  channel);
+					ret = 0;
+				}
 				else if	((ret = chan_it->second.addMember(sender, chan_it, key, 0)) != 1)	//channel exists, sender attempts to join channel...
 				{																	//but failed, because...
 					if (ret == -1)													//it gave the wrong key
@@ -738,9 +743,37 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 
 void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv)
 {
-	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
-	(void) sender;
-	(void) argv;
+	if (argv.size() < 3)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (!find_channel(argv[2]))
+		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+	else
+	{	
+		//	Necesitamos comprovacion rápide sobre si sender es ops/hops del canal y que no este echando a alguien que no puede echar
+			// Comprobacion de si el usuario tiene permisos suficientes para ejecutar el kick. Error: ERR_CHANOPRIVSNEEDED
+		if (sender.get_joined_channel(argv[2]).second == false)
+			send_err_NOTONCHANNEL(sender, _channels.find(argv[2])->second, "You're not on that channel");
+		else if((find_client_by_nick(argv[1])) == NULL)
+		{
+			//Temporal a no ser que nos funcione asi
+			send_err_ERRONEOUSNICKNAME(sender, argv[1], "User not found");
+		}
+		else if (find_client_by_nick(argv[2])->leave_channel(_channels.find(argv[1])->second.getChannelName()))
+		{
+			//Temporal a no ser que nos funcione asi
+			send_err_ERRONEOUSNICKNAME(sender, argv[2], "User not found in the channel");
+		}
+		else if (find_client_by_nick(argv[1])->get_joined_channel(argv[2]).second == false)
+			send_err_USERONCHANNEL(sender, find_client_by_nick(argv[1])->get_username(), find_client_by_nick(argv[1])->get_nick(), _channels.find(argv[2])->second);
+		else
+		{
+			send_rpl_INVITED(sender, find_client_by_nick(argv[1])->get_username(), find_client_by_nick(argv[1])->get_nick(), _channels.find(argv[2])->second);
+			_channels.find(argv[1])->second.addInvitedMember(*find_client_by_nick(argv[1]));
+		}
+	}
+
+
+
 }
 
 /****************************************

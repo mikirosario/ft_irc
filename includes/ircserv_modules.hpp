@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/12 12:40:32 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/15 16:24:27 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ void		send_rpl_LISTSTART(Client const & recipient);
 void		send_rpl_LIST(Client const & recipient, Channel const & channel);
 void		send_rpl_LISTEND(Client const & recipient);
 
+void		send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel);
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
 
 
@@ -95,7 +96,8 @@ void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, st
 void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
 void		send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const;
 void		send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const;
-
+void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const &channel_name) const;
+void		send_err_USERONCHANNEL(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel) const;
 
 	// Me quedo aqui hoy
 

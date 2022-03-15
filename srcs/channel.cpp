@@ -249,6 +249,11 @@ int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::i
     return (ret.second);
 }
 
+void IRC_Server::Channel::addInvitedMember(Client &client)
+{
+	_users.insert(client.get_nick());
+}
+
 // -miki
 	// map.erase tiene su propia sobrecarga de erase-by-key, que devuelve un
 	// size_t que nos indica cuántos elementos se han borrado. si no existe el
