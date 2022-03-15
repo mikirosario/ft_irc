@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/12 13:19:28 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/15 15:00:43 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -679,9 +679,7 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 {
 	size_t argv_size = argv.size();
 
-	if (argv_size < 2)
-		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (argv_size == 2)
+	if (argv_size == 1)
 	{
 		for (t_Channel_Map::iterator i = _channels.begin(); i != _channels.end(); i++)
 		{
@@ -693,7 +691,7 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 			send_rpl_LISTEND(sender);
 		}
 	}
-	else if (argv_size == 3)						
+	else if (argv_size == 2)						
 	{
 			std::stringstream	raw_channel_list(argv[1]);
 			do
@@ -751,25 +749,41 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 
 void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv)
 {
-	if (argv.size() < 3)
+	std::set<std::string, case_insensitive_less>	all_channle_users;
+
+	if (argv.size() <= 3)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else if (!find_channel(argv[1]))
 		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
 	else
-	{
+	{	
+		//	Necesitamos comprovacion rápide sobre si sender es ops/hops del canal y que no este echando a alguien que no puede echar
+			// Comprobacion de si el usuario tiene permisos suficientes para ejecutar el kick. Error: ERR_CHANOPRIVSNEEDED
 
-	//	Comprobacion de que el usuario pertenece al canal del que busca eliminar a alguien. Error: ERR_NOTONCHANNEL
+		if (sender.get_joined_channel(argv[1]).second == false)
+			send_err_NOTONCHANNEL(sender, _channels.find(argv[1])->second, "You're not on that channel");
+		else if((find_client_by_nick(argv[2])) == NULL)
+		{
+			//Temporal a no ser que nos funcione asi
+			send_err_ERRONEOUSNICKNAME(sender, argv[2], "User not found");
+		}
+		else if (find_client_by_nick(argv[2])->leave_channel(_channels.find(argv[1])->second.getChannelName()))
+		{
+			//Temporal a no ser que nos funcione asi
+			send_err_ERRONEOUSNICKNAME(sender, argv[2], "User not found in the channel");
+		}
+		else
+		{
+			send_rpl_PART(sender, _channels.find(argv[1])->second, (argv.size() > 3 ? argv[3] : sender.get_nick()));
+			// Enrevesado pero deberia ser funcional
+			find_client_by_nick(argv[2])->leave_channel(_channels.find(argv[1])->second.getChannelName());
+		}
+	}
 
-	// Comprobacion de si el usuario tiene permisos suficientes para ejecutar el kick. Error: ERR_CHANOPRIVSNEEDED
 
-	// Comprobacion de si el usuario usuario buscado realmente existe en el canal. Error: ERR_USERNOTINCHANNEL
-
-	// ¡Posibilidad!	¿Tenemos que comprobar si un ops/hops esta intentando eliminar un ops/hops de mayor o igual rango?
 
 	// Eliminamos al usuario. De tener mas de tres argumentos depuramos el mensaje al igual que hacemos en TOPIC, con la diferencia de que
 	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
-
-	}
 }
 
 /********************************************************************************
@@ -878,6 +892,14 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_PART(client, argv);
 		else if (cmd == "NAMES")
 			exec_cmd_NAMES(client, argv);
+		else if (cmd == "LIST")
+			exec_cmd_LIST(client, argv);
+		else if (cmd == "KICK")
+			exec_cmd_KICK(client, argv);
+		else if (cmd == "INVITE")
+			exec_cmd_INVITE(client, argv);
+		else if (cmd == "MODE")
+			exec_cmd_MODE(client, argv);
 		else if (cmd == "PING")
 			exec_cmd_PING(client, argv);
 		else if (cmd == "BAILA") //debug //this was originally just the first test case, might leave it in as an easter egg though ;)

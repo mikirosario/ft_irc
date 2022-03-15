@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/12 12:34:09 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/15 15:19:51 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,23 +257,13 @@ void		IRC_Server::send_rpl_LIST(Client const & recipient, Channel const & channe
 	 //"<client> <channel> <client count> :<topic>"
 
 	std::string msg = numeric_reply_start(recipient, RPL_LIST);
-	std::set<std::string, case_insensitive_less> all_users;
-	size_t all_users_size;
-	std::string topic;
 
-
-	all_users = channelName.getUsers();
-	all_users_size = all_users.size();
-	topic = channelName.getTopic();
-	for (size_t i = 0; i < all_users_size; i++)
-	{
-		msg = "";
-		msg += recipient.get_source() + " ";
-		msg += channelName.getChannelName() + " ";
-		msg += std::to_string(i) + " ";
-		msg += topic + " ";
-		recipient.send_msg(msg);
-	}
+	msg = "";
+	msg += recipient.get_source() + " ";
+	msg += channelName.getChannelName() + " ";
+	msg += channelName.size();
+	msg += channelName.getTopic() + " ";
+	recipient.send_msg(msg);
 	numeric_reply_end(msg, "");
 }
 

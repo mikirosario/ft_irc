@@ -2,7 +2,10 @@
 
 # Conectar a servidor
 
-telnet localhost 6651
+
+# telnet localhost 6667 ; PASS pass  ; NICK acortes ; USER acortes 0 * :Not a bot
+
+telnet localhost 6667
 PASS pass 
 NICK acortes
 USER acortes 0 * :Not a bot
@@ -25,5 +28,3 @@ do
 	fi
 	sleep 0.5s
 done
-
-
