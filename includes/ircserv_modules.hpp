@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/15 16:24:27 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/17 13:40:51 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
 
 void		send_rpl_LISTSTART(Client const & recipient);
-void		send_rpl_LIST(Client const & recipient, Channel const & channel);
+void		send_rpl_LIST(Client const & recipient, std::string const &channel_name);
 void		send_rpl_LISTEND(Client const & recipient);
 
 void		send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel);

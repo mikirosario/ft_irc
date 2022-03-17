@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 18:49:36 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/17 13:38:24 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -805,6 +805,12 @@ bool	IRC_Server::find_channel(std::string const & channel_name)
 	if ( _channels.end() == _channels.find(channel_name))
 		return(0);
 	return(1);
+}
+
+IRC_Server::t_Channel_Map::iterator	IRC_Server::get_channel_by_name(std::string const & channel_name)
+{
+	return(_channels.find(channel_name));
+
 }
 
 void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name)

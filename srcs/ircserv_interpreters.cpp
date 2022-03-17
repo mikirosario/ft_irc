@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/15 16:58:48 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/17 14:04:47 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -582,9 +582,6 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 
 	size_t argv_size = argv.size();
 	
-	if (argv_size < 2)
-		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	
 	bool existChannel = this->find_channel(argv[1]);
 	if(!existChannel)
 		send_err_NOSUCHCHANNEL(sender, argv[1], "Channel not found");
@@ -683,18 +680,20 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv)
 {
 	size_t argv_size = argv.size();
+	t_Channel_Map::iterator chan_it;
 
 	if (argv_size == 1)
 	{
+		send_rpl_LISTSTART(sender);
 		for (t_Channel_Map::iterator i = _channels.begin(); i != _channels.end(); i++)
 		{
 			if(i->second.get_mode().find('s') != std::string::npos || i->second.get_mode().find('p') != std::string::npos)
 				if (sender.get_joined_channel(i->second.getChannelName()).second == false)
 						continue;
-			send_rpl_LISTSTART(sender);
-			send_rpl_LIST(sender, _channels.find(i->first)->second);
-			send_rpl_LISTEND(sender);
+			send_rpl_LIST(sender, i->first);
+			
 		}
+		send_rpl_LISTEND(sender);
 	}
 	else if (argv_size == 2)						
 	{
@@ -722,7 +721,11 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 						if (sender.get_joined_channel(chan_it->second.getChannelName()).second == false)
 							continue;
 					send_rpl_LISTSTART(sender);
-					send_rpl_LIST(sender, chan_it->second);
+					while (raw_channel_list.eof() == false)
+					{
+						send_rpl_LIST(sender, chan_it->first);
+						std::getline(raw_channel_list, channel, ',');
+					}
 					send_rpl_LISTEND(sender);
 				}
 				else
@@ -927,6 +930,8 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_NAMES(client, argv);
 		else if (cmd == "LIST")
 			exec_cmd_LIST(client, argv);
+		else if (cmd == "TOPIC")
+			exec_cmd_TOPIC(client, argv);
 		else if (cmd == "KICK")
 			exec_cmd_KICK(client, argv);
 		else if (cmd == "INVITE")

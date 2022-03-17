@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/15 16:25:00 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/03/17 14:02:25 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,6 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic )
 {
 	std::string msg = numeric_reply_start(recipient, RPL_TOPIC); 
-	msg += recipient.get_source() + " ";
 	std::string	welcome_msg;
 
 	welcome_msg += recipient.get_username();
@@ -251,20 +250,20 @@ void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_LIST(Client const & recipient, Channel const & channelName)
+void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & channelName)
 {
 	
 	 //"<client> <channel> <client count> :<topic>"
 
 	std::string msg = numeric_reply_start(recipient, RPL_LIST);
+	std::string copy_msg;
 
-	msg = "";
-	msg += recipient.get_source() + " ";
-	msg += channelName.getChannelName() + " ";
-	msg += channelName.size();
-	msg += channelName.getTopic() + " ";
+	copy_msg += recipient.get_source() + " ";
+	copy_msg += channelName + " ";
+	copy_msg += _channels.find(channelName)->second.size();
+	copy_msg += " " + _channels.find(channelName)->second.getTopic() + " ";
+	numeric_reply_end(msg, copy_msg);
 	recipient.send_msg(msg);
-	numeric_reply_end(msg, "");
 }
 
 void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
