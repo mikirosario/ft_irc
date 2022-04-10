@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/10 19:54:55 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/04/10 20:19:33 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,13 +147,21 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 	
 	std::string 		isupport_msg;
 	
-	ss	<< "CASEMAPPING=ascii "
+	ss	<< "AWAYLEN=" << AWAYLEN_MAX << " "
+		<< "CASEMAPPING=ascii "
 		<< "CHANLIMIT=" << SUPPORTED_CHANNEL_PREFIXES << ": "
+		<< "CHANNELLEN=" << MAX_CHANNELNAME_SIZE << " "
 		<< "CHANTYPES=" << "#" << " "
+		<< "ELIST= "
+//		<< "EXTBAN= "
+		<< "KICKLEN=" << KICKLEN_MAX << " "
+		<< "MAXLIST= "
 		<< "PREFIX=(" << SUPPORTED_CHANNEL_MODES << ")" << SUPPORTED_CHANNEL_PREFIXES << " "
 		<< "NICKLEN=" << MAX_NICK_SIZE << " "
 		<< "HOSTLEN=" << MAX_HOSTNAME_SIZE << " "
-		<< "USERLEN=" << MAX_USERNAME_SIZE;
+		<< "USERLEN=" << MAX_USERNAME_SIZE
+		<< "TOPICLEN=" << TOPICLEN_MAX << " "
+		<< "STATUSMSG=" << SUPPORTED_CHANNEL_PREFIXES << " ";
 
 	msg += ss.str();
 	numeric_reply_end(msg, std::string());
