@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/17 14:02:25 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/10 18:49:05 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,14 +130,17 @@ void		IRC_Server::send_rpl_MYINFO(Client const & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_MYINFO); 
 	msg += recipient.get_source() + " ";
+	msg += _servername + " ";
+	msg += VERSION;
+	msg += " o ";
+	msg += "ohq";
 
-	std::string	myinfo_msg;
-	myinfo_msg += _servername + " ";
+	numeric_reply_end(msg, std::string());
+	recipient.send_msg(msg);
 }
 
 void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 {
-	(void)recipient;
 	std::ostringstream	ss;
 	std::string msg = numeric_reply_start(recipient, RPL_ISUPPORT); 
 	msg += recipient.get_source() + " ";
@@ -154,9 +157,10 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 
 	msg += ss.str();
 	numeric_reply_end(msg, std::string());
-	//debug
-	std::cerr << "imprime " << msg << std::endl;
-	//debug
+	recipient.send_msg(msg);
+	// //debug
+	// std::cerr << "imprime " << msg << std::endl;
+	// //debug
 }
 //debug  //finish these
 

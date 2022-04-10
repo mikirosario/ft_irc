@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/03/17 14:04:47 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/10 18:48:08 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,6 +169,8 @@ bool	IRC_Server::register_client(Client & client)
 		send_rpl_WELCOME(client);
 		send_rpl_YOURHOST(client);
 		send_rpl_CREATED(client);
+		send_rpl_MYINFO(client);
+		send_rpl_ISUPPORT(client);
 	}
 
 	return(true);
@@ -901,17 +903,17 @@ void	IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 {
 	if (argv.size() < 3)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (argv[1].front() == '+' || argv[1].front() == '&')
+	else if (argv[1][0] == '+' || argv[1][0] == '&')
 		send_err_UNKNOWNERROR(sender, argv[0], "Unsupported channel prefixes");
-	else if (argv[1].front() == '#' || argv[1].front() == '!')
+	else if (argv[1][0] == '#' || argv[1][0] == '!')
 	{
 		if(!find_channel(argv[1]))
 			send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
 		else
 		{
-			if (argv[2].front() == '+' )
+			if (argv[2][0] == '+' )
 				ft_add_mode(sender, argv[1], argv[2]);
-			else if(argv[2].front() == '-')
+			else if(argv[2][0] == '-')
 				ft_remove_mode(sender, argv[1], argv[2]);
 			else
 				send_err_UNKNOWNERROR(sender, argv[0], " + or - required to give/remove modes");
