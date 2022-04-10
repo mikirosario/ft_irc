@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/09 19:07:11 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/17 14:02:25 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,4 +241,45 @@ void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string cons
 	msg += channelName;
 	numeric_reply_end(msg, "End of /NAMES list");
 	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
+	msg += recipient.get_source() + " ";
+	numeric_reply_end(msg, "Channel :Users  Name");
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & channelName)
+{
+	
+	 //"<client> <channel> <client count> :<topic>"
+
+	std::string msg = numeric_reply_start(recipient, RPL_LIST);
+	std::string copy_msg;
+
+	copy_msg += recipient.get_source() + " ";
+	copy_msg += channelName + " ";
+	copy_msg += _channels.find(channelName)->second.size();
+	copy_msg += " " + _channels.find(channelName)->second.getTopic() + " ";
+	numeric_reply_end(msg, copy_msg);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
+	msg += recipient.get_source() + " ";
+	numeric_reply_end(msg, ":End of /LIST");
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel)
+{
+	std::string msg = numeric_reply_start(sender, RPL_INVITING);
+	msg += client_name + " ";
+	msg += client_nick + " ";
+	msg += channel.getChannelName();
+	sender.send_msg(msg);
 }

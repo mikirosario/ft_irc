@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/03/09 21:31:00 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/03/15 16:29:17 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,15 @@ void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string c
 {
 	std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNCOMMAND);
 	msg += recipient.get_source() + " ";
+
+	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_err_ERR_UNKNOWNMODE(Client const & recipient, char const &command, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNMODE);
 
 	msg += command;
 	numeric_reply_end(msg, description);
@@ -251,6 +260,28 @@ void	IRC_Server::send_err_NOTONCHANNEL(Client const & recipient, Channel const &
 	msg += channel.getChannelName();
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_err_INVITEONLYCHAN(Client const & recipient, std::string const & channel_name) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_INVITEONLYCHAN);
+	msg += recipient.get_source() + " ";
+
+	msg += channel_name;
+	numeric_reply_end(msg, " :Cannot join channel (+i)");
+	recipient.send_msg(msg);
+
+}
+
+void		IRC_Server::send_err_USERONCHANNEL(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel) const
+{
+	std::string msg = numeric_reply_start(sender, ERR_USERONCHANNEL);
+	msg += sender.get_source() + " ";
+	msg += client_name + " ";
+	msg += client_nick + " ";
+	msg += channel.getChannelName();
+	msg += " :is already on channel";
+	sender.send_msg(msg);
 }
 
 void	IRC_Server::send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 19:38:30 by miki             ###   ########.fr       */
+/*   Updated: 2022/03/15 16:56:48 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,13 @@ class Channel
 		// int addNewClient(Client const &client, std::string const & privileges);
 		// int addNewClient(Client const &client, std::string const &password);
 		int	addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
+		void addInvitedMember(Client & client);
 		bool removeMember(std::string const & client_nick);
 		void removeMember(t_ChannelMemberSet::iterator const & member, t_ChannelMemberSet & member_set);
 		void	removeAllMembers(void);
+		void	add_mode(char	c);
+		void	remove_mode(char c);
+		std::string	get_mode(void);
 		//bool removeMember(Client const &client, std::string const &msg);
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);
 		
@@ -101,6 +105,7 @@ class Channel
 		IRC_Server &		_parent_server;
 		std::string 		_channelName;
 		std::string			_channelPassword;
+		std::string			_modes;
 		//t_ChannelMemberMap allClients; //debug //remove
 
 		std::string			_owner;
