@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/10 18:49:05 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/04/10 19:54:55 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 	
 	ss	<< "CASEMAPPING=ascii "
 		<< "CHANLIMIT=" << SUPPORTED_CHANNEL_PREFIXES << ": "
-		<< "CHANTYPES=" << SUPPORTED_CHANNEL_PREFIXES << " "
+		<< "CHANTYPES=" << "#" << " "
 		<< "PREFIX=(" << SUPPORTED_CHANNEL_MODES << ")" << SUPPORTED_CHANNEL_PREFIXES << " "
 		<< "NICKLEN=" << MAX_NICK_SIZE << " "
 		<< "HOSTLEN=" << MAX_HOSTNAME_SIZE << " "
@@ -265,7 +265,7 @@ void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & ch
 
 	copy_msg += recipient.get_source() + " ";
 	copy_msg += channelName + " ";
-	copy_msg += _channels.find(channelName)->second.size();
+	copy_msg += INT_TO_STR(_channels.find(channelName)->second.size());
 	copy_msg += " " + _channels.find(channelName)->second.getTopic() + " ";
 	numeric_reply_end(msg, copy_msg);
 	recipient.send_msg(msg);
