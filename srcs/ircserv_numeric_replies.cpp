@@ -166,6 +166,7 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic )
 {
 	std::string msg = numeric_reply_start(recipient, RPL_TOPIC); 
+	msg += recipient.get_source() + " ";
 	std::string	welcome_msg;
 
 	welcome_msg += recipient.get_username();

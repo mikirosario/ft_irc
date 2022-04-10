@@ -500,7 +500,7 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 					else
 						ret = 1;															//map insert success
 				}
-				else if (chan_it->second.get_mode().find('i') != std::string::npos)
+				else if (chan_it->second.get_mode().find('i') != std::string::npos) // channel exists, but is invite-only and you are not invited
 				{
 					send_err_INVITEONLYCHAN(sender,  channel);
 					ret = 0;
@@ -570,6 +570,36 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 		}
 		while (raw_channel_list.eof() == false);
 	}
+	// for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
+	// {
+	// 	std::string password = "";
+	// 	std::string expectsString(*it);
+
+	// 	//	Error encontrado. Find channel nos devuelve siempre 0 si ejecutamos "PART canalAleatorioInventado"
+		
+	// 	bool existChannel = find_channel(expectsString);
+	// 	if(!existChannel)
+	// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	// 	else
+	// 	{
+	// 		//send_err_NOSUCHCHANNEL(sender, argv[0], "Debug error");
+	// 		if (argv_size == 2)
+	// 			remove_user_from_channel(sender, expectsString);
+	// 		// else
+	// 		// {
+	// 		// 	size_t i = 2;
+	// 		// 	std::string tmp_msg;
+
+	// 		// 	while (i < argv_size)
+	// 		// 	{
+	// 		// 		tmp_msg += argv[i];
+	// 		// 		tmp_msg += " ";
+	// 		// 		i++;
+	// 		// 	}
+	// 		// 	remove_user_from_channel(sender, expectsString, tmp_msg);
+	// 		// }
+	// 	}
+	// }
 }
 
 /****************************************

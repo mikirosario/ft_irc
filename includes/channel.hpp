@@ -65,7 +65,6 @@ class Channel
 		void	add_mode(char	c);
 		void	remove_mode(char c);
 		std::string	get_mode(void);
-
 		//bool removeMember(Client const &client, std::string const &msg);
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);
 		
