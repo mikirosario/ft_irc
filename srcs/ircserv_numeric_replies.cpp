@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/10 20:19:33 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/04/12 23:57:16 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,39 +132,46 @@ void		IRC_Server::send_rpl_MYINFO(Client const & recipient)
 	msg += recipient.get_source() + " ";
 	msg += _servername + " ";
 	msg += VERSION;
-	msg += " o ";
-	msg += "ohq";
+	msg += " o";
 
-	numeric_reply_end(msg, std::string());
+	numeric_reply_end(msg, "qoh");
 	recipient.send_msg(msg);
 }
 
 void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 {
-	std::ostringstream	ss;
-	std::string msg = numeric_reply_start(recipient, RPL_ISUPPORT); 
+	std::ostringstream	ss1;
+	std::ostringstream	ss2;
+	std::string msg_start = numeric_reply_start(recipient, RPL_ISUPPORT); 
+	std::string msg;
+
 	msg += recipient.get_source() + " ";
 	
 	std::string 		isupport_msg;
 	
-	ss	<< "AWAYLEN=" << AWAYLEN_MAX << " "
+	ss1	<< "AWAYLEN=" << AWAYLEN_MAX << " "
 		<< "CASEMAPPING=ascii "
 		<< "CHANLIMIT=" << SUPPORTED_CHANNEL_PREFIXES << ": "
 		<< "CHANNELLEN=" << MAX_CHANNELNAME_SIZE << " "
-		<< "CHANTYPES=" << "#" << " "
+		<< "CHANTYPES=# "
+		<< "CHANMODES="
 		<< "ELIST= "
-//		<< "EXTBAN= "
+		<< "EXTBAN= "
 		<< "KICKLEN=" << KICKLEN_MAX << " "
 		<< "MAXLIST= "
 		<< "PREFIX=(" << SUPPORTED_CHANNEL_MODES << ")" << SUPPORTED_CHANNEL_PREFIXES << " "
 		<< "NICKLEN=" << MAX_NICK_SIZE << " "
-		<< "HOSTLEN=" << MAX_HOSTNAME_SIZE << " "
-		<< "USERLEN=" << MAX_USERNAME_SIZE
+		<< "HOSTLEN=" << MAX_HOSTNAME_SIZE << " ";
+		
+	ss2 << "USERLEN=" << MAX_USERNAME_SIZE
 		<< "TOPICLEN=" << TOPICLEN_MAX << " "
 		<< "STATUSMSG=" << SUPPORTED_CHANNEL_PREFIXES << " ";
 
-	msg += ss.str();
-	numeric_reply_end(msg, std::string());
+	msg = msg_start + ss1.str();
+	numeric_reply_end(msg, "are supported by this server");
+	recipient.send_msg(msg);
+	msg = msg_start + ss2.str();
+	numeric_reply_end(msg, "are supported on this server");
 	recipient.send_msg(msg);
 	// //debug
 	// std::cerr << "imprime " << msg << std::endl;
