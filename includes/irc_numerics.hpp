@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/03/15 16:17:25 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/14 06:02:46 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,13 @@
 #define ERR_UNKNOWNERROR "400"
 #define ERR_TOOMANYCHANNELS "405"
 #define ERR_NOSUCHNICK "401"
+#define ERR_NOSUCHSERVER "402"
 #define ERR_NOSUCHCHANNEL "403"
 #define ERR_NORECIPIENT "411"
 #define ERR_NOTEXTTOSEND "412"
 #define ERR_INPUTTOOLONG "417"
 #define ERR_UNKNOWNCOMMAND "421"
+#define ERR_NOMOTD "422"
 #define ERR_NONICKNAMEGIVEN "431"
 #define ERR_ERRONEOUSNICKNAME "432"
 #define ERR_NICKNAMEINUSE "433"
