@@ -391,6 +391,11 @@ std::string	IRC_Server::Channel::get_mode(void)
 bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message) const
 {
 	IRC_Server::Client const *	recipient = NULL;
+
+	//debug
+	std::cerr << message << std::endl;
+	//debug
+
 	switch (privilege_level)
 	{
 		case 0 :

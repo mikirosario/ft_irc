@@ -6,7 +6,7 @@
 /*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/14 06:14:22 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/14 08:18:08 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,6 +169,8 @@ bool	IRC_Server::register_client(Client & client)
 		send_rpl_WELCOME(client);
 		send_rpl_YOURHOST(client);
 		send_rpl_CREATED(client);
+		send_rpl_MYINFO(client);
+		send_rpl_ISUPPORT(client);
 	}
 
 	return(true);
@@ -832,6 +834,11 @@ void	IRC_Server::interpret_msg(Client & client)
 {
 	std::vector<std::string>	argv = client.get_message();
 	
+	//debug
+	for (std::vector<std::string>::iterator it = argv.begin(), end = argv.end(); it != end; ++it)
+		std::cerr << *it << " ";
+	std::cerr << std::endl;
+	//debug
 
 	//this might work best as a cmd-method map, just need to standardize all the functions...
 	if (argv.size() < 1) //if somehow the client buffer contained no command, we do nothing with the message
