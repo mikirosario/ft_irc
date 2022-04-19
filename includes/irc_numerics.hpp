@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/04/14 06:02:46 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/19 19:08:47 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@
 #define ERR_NONICKNAMEGIVEN "431"
 #define ERR_ERRONEOUSNICKNAME "432"
 #define ERR_NICKNAMEINUSE "433"
+#define ERR_USERNOTINCHANNEL "441"
 #define ERR_NOTONCHANNEL "442"
 #define ERR_USERONCHANNEL "443"
 #define ERR_NOTREGISTERED "451"
@@ -61,7 +62,6 @@
 #define ERR_BANNEDFROMCHAN "474"
 #define ERR_BADCHANNELKEY "475"
 #define ERR_BADCHANMASK	"476"
-
-
+#define ERR_CHANOPRIVSNEEDED "482"
 
 #endif

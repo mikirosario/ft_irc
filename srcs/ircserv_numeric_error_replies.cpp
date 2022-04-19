@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/04/14 08:12:03 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/19 19:45:39 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,6 +236,16 @@ void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, Channel const 
 	recipient.send_msg(msg);
 }
 
+void	IRC_Server::send_err_USERNOTINCHANNEL(Client const & recipient, Client const & target, Channel const & channel, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_USERNOTINCHANNEL);
+
+	msg += target.get_nick() + " ";
+	msg += channel.getChannelName();
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
 void	IRC_Server::send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOTONCHANNEL);
@@ -279,6 +289,16 @@ void		IRC_Server::send_err_NOMOTD(Client const & recipient, std::string const & 
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
+
+void		IRC_Server::send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channel const & channel, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_CHANOPRIVSNEEDED);
+
+	msg += channel.getChannelName();
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
 
 void	IRC_Server::send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const
 {

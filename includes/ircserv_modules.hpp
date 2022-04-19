@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/04/14 06:10:16 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/19 22:45:39 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MOTD(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_NOTICE(Client & sender, std::vector<std::string> const & argv);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 
@@ -97,10 +98,12 @@ void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, st
 void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
 void		send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const;
 void		send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const;
+void		send_err_USERNOTINCHANNEL(Client const & recipient, Client const & target, Channel const & channel, std::string const & description) const;
 void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const &channel_name) const;
 void		send_err_USERONCHANNEL(Client const & recipient, std::string const & client_name, std::string const & client_nick, Channel const & channel) const;
 void		send_err_NOSUCHSERVER(Client const & recipient, std::string const & server_name, std::string const & description) const;
 void		send_err_NOMOTD(Client const & recipient, std::string const & description) const;
+void		send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channel const & channel, std::string const & description) const;
 	// Me quedo aqui hoy
 
 // Join
@@ -120,8 +123,10 @@ void		non_numeric_reply_end(std::string & reply, std::string const & last_param)
 void		send_rpl_NICK(Client const & recipient, std::string const & old_source) const;
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
+void		send_rpl_NOTICE(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
+void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const;
 void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
 
 // Auxiliar methods

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/14 08:18:08 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/19 23:07:37 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,7 @@ bool	IRC_Server::register_client(Client & client)
 		send_rpl_CREATED(client);
 		send_rpl_MYINFO(client);
 		send_rpl_ISUPPORT(client);
+		send_err_NOMOTD(client, "MOTD file is missing"); //debug //temporary, no MOTD implemented yet
 	}
 
 	return(true);
@@ -410,7 +411,7 @@ void	IRC_Server::exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> cons
 		send_err_NOTEXTTOSEND(sender, "No text to send");
 	else
 	{
-		std::string				msg_source = sender.get_source() + " ";
+		//std::string				msg_source = sender.get_source() + " ";
 		std::string				target;
 		Client * 				usr_recipient;
 		t_Channel_Map::iterator	ch_recipient;
@@ -474,8 +475,37 @@ void	IRC_Server::exec_cmd_MOTD(Client & sender, std::vector<std::string> const &
 {
 	if (argv.size() > 1 && argv[1].compare(_servername) != 0)
 		send_err_NOSUCHSERVER(sender, argv[1], "No such server");
-	else	//add MOTD at some point :p
+	else	//debug //add MOTD at some point :p
 		send_err_NOMOTD(sender, "MOTD file is missing");
+}
+
+/*!
+** @brief	Executes a NOTICE command originating from @a sender.
+**
+** @param	sender	A reference to the client who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[1,...]) in a string vector.
+*/
+void	IRC_Server::exec_cmd_NOTICE(Client & sender, std::vector<std::string> const & argv)
+{
+	std::string				target;
+	Client * 				usr_recipient;
+	std::stringstream		raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
+
+	if (argv.size() < 3)
+		return ;
+	do	
+	{
+		std::getline(raw_target_list, target, ',');
+		
+		if (raw_target_list.fail() == false) //valid target passed to std::getline
+		{
+			size_t		hash_pos = target.find_first_of("#");
+			if (hash_pos == std::string::npos && (usr_recipient = find_client_by_nick(target)) != NULL) //it's not a channel and the user exists
+				send_rpl_NOTICE(*usr_recipient, sender, argv[2]);
+		}
+	}
+	while (raw_target_list.eof() == false);
 }
 
 
@@ -555,8 +585,7 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 		std::stringstream		raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
 		std::string				channel;
 		do
-		{
-			
+		{		
 			std::getline(raw_channel_list, channel, ',');
 			
 			if (raw_channel_list.fail() == true)
@@ -791,12 +820,45 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 
 void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv)
 {
-	if (argv.size() < 3)
+	size_t argc = argv.size();
+
+	if (argc < 3)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (!find_channel(argv[1]))
-		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");
+
+	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[1]);	
+	if (target_channel == _channels.end())
+		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");	
+	else if (sender.get_joined_channel(argv[1]).second == false)									//sender is not on affected channel
+		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
+	else if (target_channel->second.isChannelOperator(sender) == false)								//sender lacks needed permissions
+		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
 	else
 	{
+		std::stringstream	raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[2]), ','));
+		do
+		{
+			std::string				target_nick;
+			Channel &				channel = target_channel->second;
+			Client *				target;
+
+			std::getline(raw_target_list, target_nick, ',');
+
+			if (raw_target_list.fail() == true)												//weird getline error
+				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
+			else if ((target = find_client_by_nick(target_nick)) == NULL)					//target user does not exist
+				send_err_UNKNOWNERROR(sender, argv[0], "Target user does not exist");
+			else if (target->get_joined_channel(channel.getChannelName()).second == false)	//target user is not on channel
+				send_err_USERNOTINCHANNEL(sender, *target, channel, "They aren't on that channel");
+			else if (sender.get_nick() != channel.getOwner() && channel.isChannelOperator(*target))	//only channel owner can kick other operators
+				send_err_UNKNOWNERROR(sender, argv[0], "Target user is also a Channel Operator");
+			else
+			{
+				target->leave_channel(channel.getChannelName());
+				send_rpl_KICK(sender, *target, channel, (argc > 3 ? argv[3] : std::string("Kicked from the channel")));
+			}
+		}
+		while (raw_target_list.eof() == false);
+	}
 
 	//	Comprobacion de que el usuario pertenece al canal del que busca eliminar a alguien. Error: ERR_NOTONCHANNEL
 
@@ -808,8 +870,6 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 
 	// Eliminamos al usuario. De tener mas de tres argumentos depuramos el mensaje al igual que hacemos en TOPIC, con la diferencia de que
 	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
-
-	}
 }
 
 /********************************************************************************
@@ -868,6 +928,10 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_BAILA(client, argv);
 		else if (cmd == "MOTD")
 			exec_cmd_MOTD(client, argv);
+		else if (cmd == "NOTICE")
+			exec_cmd_NOTICE(client, argv);
+		else if (cmd == "KICK")
+			exec_cmd_KICK(client, argv);
 		else
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 	}

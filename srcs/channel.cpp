@@ -176,6 +176,14 @@ IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getUsers(vo
 	return (_users);
 }
 
+bool											IRC_Server::Channel::isChannelOperator(IRC_Server::Client const & client) const
+{
+	std::string const & client_nick = client.get_nick();
+
+	if (_owner == client_nick || _chanops.find(client_nick) != _chanops.end())
+		return true;
+	return false;
+}
 // -miki
     // single-element insert devuelve un pair en el que 'second' es un bool que
 	// indica si se ha insertado o no. si es false (0) es que ya había un string
