@@ -280,7 +280,10 @@ void IRC_Server::Channel::addInvitedMember(Client &client)
 **			member. Destroys channel if client_nick was the last member of the
 **			channel.
 **
-** @details	If @a client_nick is the owner, the channel becomes ownerless.
+** @details	If @a client_nick is the owner, ownership is inherited as long as
+**			there are still other channel members, in order of highest privilege
+**			and, among members of equal privilege, alphabetical order.
+**
 **			Otherwise, we search for @a client in each of the privilege levels
 **			and erase when we find them.
 ** @param	client_nick	Nick of the member to remove from the channel.
@@ -288,16 +291,24 @@ void IRC_Server::Channel::addInvitedMember(Client &client)
 */
 bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 {
+	IRC_Server::Channel::t_ChannelMemberSet	* pMemberSet[] = {&_chanops, &_halfops, &_users};
+
 	bool	member_was_removed = false;
 	if (_owner == client_nick)
 	{
 		_owner.clear();
+		for (size_t i = 0; i < 3; ++i)				//replace owner with remaining channel member in order of highest privilege, and among members of equal privilege, alphabetical order
+			if (pMemberSet[i]->size() > 0)
+			{
+				t_ChannelMemberSet::iterator new_owner = pMemberSet[i]->begin();
+				_owner = *new_owner;
+				pMemberSet[i]->erase(new_owner);
+				break ;
+			}
 		member_was_removed = true;
 	}
 	else
-	{
-		IRC_Server::Channel::t_ChannelMemberSet	* pMemberSet[] = {&_chanops, &_halfops, &_users};
-	
+	{	
 		for (size_t i = 0, ret = 0; i < 3; ++i)
 			if ((ret = pMemberSet[i]->erase(client_nick)) > 0)
 				member_was_removed = true;
@@ -321,8 +332,8 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 void IRC_Server::Channel::removeMember(t_ChannelMemberSet::iterator const & member, IRC_Server::Channel::t_ChannelMemberSet & member_set)
 {
 	member_set.erase(member);
-	if (size() == 0)
-		_parent_server.remove_channel(getChannelName());
+	// if (size() == 0)
+	// 	_parent_server.remove_channel(getChannelName());
 }
 
 void	IRC_Server::Channel::removeAllMembers(void)
