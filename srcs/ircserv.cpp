@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/17 13:38:24 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/20 22:33:11 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -762,6 +762,8 @@ void	IRC_Server::remove_flagged_clients(void)
 **			If the new channel was inserted but channel_membership could not
 **			successfully be registered in the client object, the new channel is
 **			deleted and false is returned.
+**
+**			Channel names are saved WITH the preceding '#'.
 ** @param	creator			The client creating the new channel.
 ** @param	channel_name	The channel_name. This should be parsed beforehand
 **							for correctness.
@@ -810,7 +812,6 @@ bool	IRC_Server::find_channel(std::string const & channel_name)
 IRC_Server::t_Channel_Map::iterator	IRC_Server::get_channel_by_name(std::string const & channel_name)
 {
 	return(_channels.find(channel_name));
-
 }
 
 void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name)

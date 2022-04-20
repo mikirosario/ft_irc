@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/19 23:07:37 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/20 22:31:47 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,8 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 /*!
 ** @brief	Determines validity of @a channel_name as a channel name.
 **
-** @details	A channel name must start with '&', '#', '+' or '!' and be between
-**			2 and 50 bytes long, and may not contain ' ', '\a', ',' or '0'.
+** @details	A channel name must start with '#' and be between 2 and 50 bytes			// debug //deprecated A channel name must start with '&', '#', '+' or '!' and be between
+**			long, and may not contain ' ', '\a', ',' or '0'.
 ** @param	channel_name	A string proposed as a channel name.
 ** @return	true of @a channel_name is a valid channel name, otherwise false
 */
@@ -81,7 +81,7 @@ bool	IRC_Server::channel_name_is_valid(std::string const & channel_name) const
 {
 	if (channel_name.size() < 2
 		|| channel_name.size() > MAX_CHANNELNAME_SIZE
-		|| std::strchr("&#+!", channel_name[0]) == NULL
+		|| std::strchr("#", channel_name[0]) == NULL
 		|| channel_name.find_first_of(" \a,") != std::string::npos)
 		return false;
 	return true;
@@ -597,9 +597,11 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 				if (hash_pos != std::string::npos) 								//it's a channel
 				{
 					size_t		chname_pos;
+					// if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
+					// 	(ch_recipient = _channels.find(channel.substr(chname_pos - 1))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
 					if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
-						(ch_recipient = _channels.find(channel.substr(chname_pos - 1))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
-						send_err_NOSUCHCHANNEL(sender, "PART", "No such channel");
+						(ch_recipient = _channels.find(channel)) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
+						send_err_NOSUCHCHANNEL(sender, channel, "No such channel");
 					//else if (sender.leave_channel(ch_recipient->second.getChannelName()) == false)
 					else if (sender.get_joined_channel(ch_recipient->second.getChannelName()).second == false)
 						send_err_NOTONCHANNEL(sender, ch_recipient->second, "You're not on that channel");
@@ -610,7 +612,7 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 					}
 				}
 				else
-					send_err_NOSUCHCHANNEL(sender, "PART", "No such channel");
+					send_err_NOSUCHCHANNEL(sender, channel, "No such channel");
 			}
 		}
 		while (raw_channel_list.eof() == false);
@@ -827,7 +829,7 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 
 	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[1]);	
 	if (target_channel == _channels.end())
-		send_err_NOSUCHCHANNEL(sender, argv[0], "No such channel");	
+		send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");	
 	else if (sender.get_joined_channel(argv[1]).second == false)									//sender is not on affected channel
 		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
 	else if (target_channel->second.isChannelOperator(sender) == false)								//sender lacks needed permissions
@@ -877,6 +879,25 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 		TODO - Existe el commando MODE...pero me niego a hacerlo
 		
 *********************************************************************************/
+
+void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv)
+{
+	if (argv.size() < 2)
+		send_err_NEEDMOREPARAMS(sender, "MODE", "Not enough parameters");
+	size_t		hash_pos = argv[1].find_first_of("#");
+	if (hash_pos == std::string::npos) 					//it's a user
+	{
+		Client * target = find_client_by_nick(argv[1]);
+		if (target == NULL)									//user does not exist
+			send_err_NOSUCHNICK(sender, argv[1], "No such nick");
+	}
+	else												//it's a channel
+	{
+		t_Channel_Map::iterator target = get_channel_by_name(argv[1]);
+		if (target == _channels.end())						//channel does not exist
+			send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");
+	}
+}
 
 
 

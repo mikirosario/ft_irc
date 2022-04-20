@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/04/19 22:45:39 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/20 22:19:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void		send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channel const & ch
 
 // Join
 
-void		send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & command, std::string const & description) const;
+void		send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & channel_nick, std::string const & description) const;
 void		send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const;
 
 void		send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const;

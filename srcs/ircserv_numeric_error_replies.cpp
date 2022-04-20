@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/04/19 19:45:39 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/20 22:31:29 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,20 +200,20 @@ void	IRC_Server::send_err_NOSUCHNICK(Client const & recipient, std::string const
 
 // Join errors
 
-void	IRC_Server::send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & channel_name, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOSUCHCHANNEL); 
 
-	msg += command;
+	msg += channel_name;
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & channel_name, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_TOOMANYCHANNELS); 
 
-	msg += command;
+	msg += channel_name;
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
