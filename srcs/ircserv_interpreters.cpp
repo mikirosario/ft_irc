@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/23 19:57:38 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:44:43 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -881,7 +881,25 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 *********************************************************************************/
 
 
-
+/*!
+** @brief	Executes a MODE command originating from @a sender.
+**
+** @details	The expected argv for this command is:
+**
+**			MODE <target> [<modestring> [<mode arguments>...]]
+**
+**			The command has two behaviours, depending on whether <target> is a
+**			user or a channel.
+**
+**			If <modestring> is omitted, the command replies with <target>'s
+**			current active modes.
+**
+**			If <modestring> contains no sign ('+' or '-'), or only contains
+**			contains signs, it will be interpreted as no modestring given.
+** @param	sender	A reference to the client who sent the command.
+** @param	argv	A reference to the message containing the command (argv[0])
+**					and its arguments (argv[1,...]) in a string vector.
+*/
 void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv)
 {
 	size_t 	argc = argv.size();
@@ -890,12 +908,27 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 	size_t		hash_pos = argv[1].find_first_of("#");
 	if (hash_pos == std::string::npos) 					//it's a user
 	{
-		Client * target = find_client_by_nick(argv[1]);
+		Client *						target = find_client_by_nick(argv[1]);
+		size_t							first_sign_pos;
+
 		if (target == NULL)																//user does not exist
 			send_err_NOSUCHNICK(sender, argv[1], "No such nick");
 		else if (case_insensitive_ascii_compare(sender.get_nick(), argv[1]) == false)	//sender is not the same as target
 			send_err_USERSDONTMATCH(sender, "Can't change mode for other users");
-		//else if (argc < 3)																//no modestring given
+		else if (argc < 3 ||
+				(first_sign_pos = argv[2].find_first_of("+-")) == std::string::npos ||
+				argv[2].find_first_not_of("+-", first_sign_pos) == std::string::npos)	//no modestring given
+			send_rpl_UMODEIS(sender);
+		else		//debug //shouldn't o be privileged????? :p pregunta a raul
+		{
+			std::string	applied_changes;
+			bool		all_modes_supported;
+
+			all_modes_supported = target->set_modes(&argv[2][first_sign_pos], applied_changes);
+			send_rpl_MODE(sender, applied_changes);
+			if (all_modes_supported == false)
+				send_err_UMODEUNKNOWNFLAG(sender, "Unknown mode flag");			
+		}
 			
 	}
 	else												//it's a channel
@@ -960,6 +993,8 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_NOTICE(client, argv);
 		else if (cmd == "KICK")
 			exec_cmd_KICK(client, argv);
+		else if (cmd == "MODE")
+			exec_cmd_MODE(client, argv);
 		else
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 	}

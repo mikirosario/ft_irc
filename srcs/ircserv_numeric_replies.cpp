@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/14 08:06:35 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/24 01:37:01 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,16 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 	// std::cerr << "imprime " << msg << std::endl;
 	// //debug
 }
+
+void		IRC_Server::send_rpl_UMODEIS(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_UMODEIS);
+
+	msg += recipient.get_modes();
+	numeric_reply_end(msg, std::string());
+	recipient.send_msg(msg);
+}
+
 //debug  //finish these
 
 // Join: replies to command

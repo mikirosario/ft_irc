@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/04/23 19:56:39 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:32:07 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -474,28 +474,48 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 **			and included in a string with no other delimiters.
 **			Ex. (+a, -i, -o+ai).
 **
-**			If no '+' or '-' is prepended, or if unsupported user modes are
-**			indicated, nothing is done.
+**			A '+' or '-' sign will affect all subsequent modes until an opposite
+**			sign.
 **
-**			Duplicate modes will be ignored.
+**			Modes with no '+' or '-' prepended are ignored and not applied.
+**
+**			Unsupported modes are ignored and not applied.
 ** @param	modes	Modes to set or unset, preceded by a '+' or '-' sign to set
 **					or unset, respectively.
+** @param	applied_changes	An empty string in which all applied mode changes
+**			will be recorded.
+** @return	false if any mode was unsupported or if no '+' or '-' was present,
+**			otherwise true
 */
-void	IRC_Server::Client::set_modes(std::string const & modes)
+bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & applied_changes)
 {
+	size_t	start_pos = modes.find_first_of("+-");
 	size_t	del;
-	size_t	set_pos = modes.find_first_of('+');
-	set_pos = modes.find_first_not_of('+', set_pos);
-	size_t	unset_pos = modes.find_first_of('-');
-	unset_pos = modes.find_first_not_of('-', unset_pos);
-	if (set_pos != std::string::npos)																		//set mode requested
-		for (std::string::const_iterator it = modes.begin() + set_pos, end = modes.end(); it != end && *it != '+' && *it != '-'; ++it)
-			if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL && _modes.find(*it) == std::string::npos)			//known mode set request and mode not already set
-				_modes.push_back(*it);																					//set mode
-	if (unset_pos != std::string::npos)																		//unset mode requested
-		for (std::string::const_iterator it = modes.begin() + unset_pos, end = modes.end(); it != end && *it != '+' && *it != '-'; ++it)
-			if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL && (del = _modes.find(*it)) != std::string::npos)	//known mode unset request and mode not already unset
-				_modes.erase(del, 1);																					//unset mode
+	char	sign;
+	bool	ret;
+
+	if (start_pos == std::string::npos)
+		return false;
+	ret = true;
+	for (std::string::const_iterator it = modes.begin() + start_pos, end = modes.end(); it != end; ++it)
+	{
+		if (std::strchr("+-", *it) != NULL)								//set sign
+		{
+			sign = *it;
+			applied_changes.push_back(*it);
+		}
+		else if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL)		//mode is known
+		{
+			if (sign == '+' && _modes.find(*it) == std::string::npos)				//set requested and mode not already set
+				_modes.push_back(*it);													//set mode
+			else if (sign == '-' && (del = _modes.find(*it)) != std::string::npos)	//unset requested and mode not already unset
+				_modes.erase(del, 1);													//unset mode
+			applied_changes.push_back(*it);
+		}
+		else															//mode is unknown
+			ret = false;
+	}
+	return (ret);
 }
 
 /*!
@@ -949,6 +969,11 @@ std::string const &			IRC_Server::Client::get_hostname(void) const
 std::string const &			IRC_Server::Client::get_clientaddr(void) const
 {
 	return (_clientaddr);
+}
+
+std::string const &			IRC_Server::Client::get_modes(void)	const
+{
+	return (_modes);
 }
 
 int							IRC_Server::Client::get_sockfd(void) const

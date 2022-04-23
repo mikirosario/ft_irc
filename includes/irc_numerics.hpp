@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/04/23 18:20:55 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:03:19 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #define RPL_CREATED "003"
 #define RPL_MYINFO "004"
 #define RPL_ISUPPORT "005"
+#define RPL_UMODEIS "221"
 
 /* -- RPL TO COMMANDS -- */
 
@@ -63,6 +64,7 @@
 #define ERR_BADCHANNELKEY "475"
 #define ERR_BADCHANMASK	"476"
 #define ERR_CHANOPRIVSNEEDED "482"
+#define ERR_UMODEUNKNOWNFLAG "501"
 #define ERR_USERSDONTMATCH "502"
 
 #endif

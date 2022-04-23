@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/04/23 18:23:28 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:27:35 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ void		send_rpl_YOURHOST(Client const & recipient);
 void		send_rpl_CREATED(Client const & recipient);
 void		send_rpl_MYINFO(Client const & recipient);
 void		send_rpl_ISUPPORT(Client const & recipient);
+void		send_rpl_UMODEIS(Client const & recipient);
+
 void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
 
@@ -105,6 +107,7 @@ void		send_err_NOSUCHSERVER(Client const & recipient, std::string const & server
 void		send_err_NOMOTD(Client const & recipient, std::string const & description) const;
 void		send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channel const & channel, std::string const & description) const;
 void		send_err_USERSDONTMATCH(Client const & recipient, std::string const & description) const;
+void		send_err_UMODEUNKNOWNFLAG(Client const & recipient, std::string const & description) const;
 	// Me quedo aqui hoy
 
 // Join
@@ -129,6 +132,7 @@ void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
 void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const;
 void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
+void		send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const;
 
 // Auxiliar methods
 

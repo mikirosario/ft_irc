@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/19 22:35:43 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:30:45 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,5 +197,16 @@ void		IRC_Server::send_rpl_PONG(Client const & recipient, std::string const & to
 	// //debug
 	// std::cerr << msg << std::endl;
 	// //debug
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const
+{
+	std::string msg = recipient.get_source() + " ";
+
+	msg += "MODE ";
+	msg += recipient.get_nick() + " ";
+	msg += applied_changes;
+	non_numeric_reply_end(msg, std::string());
 	recipient.send_msg(msg);
 }

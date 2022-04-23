@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/04/23 18:25:14 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:05:06 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,6 +302,13 @@ void		IRC_Server::send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channe
 void		IRC_Server::send_err_USERSDONTMATCH(Client const & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_USERSDONTMATCH);
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_err_UMODEUNKNOWNFLAG(Client const & recipient, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_UMODEUNKNOWNFLAG);
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }

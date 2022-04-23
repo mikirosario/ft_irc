@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/23 18:43:59 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:21:28 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ class Client
 		void	set_realname(std::string const & realname);
 		bool	set_clientaddr(char const * remoteIP);
 		//void	set_hostname(std::string const & hostname);
-		void	set_modes(std::string const & modes);
+		bool	set_modes(std::string const & modes, std::string & applied_changes);
 		void	set_pass_validated(bool state);
 		void	set_state_registered(void);
 		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
