@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/04/19 19:08:47 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/23 18:20:55 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,5 +63,6 @@
 #define ERR_BADCHANNELKEY "475"
 #define ERR_BADCHANMASK	"476"
 #define ERR_CHANOPRIVSNEEDED "482"
+#define ERR_USERSDONTMATCH "502"
 
 #endif

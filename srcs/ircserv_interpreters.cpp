@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/20 22:31:47 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/23 19:57:38 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -880,16 +880,23 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 		
 *********************************************************************************/
 
+
+
 void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv)
 {
-	if (argv.size() < 2)
+	size_t 	argc = argv.size();
+	if (argc < 2)
 		send_err_NEEDMOREPARAMS(sender, "MODE", "Not enough parameters");
 	size_t		hash_pos = argv[1].find_first_of("#");
 	if (hash_pos == std::string::npos) 					//it's a user
 	{
 		Client * target = find_client_by_nick(argv[1]);
-		if (target == NULL)									//user does not exist
+		if (target == NULL)																//user does not exist
 			send_err_NOSUCHNICK(sender, argv[1], "No such nick");
+		else if (case_insensitive_ascii_compare(sender.get_nick(), argv[1]) == false)	//sender is not the same as target
+			send_err_USERSDONTMATCH(sender, "Can't change mode for other users");
+		//else if (argc < 3)																//no modestring given
+			
 	}
 	else												//it's a channel
 	{

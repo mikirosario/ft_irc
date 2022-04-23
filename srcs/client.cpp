@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/04/14 08:00:43 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/23 19:56:39 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
 	_message = src._message;
+	_modes = src._modes;
 	_username = src._username;
 	_realname = src._realname;
 	_hostname = src._hostname;
@@ -76,6 +77,7 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_realname, src._realname);
 	std::swap(this->_msg_buf, src._msg_buf);
 	std::swap(this->_message, src._message);
+	std::swap(this->_modes, src._modes);
 	std::swap(this->_hostname, src._hostname);
 	//std::swap(this->_channels, src._channels);
 	src.clear();
@@ -462,6 +464,38 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 	std::cout << "My name is: " << _hostname << std::endl;
 	//debug
 	return (true);
+}
+
+/*!
+** @brief	Sets and unsets Client modes.
+**
+** @details	Supported modes are i (invisible), a (away) and o (operator). Modes
+**			should be prepended by '+' or '-' as they are to be added or removed
+**			and included in a string with no other delimiters.
+**			Ex. (+a, -i, -o+ai).
+**
+**			If no '+' or '-' is prepended, or if unsupported user modes are
+**			indicated, nothing is done.
+**
+**			Duplicate modes will be ignored.
+** @param	modes	Modes to set or unset, preceded by a '+' or '-' sign to set
+**					or unset, respectively.
+*/
+void	IRC_Server::Client::set_modes(std::string const & modes)
+{
+	size_t	del;
+	size_t	set_pos = modes.find_first_of('+');
+	set_pos = modes.find_first_not_of('+', set_pos);
+	size_t	unset_pos = modes.find_first_of('-');
+	unset_pos = modes.find_first_not_of('-', unset_pos);
+	if (set_pos != std::string::npos)																		//set mode requested
+		for (std::string::const_iterator it = modes.begin() + set_pos, end = modes.end(); it != end && *it != '+' && *it != '-'; ++it)
+			if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL && _modes.find(*it) == std::string::npos)			//known mode set request and mode not already set
+				_modes.push_back(*it);																					//set mode
+	if (unset_pos != std::string::npos)																		//unset mode requested
+		for (std::string::const_iterator it = modes.begin() + unset_pos, end = modes.end(); it != end && *it != '+' && *it != '-'; ++it)
+			if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL && (del = _modes.find(*it)) != std::string::npos)	//known mode unset request and mode not already unset
+				_modes.erase(del, 1);																					//unset mode
 }
 
 /*!

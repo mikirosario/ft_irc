@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/10 18:42:48 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/23 18:43:59 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Client
 		//std::string	_longname;		//Client's name in format nickname!username@hostname. maybe replace build_source with this
 		std::string	_msg_buf;
 		std::string	_message;
+		std::string _modes;
 		t_ChanMap	_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
 
 		/* PRIVATE UTILS */
@@ -73,7 +74,8 @@ class Client
 		void	set_username(std::string const & username);
 		void	set_realname(std::string const & realname);
 		bool	set_clientaddr(char const * remoteIP);
-		void	set_hostname(std::string const & hostname);
+		//void	set_hostname(std::string const & hostname);
+		void	set_modes(std::string const & modes);
 		void	set_pass_validated(bool state);
 		void	set_state_registered(void);
 		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
@@ -91,6 +93,7 @@ class Client
 		std::string const &						get_realname(void) const;
 		std::string const &						get_hostname(void) const;
 		std::string const &						get_clientaddr(void) const;
+		std::string const &						get_modes(void) const;
 		int										get_sockfd(void) const;
 		int										get_pass_attempts(void) const;
 		size_t									get_pos(void) const;

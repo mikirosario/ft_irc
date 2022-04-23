@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/04/20 22:19:52 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/23 18:23:28 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,7 @@ void		send_err_USERONCHANNEL(Client const & recipient, std::string const & clien
 void		send_err_NOSUCHSERVER(Client const & recipient, std::string const & server_name, std::string const & description) const;
 void		send_err_NOMOTD(Client const & recipient, std::string const & description) const;
 void		send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channel const & channel, std::string const & description) const;
+void		send_err_USERSDONTMATCH(Client const & recipient, std::string const & description) const;
 	// Me quedo aqui hoy
 
 // Join
