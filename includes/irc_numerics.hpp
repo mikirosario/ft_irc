@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 01:03:19 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 15:46:42 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #define RPL_MYINFO "004"
 #define RPL_ISUPPORT "005"
 #define RPL_UMODEIS "221"
+#define RPL_CHANNELMODEIS "324"
 
 /* -- RPL TO COMMANDS -- */
 

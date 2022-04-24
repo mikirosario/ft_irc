@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 01:44:43 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 15:44:01 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -927,7 +927,7 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			all_modes_supported = target->set_modes(&argv[2][first_sign_pos], applied_changes);
 			send_rpl_MODE(sender, applied_changes);
 			if (all_modes_supported == false)
-				send_err_UMODEUNKNOWNFLAG(sender, "Unknown mode flag");			
+				send_err_UMODEUNKNOWNFLAG(sender, "Unknown mode flag");
 		}
 			
 	}

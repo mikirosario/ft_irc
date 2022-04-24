@@ -110,6 +110,7 @@ IRC_Server::Channel::Channel(Channel const &other)
 		_parent_server(other._parent_server),
     	_channelName(other._channelName),
 		_channelPassword(other._channelPassword),
+		_modes(other._modes),
 		_owner(other._owner),
 		_chanops(other._chanops),
 		_halfops(other._halfops),
@@ -117,6 +118,23 @@ IRC_Server::Channel::Channel(Channel const &other)
 		//allClients(other.allClients),
         _topic(other._topic)     
 {}
+
+IRC_Server::Channel &	IRC_Server::Channel::operator=(Channel const &other)
+{
+	if (*this == other || &_parent_server != &other._parent_server)
+		return(*this);
+	_channelPassword = other._channelPassword;
+	_modes = other._modes;
+	_channelName = other._channelName;
+	//allClients.clear();
+	//allClients = other.allClients;
+	_owner = other._owner;
+	_chanops = other._chanops;
+	_halfops = other._halfops;
+	_users = other._users;
+	return(*this);
+}
+
 // -miki
 	// en principio esta funcionalidad ya está cubierta por el map con
 	// case_insensitive_less.
@@ -156,6 +174,38 @@ void IRC_Server::Channel::setOwner(Client const & client)
     _owner = client.get_nick(); //se puede cambiar de owner? al cambiar, el antiguo owner sigue siendo miembro del canal?
 }
 
+bool	IRC_Server::Channel::setModes(std::string const & modes, std::string & applied_changes)
+{
+	size_t	start_pos = modes.find_first_of("+-");
+	size_t	del;
+	char	sign;
+	bool	ret;
+
+	if (start_pos == std::string::npos)
+		return false;
+	ret = true;
+	for (std::string::const_iterator it = modes.begin() + start_pos, end = modes.end(); it != end; ++it)
+	{
+		if (std::strchr("+-", *it) != NULL)								//set sign
+		{
+			sign = *it;
+			applied_changes.push_back(*it);
+		}
+		else if (std::strchr(SUPPORTED_CHANNEL_MODES, *it) != NULL)		//mode is known
+		{
+			if (sign == '+' && _modes.find(*it) == std::string::npos)				//set requested and mode not already set
+				_modes.push_back(*it);													//set mode
+			else if (sign == '-' && (del = _modes.find(*it)) != std::string::npos)	//unset requested and mode not already unset
+				_modes.erase(del, 1);													//unset mode
+			applied_changes.push_back(*it);
+		}
+		else															//mode is unknown
+			ret = false;
+	}
+	return (ret);
+}
+
+
 std::string const & IRC_Server::Channel::getOwner(void) const
 {
     return(_owner);
@@ -174,6 +224,11 @@ IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getHalfops(
 IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getUsers(void) const
 {
 	return (_users);
+}
+
+std::string const & 							IRC_Server::Channel::getModes(void) const
+{
+	return(_modes);
 }
 
 bool											IRC_Server::Channel::isChannelOperator(IRC_Server::Client const & client) const
@@ -350,23 +405,6 @@ void	IRC_Server::Channel::removeAllMembers(void)
 	for (it = getUsers().begin(); it != getUsers().end(); )
 		removeMember(it++, _users);
 }
-
-void	IRC_Server::Channel::add_mode(char	c)
-{
-	_modes += c;
-}
-
-void	IRC_Server::Channel::remove_mode(char	c)
-{
-	_modes.erase(std::remove(_modes.begin(), _modes.end(), c), _modes.end());
-}
-
-std::string	IRC_Server::Channel::get_mode(void)
-{
-	return(_modes);
-}
-
-
 
 // bool IRC_Server::Channel::removeClient(Client const &client, std::string const &msg)
 // {
