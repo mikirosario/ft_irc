@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/15 16:56:48 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/20 21:47:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ class Channel
 		//bool	is_empty(void) const;
 
 
-		bool 	send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message) const;
+		bool 	send_msg(Client const * sender, char privilege_level, std::string const & message) const;
 		// - miki
 			//USA case_insensitive_ascii_compare()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -99,6 +99,7 @@ class Channel
 		t_ChannelMemberSet const &	getChanops(void) const;
 		t_ChannelMemberSet const &	getHalfops(void) const;
 		t_ChannelMemberSet const &	getUsers(void) const;
+		bool						isChannelOperator(Client const & client) const;
 	private:
 		Channel(void);
 

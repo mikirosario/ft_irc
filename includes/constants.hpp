@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   constants.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/12 13:19:29 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/23 18:52:44 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,9 @@
 #define MAX_USERNAME_SIZE 25	//maximum username size
 #define MAX_REALNAME_SIZE 35	//maximum real name size
 #define MAX_PASS_ATTEMPTS 10	//maximum number of PASS commands allowed during registration before we reject connection
+#define AWAYLEN_MAX 200
+#define KICKLEN_MAX 200
+#define TOPICLEN_MAX 307
 
 /* CHANNEL CONSTANTS */
 
@@ -28,8 +31,9 @@
 #define ADMIN_USER 1
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
-#define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp
-#define SUPPORTED_CHANNEL_MODES "qoh" //Founder (q)~ // Operator (o)@ // HalfOp(h)%
+#define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp || //Founder (q)~ // Operator (o)@ // HalfOp(h)%
+#define SUPPORTED_CHANNEL_MODES "qoh"
+#define SUPPORTED_USER_MODES "oai"
 #define UNSUPPORTED_CHANNEL_PREFIXES "&+" //we don't support Protected or Voice
 
 

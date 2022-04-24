@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/03/10 18:45:57 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/24 01:32:07 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
 	_message = src._message;
+	_modes = src._modes;
 	_username = src._username;
 	_realname = src._realname;
 	_hostname = src._hostname;
@@ -76,6 +77,7 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_realname, src._realname);
 	std::swap(this->_msg_buf, src._msg_buf);
 	std::swap(this->_message, src._message);
+	std::swap(this->_modes, src._modes);
 	std::swap(this->_hostname, src._hostname);
 	//std::swap(this->_channels, src._channels);
 	src.clear();
@@ -465,6 +467,58 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 }
 
 /*!
+** @brief	Sets and unsets Client modes.
+**
+** @details	Supported modes are i (invisible), a (away) and o (operator). Modes
+**			should be prepended by '+' or '-' as they are to be added or removed
+**			and included in a string with no other delimiters.
+**			Ex. (+a, -i, -o+ai).
+**
+**			A '+' or '-' sign will affect all subsequent modes until an opposite
+**			sign.
+**
+**			Modes with no '+' or '-' prepended are ignored and not applied.
+**
+**			Unsupported modes are ignored and not applied.
+** @param	modes	Modes to set or unset, preceded by a '+' or '-' sign to set
+**					or unset, respectively.
+** @param	applied_changes	An empty string in which all applied mode changes
+**			will be recorded.
+** @return	false if any mode was unsupported or if no '+' or '-' was present,
+**			otherwise true
+*/
+bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & applied_changes)
+{
+	size_t	start_pos = modes.find_first_of("+-");
+	size_t	del;
+	char	sign;
+	bool	ret;
+
+	if (start_pos == std::string::npos)
+		return false;
+	ret = true;
+	for (std::string::const_iterator it = modes.begin() + start_pos, end = modes.end(); it != end; ++it)
+	{
+		if (std::strchr("+-", *it) != NULL)								//set sign
+		{
+			sign = *it;
+			applied_changes.push_back(*it);
+		}
+		else if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL)		//mode is known
+		{
+			if (sign == '+' && _modes.find(*it) == std::string::npos)				//set requested and mode not already set
+				_modes.push_back(*it);													//set mode
+			else if (sign == '-' && (del = _modes.find(*it)) != std::string::npos)	//unset requested and mode not already unset
+				_modes.erase(del, 1);													//unset mode
+			applied_changes.push_back(*it);
+		}
+		else															//mode is unknown
+			ret = false;
+	}
+	return (ret);
+}
+
+/*!
 ** @brief	Sets Client's @a _pass_validated flag to @a state.
 **
 ** @param	state	State to which to set Client's @a _pass_validated flag (true
@@ -636,6 +690,9 @@ bool		IRC_Server::Client::is_registered(void) const
 
 void		IRC_Server::Client::send_msg(std::string const & msg) const
 {
+	//debug
+	std::cerr << msg << std::endl;
+	//debug
 	send(_sockfd, msg.data(), msg.size(), 0);
 }
 
@@ -912,6 +969,11 @@ std::string const &			IRC_Server::Client::get_hostname(void) const
 std::string const &			IRC_Server::Client::get_clientaddr(void) const
 {
 	return (_clientaddr);
+}
+
+std::string const &			IRC_Server::Client::get_modes(void)	const
+{
+	return (_modes);
 }
 
 int							IRC_Server::Client::get_sockfd(void) const

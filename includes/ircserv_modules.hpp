@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/03/17 13:40:51 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/24 01:27:35 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@ void	exec_cmd_PRIVMSG(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PING(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_MOTD(Client & sender, std::vector<std::string> const & argv);
+void	exec_cmd_NOTICE(Client & sender, std::vector<std::string> const & argv);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 
@@ -60,6 +62,8 @@ void		send_rpl_YOURHOST(Client const & recipient);
 void		send_rpl_CREATED(Client const & recipient);
 void		send_rpl_MYINFO(Client const & recipient);
 void		send_rpl_ISUPPORT(Client const & recipient);
+void		send_rpl_UMODEIS(Client const & recipient);
+
 void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
 
@@ -96,14 +100,19 @@ void		send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, st
 void		send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const;
 void		send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const;
 void		send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const;
+void		send_err_USERNOTINCHANNEL(Client const & recipient, Client const & target, Channel const & channel, std::string const & description) const;
 void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const &channel_name) const;
-void		send_err_USERONCHANNEL(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel) const;
-
+void		send_err_USERONCHANNEL(Client const & recipient, std::string const & client_name, std::string const & client_nick, Channel const & channel) const;
+void		send_err_NOSUCHSERVER(Client const & recipient, std::string const & server_name, std::string const & description) const;
+void		send_err_NOMOTD(Client const & recipient, std::string const & description) const;
+void		send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channel const & channel, std::string const & description) const;
+void		send_err_USERSDONTMATCH(Client const & recipient, std::string const & description) const;
+void		send_err_UMODEUNKNOWNFLAG(Client const & recipient, std::string const & description) const;
 	// Me quedo aqui hoy
 
 // Join
 
-void		send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & command, std::string const & description) const;
+void		send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & channel_nick, std::string const & description) const;
 void		send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const;
 
 void		send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
@@ -118,9 +127,12 @@ void		non_numeric_reply_end(std::string & reply, std::string const & last_param)
 void		send_rpl_NICK(Client const & recipient, std::string const & old_source) const;
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
+void		send_rpl_NOTICE(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
+void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const;
 void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
+void		send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const;
 
 // Auxiliar methods
 

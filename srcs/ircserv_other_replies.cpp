@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/03/11 03:31:37 by miki             ###   ########.fr       */
+/*   Updated: 2022/04/24 01:30:45 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,24 @@ void		IRC_Server::send_rpl_PRIVMSG(Channel const & recipient, Client const & sou
 }
 
 /*!
+** @brief	Builds and sends a reply message from @a source to @a recipient
+**			following successful NOTICE command.
+**
+** @param	recipient	The message recipient.
+** @param	source		The message sender.
+** @param	message		The message text input by the user @a source.
+*/
+void		IRC_Server::send_rpl_NOTICE(Client const & recipient, Client const & source, std::string const & message) const
+{
+	std::string msg = source.get_source() + " ";
+
+	msg += "NOTICE ";
+	msg += recipient.get_nick();
+	non_numeric_reply_end(msg, message);
+	recipient.send_msg(msg);
+}
+
+/*!
 ** @brief	Builds and sends a reply message from @a source to all members of
 **			Channel @a recipient following successful JOIN command.
 **
@@ -157,6 +175,17 @@ void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channe
 	channel.send_msg(&recipient, 0, msg_channel);
 }
 
+void		IRC_Server::send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const
+{
+	std::string msg = kicker.get_source() + " KICK ";
+
+	msg += channel.getChannelName() + " ";
+	msg += recipient.get_nick();
+	non_numeric_reply_end(msg, kick_message);
+	recipient.send_msg(msg);
+	channel.send_msg(NULL, 0, msg);
+}
+
 void		IRC_Server::send_rpl_PONG(Client const & recipient, std::string const & token) const
 {
 	std::string msg = get_source() + " ";
@@ -165,8 +194,19 @@ void		IRC_Server::send_rpl_PONG(Client const & recipient, std::string const & to
 	msg += _servername + " ";
 	msg += token;
 	non_numeric_reply_end(msg, std::string());
-	//debug
-	std::cerr << msg << std::endl;
-	//debug
+	// //debug
+	// std::cerr << msg << std::endl;
+	// //debug
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const
+{
+	std::string msg = recipient.get_source() + " ";
+
+	msg += "MODE ";
+	msg += recipient.get_nick() + " ";
+	msg += applied_changes;
+	non_numeric_reply_end(msg, std::string());
 	recipient.send_msg(msg);
 }
