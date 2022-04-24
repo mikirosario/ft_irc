@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 01:44:43 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 16:59:20 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -655,31 +655,27 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 
 void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv)
 {
-	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
-
 	size_t argv_size = argv.size();
 	
 	if (argv_size < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	
-	bool existChannel = this->find_channel(argv[1]);
-	if(!existChannel)
-		send_err_NOSUCHCHANNEL(sender, argv[1], "Channel not found");
+
+	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[1]);	
+	if (target_channel == _channels.end())
+		send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");	
+	else if (target_channel->second.isChannelOperator(sender) == false && argv_size > 2)								//sender lacks needed permissions
+		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
 	else if(argv_size == 2)
-	{
-		//Aqui leemos en topic del canal y se lo mandamos a sender
-	}
+		send_rpl_TOPIC(sender, target_channel->first, target_channel->second.getTopic());
 	else
 	{
-		// Si el primer char != ':' buscar que error mandar y mandarlo a sender
+		std::string	new_topic;
 
-		// Si es valido, comprobar los permisos de sender. Tiene truco, pues con mode +t se hace que solo los op/hops puedan poner el topic
-
-			// Si sender en un "operario del canal/rango neceserio", setTopic a el mensaje (coger todos los argv[i] hasta que i == argv_size)
-
-			// Si sender no tiene los permisos necesarios, mandamos el error correspondiente
+		for(int i = 2; i < argv_size; i++)
+			new_topic += argv[i];
+		target_channel->second.setTopic(new_topic);
+		send_rpl_TOPIC(sender, target_channel->first, target_channel->second.getTopic());
 	}
-
 }
 
 /****************************************
@@ -723,8 +719,9 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 */
 void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv)
 {
-	if (argv.size() < 2)
-		send_rpl_ENDOFNAMES(sender, "*");
+	size_t 	argc = argv.size();
+	if (argc < 2)
+		send_err_NEEDMOREPARAMS(sender, "MODE", "Not enough parameters");
 	else if (argv.size() == 2)						
 	{
 			std::stringstream	raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
@@ -742,7 +739,10 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 				{
 					//debug / error // Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
 					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
-
+					
+					if (!chan_it->second.findClient(sender) && (chan_it->second.get_mode().find('p') == std::string::npos || 
+						chan_it->second.get_mode().find('p') == std::string::npos))
+							continue ;
 					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
 			}
@@ -759,15 +759,24 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 
 void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv)
 {
-	if (argv.size() < 1)
-		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	else if (argv.size() == 1)
+	size_t 	argc = argv.size();
+
+	if (argc == 1)
 	{
-		// List all channels as return to sender
+		send_rpl_LISTSTART(sender);
+		for (IRC_Server::t_Channel_Map::iterator i = _channels.begin();	i != _channels.end(); i++)
+		{
+			if (!i->second.findClient(sender) && (i->second.get_mode().find('p') == std::string::npos || 
+						i->second.get_mode().find('p') == std::string::npos))
+							continue ;
+			send_rpl_LIST(sender, i->first);
+		}
+		send_rpl_LISTEND(sender);
 	}
-	else if (argv.size() == 2)						
+	else if (argc == 2)						
 	{
 			std::stringstream	raw_channel_list(argv[1]);
+			send_rpl_LISTSTART(sender);
 			do
 			{
 				std::string				channel;
@@ -783,26 +792,23 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 				else if (channel_name_is_valid(channel) == false)
 				{
 					ret = 0;
-					//BADCHANMASK?? UNKNOWN ERROR??
+					send_err_NOSUCHCHANNEL(sender, channel, "No such channel");	
 				}
 				else if ((chan_it = _channels.find(channel)) != _channels.end())
 				{
-					// Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
-
-					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
+					if (!chan_it->second.findClient(sender) && (chan_it->second.get_mode().find('p') == std::string::npos || 
+						chan_it->second.get_mode().find('p') == std::string::npos))
+							continue ;
+					send_rpl_LIST(sender, chan_it->first);
 				}
 				else
-				{
-					//Mensaje de error como que el canal no existe
-				}
-				
+					send_err_NOSUCHCHANNEL(sender, channel, "No such channel");	
 			}
 			while (raw_channel_list.eof() == false);
+			send_rpl_LISTEND(sender);
 	}
 	else
-	{
-		//	Enviar error por demasiados argumentos
-	}
+		send_err_UNKNOWNERROR(sender, argv[0], "To many arguments");
 }
 
 /****************************************
@@ -811,9 +817,46 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 
 void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv)
 {
-	//	Aqui hacemos que part salga de los canales que pasamos por argumento. Parece sencillo
-	(void) sender;
-	(void) argv;
+	size_t argc = argv.size();
+
+	if (argc < 3)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[1]);	
+	if (target_channel == _channels.end())
+		send_err_NOSUCHCHANNEL(sender, argv[2], "No such channel");	
+	else if (sender.get_joined_channel(argv[2]).second == false)									//sender is not on affected channel
+		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
+	else if (target_channel->second.isChannelOperator(sender) == false)								//sender lacks needed permissions
+		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
+	else
+	{
+		std::stringstream	raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
+		do
+		{
+			std::string				target_nick;
+			Channel &				channel = target_channel->second;
+			Client *				target;
+
+			std::getline(raw_target_list, target_nick, ',');
+
+			if (raw_target_list.fail() == true)												//weird getline error
+				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
+			else if ((target = find_client_by_nick(target_nick)) == NULL)					//target user does not exist
+				send_err_UNKNOWNERROR(sender, argv[0], "Target user does not exist");
+			else if (target->get_joined_channel(channel.getChannelName()).second == false)	//target user is not on channel
+				send_err_USERNOTINCHANNEL(sender, *target, channel, "They aren't on that channel");
+			else if (sender.get_nick() != channel.getOwner() && channel.isChannelOperator(*target))	//only channel owner can kick other operators
+				send_err_UNKNOWNERROR(sender, argv[0], "Target user is also a Channel Operator");
+			else
+			{
+				target->leave_channel(channel.getChannelName());
+				send_rpl_JOIN(channel, sender);
+				send_rpl_NAMREPLY(sender, channel);
+				send_rpl_INVITED(sender, target->get_hostname(), target->get_nick(), channel);
+			}
+		}
+		while (raw_target_list.eof() == false);
+	}
 }
 
 /****************************************
@@ -873,13 +916,6 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 	// Eliminamos al usuario. De tener mas de tres argumentos depuramos el mensaje al igual que hacemos en TOPIC, con la diferencia de que
 	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
 }
-
-/********************************************************************************
-
-		TODO - Existe el commando MODE...pero me niego a hacerlo
-		
-*********************************************************************************/
-
 
 /*!
 ** @brief	Executes a MODE command originating from @a sender.
