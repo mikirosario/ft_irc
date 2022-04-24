@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 16:59:20 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/24 17:04:40 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -671,7 +671,7 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 	{
 		std::string	new_topic;
 
-		for(int i = 2; i < argv_size; i++)
+		for(size_t i = 2; i < argv_size; i++)
 			new_topic += argv[i];
 		target_channel->second.setTopic(new_topic);
 		send_rpl_TOPIC(sender, target_channel->first, target_channel->second.getTopic());
