@@ -6,7 +6,7 @@
 /*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 18:48:05 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/24 20:22:04 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -740,8 +740,8 @@ void	IRC_Server::exec_cmd_NAMES(Client & sender, std::vector<std::string> const 
 					//debug / error // Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
 					// Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
 					
-					if (!chan_it->second.findClient(sender) && (chan_it->second.get_mode().find('p') == std::string::npos || 
-						chan_it->second.get_mode().find('p') == std::string::npos))
+					if (!chan_it->second.findClient(sender) && (chan_it->second.getModes().find('p') == std::string::npos || 
+						chan_it->second.getModes().find('p') == std::string::npos))
 							continue ;
 					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
@@ -766,8 +766,8 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 		send_rpl_LISTSTART(sender);
 		for (IRC_Server::t_Channel_Map::iterator i = _channels.begin();	i != _channels.end(); i++)
 		{
-			if (!i->second.findClient(sender) && (i->second.get_mode().find('p') == std::string::npos || 
-						i->second.get_mode().find('p') == std::string::npos))
+			if (!i->second.findClient(sender) && (i->second.getModes().find('p') == std::string::npos || 
+						i->second.getModes().find('p') == std::string::npos))
 							continue ;
 			send_rpl_LIST(sender, i->first);
 		}
@@ -796,8 +796,8 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 				}
 				else if ((chan_it = _channels.find(channel)) != _channels.end())
 				{
-					if (!chan_it->second.findClient(sender) && (chan_it->second.get_mode().find('p') == std::string::npos || 
-						chan_it->second.get_mode().find('p') == std::string::npos))
+					if (!chan_it->second.findClient(sender) && (chan_it->second.getModes().find('p') == std::string::npos || 
+						chan_it->second.getModes().find('p') == std::string::npos))
 							continue ;
 					send_rpl_LIST(sender, chan_it->first);
 				}
@@ -963,7 +963,7 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			all_modes_supported = target->set_modes(&argv[2][first_sign_pos], applied_changes);
 			send_rpl_MODE(sender, applied_changes);
 			if (all_modes_supported == false)
-				send_err_UMODEUNKNOWNFLAG(sender, "Unknown mode flag");			
+				send_err_UMODEUNKNOWNFLAG(sender, "Unknown mode flag");
 		}
 			
 	}
