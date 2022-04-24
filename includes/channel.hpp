@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/20 21:47:52 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/24 19:12:14 by acortes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ class Channel
 		
 		void setOwner(Client const &OwnerUser2);
 		void setTopic(std::string const &Topic);
-		bool findClient(Client const &client);
+		//bool findClient(Client const &client);
 		//bool	is_empty(void) const;
 
 
