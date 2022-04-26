@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: acortes- <acortes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 20:37:10 by acortes-         ###   ########.fr       */
+/*   Updated: 2022/04/26 15:47:01 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -965,6 +965,10 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 		t_Channel_Map::iterator target = get_channel_by_name(argv[1]);
 		if (target == _channels.end())						//channel does not exist
 			send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");
+		else if (target->second.isChannelOperator(sender) == false)
+			send_err_ERR_CHANOPRIVSNEEDED(sender, target->second, "You're not a channel operator");
+		
+		
 	}
 }
 

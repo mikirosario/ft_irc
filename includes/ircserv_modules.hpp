@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 15:51:14 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/26 15:39:00 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ void		send_rpl_LISTEND(Client const & recipient);
 
 void		send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel);
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
+void		send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel, std::string const & modestring, std::string const & modeargs);
 
 
 // Esto no lo considero neceserio
@@ -133,7 +134,6 @@ void		send_rpl_PART(Client const & recipient, Channel const & channel, std::stri
 void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const;
 void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
 void		send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const;
-void		send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel, std::string const & modestring, std::string const & modeargs) const;
 
 // Auxiliar methods
 

@@ -174,6 +174,16 @@ void IRC_Server::Channel::setOwner(Client const & client)
     _owner = client.get_nick(); //se puede cambiar de owner? al cambiar, el antiguo owner sigue siendo miembro del canal?
 }
 
+/*!
+**	@brief	Sets all modes in @a modes parameter if they were not already set,
+**			and indicates which changes were applied in the @a applied_changes
+**			string.
+**
+** @param	modes			Modes to set in the channel.
+** @param	applied_changes	An empty writable string where applied changes will
+**							be returned.
+** @return	false if any modes could not be set, otherwise true
+*/
 bool	IRC_Server::Channel::setModes(std::string const & modes, std::string & applied_changes)
 {
 	size_t	start_pos = modes.find_first_of("+-");

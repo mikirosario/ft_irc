@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/24 01:37:01 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/26 15:43:04 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,15 @@ void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & c
 	welcome_msg += channelTopic;
 	numeric_reply_end(msg, welcome_msg);
 	recipient.send_msg(msg);
+}
 
+void		IRC_Server::send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel, std::string const & modestring, std::string const & modeargs)
+{
+		std::string msg = numeric_reply_start(recipient, RPL_CHANNELMODEIS);
+		msg += channel.getChannelName() + " ";
+		msg += channel.getModes();
+		non_numeric_reply_end(msg, std::string());
+		
 }
 
 //debug //if user invisibility is implemented, we will need to account for this!!
