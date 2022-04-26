@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/24 14:57:17 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/26 17:57:17 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,8 @@ class Channel
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);	
 		void	setOwner(Client const &OwnerUser2);
 		void	setTopic(std::string const &Topic);
+		bool	banUser(Client const & user);
+		bool	unbanUser(Client const & user);
 		bool	setModes(std::string const & modes, std::string & applied_changes);
 
 		bool findClient(Client const &client);
@@ -88,6 +90,7 @@ class Channel
 		t_ChannelMemberSet const &	getChanops(void) const;
 		t_ChannelMemberSet const &	getHalfops(void) const;
 		t_ChannelMemberSet const &	getUsers(void) const;
+		t_ChannelMemberSet const &	getBanList(void) const;
 		std::string	const &			getModes(void) const;
 		bool						isChannelOperator(Client const & client) const;
 	private:
@@ -97,6 +100,7 @@ class Channel
 		std::string 		_channelName;
 		std::string			_channelPassword;
 		std::string			_modes;
+		t_ChannelMemberSet	_banlist;
 		//t_ChannelMemberMap allClients; //debug //remove
 
 		std::string			_owner;

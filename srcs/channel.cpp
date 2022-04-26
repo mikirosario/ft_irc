@@ -111,6 +111,7 @@ IRC_Server::Channel::Channel(Channel const &other)
     	_channelName(other._channelName),
 		_channelPassword(other._channelPassword),
 		_modes(other._modes),
+		_banlist(other._banlist),
 		_owner(other._owner),
 		_chanops(other._chanops),
 		_halfops(other._halfops),
@@ -125,6 +126,7 @@ IRC_Server::Channel &	IRC_Server::Channel::operator=(Channel const &other)
 		return(*this);
 	_channelPassword = other._channelPassword;
 	_modes = other._modes;
+	_banlist = other._banlist;
 	_channelName = other._channelName;
 	//allClients.clear();
 	//allClients = other.allClients;
@@ -162,6 +164,30 @@ std::string const & IRC_Server::Channel::getChannelName() const
 std::string const & IRC_Server::Channel::getTopic() const
 {
     return (_topic);
+}
+
+/*!
+** @brief Attempts to add the client address of @a user to the ban list.
+**
+** @return	false if channel ban mode not set or unsuccessful for other reasons,
+**			otherwise true
+*/
+bool	IRC_Server::Channel::banUser(Client const & user)
+{
+	bool ret = false;
+	if (_modes.find('b') != std::string::npos)
+		ret = _banlist.insert(user.get_clientaddr()).second;
+	return ret;
+}
+
+/*!
+** @brief Attempts to remove the client address of @a user from the ban list.
+**
+** @return false if address was not found on the list, otherwise true
+*/
+bool	IRC_Server::Channel::unbanUser(Client const & user)
+{
+	return static_cast<bool>(_banlist.erase(user.get_clientaddr()));
 }
 
 void IRC_Server::Channel::setTopic(std::string const & topic)
@@ -206,7 +232,7 @@ bool	IRC_Server::Channel::setModes(std::string const & modes, std::string & appl
 			if (sign == '+' && _modes.find(*it) == std::string::npos)				//set requested and mode not already set
 				_modes.push_back(*it);													//set mode
 			else if (sign == '-' && (del = _modes.find(*it)) != std::string::npos)	//unset requested and mode not already unset
-				_modes.erase(del, 1);													//unset mode
+				_modes.erase(del, 1);													//unset mode //debug // duda, si quitas ban mode, el banlist se borra o se guarda???
 			applied_changes.push_back(*it);
 		}
 		else															//mode is unknown
@@ -234,6 +260,11 @@ IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getHalfops(
 IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getUsers(void) const
 {
 	return (_users);
+}
+
+IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getBanList(void) const
+{
+	return (_banlist);
 }
 
 std::string const & 							IRC_Server::Channel::getModes(void) const

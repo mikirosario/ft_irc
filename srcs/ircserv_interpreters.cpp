@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/26 17:37:54 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/26 17:43:05 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -974,7 +974,10 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 		else if (target->second.isChannelOperator(sender) == false)						//sender is not channel operator
 			send_err_ERR_CHANOPRIVSNEEDED(sender, target->second, "You're not a channel operator");
 		//else
-			//get_mode_type('b'); //debug //placeholder;
+			//mode does not exist -> modeunknown
+			//type b or c mode exists but lacks required argument -> ignore
+			//type a mode exists but lacks argument -> send mode list to user
+			//m
 		
 		
 		
