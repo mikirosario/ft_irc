@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/20 22:27:44 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/26 16:03:28 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,7 @@ class IRC_Server
 		std::bitset<MAX_CONNECTIONS>			_remove_list;
 		std::vector<t_Channel_Map::iterator>	_chan_remove_list;
 		int										_connections;
-
-		t_Channel_Map						_channels;
+		t_Channel_Map							_channels;
 		
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
 						IRC_Server(void);						//Default constructor

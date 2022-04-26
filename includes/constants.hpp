@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/24 15:30:17 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/26 17:36:12 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@
 #define ADMIN_USER 1
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
+#define ISUPPORT_CHANMODES "b,k,,i"
 #define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp || //Founder (q)~ // Operator (o)@ // HalfOp(h)%
 #define SUPPORTED_CHANNEL_MODES "bik"
 #define SUPPORTED_USER_MODES "oai"
@@ -40,6 +41,22 @@
 #define CLIENT_ALREADY_EXIST_RETURN	0
 #define INVALID_PASSWORD_RETURN	-1
 
-#define CHANNEL_MODES "isp"
+//#define CHANNEL_MODES "isp"
+
+/*!
+** @brief	Returns channel mode type of @a mode.
+**
+** @details	Channel mode types are A, B, C and D.
+**
+**			Types B and C have mandatory parameters.
+**
+**			Type A are modes associated with lists (like a ban list) with
+**			optional parameters.
+**
+**          Type D has no parameters.
+** @param	mode	Channel mode.
+** @return	Mode type of @a mode.
+*/
+char	get_mode_type(char mode);
 
 #endif

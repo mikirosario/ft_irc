@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/24 01:30:45 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/04/26 17:24:43 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,4 +209,16 @@ void		IRC_Server::send_rpl_MODE(Client const & recipient, std::string const & ap
 	msg += applied_changes;
 	non_numeric_reply_end(msg, std::string());
 	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_MODE(Client const & recipient, Channel const & channel, std::string const & applied_changes, std::string const & change_args) const
+{
+	std::string msg = recipient.get_source() + " ";
+	msg += "MODE ";
+	msg += channel.getChannelName() + " ";
+	msg += applied_changes + " ";
+	msg += change_args;
+	non_numeric_reply_end(msg, std::string());
+	
+	channel.send_msg(NULL, 0, msg);
 }
