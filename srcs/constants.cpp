@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   constants.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: miki <miki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 17:34:46 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/26 17:37:00 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/01 20:20:32 by miki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
+#include <cstring>
 #include "../includes/constants.hpp"
 
 char	get_mode_type(char mode)
