@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 01:32:07 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/03 01:17:48 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -490,6 +490,9 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & applied_changes)
 {
 	size_t	start_pos = modes.find_first_of("+-");
+	size_t	end_pos = modes.find_first_of(' ');
+	if (end_pos == std::string::npos)
+		end_pos = modes.size();
 	size_t	del;
 	char	sign;
 	bool	ret;
@@ -497,7 +500,7 @@ bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & appl
 	if (start_pos == std::string::npos)
 		return false;
 	ret = true;
-	for (std::string::const_iterator it = modes.begin() + start_pos, end = modes.end(); it != end; ++it)
+	for (std::string::const_iterator it = modes.begin() + start_pos, end = modes.begin() + end_pos; it != end; ++it)
 	{
 		if (std::strchr("+-", *it) != NULL)								//set sign
 		{

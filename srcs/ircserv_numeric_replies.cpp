@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/26 16:22:58 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/02 19:56:51 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 		<< "CASEMAPPING=ascii "
 		<< "CHANLIMIT=" << SUPPORTED_CHANNEL_PREFIXES << ": "
 		<< "CHANNELLEN=" << MAX_CHANNELNAME_SIZE << " "
-		<< "CHANTYPES=# "
+		<< "CHANTYPES=" << ISUPPORT_CHANTYPES << " "
 		<< "CHANMODES=" << ISUPPORT_CHANMODES << " "
 		<< "ELIST= "
 		<< "EXTBAN= "

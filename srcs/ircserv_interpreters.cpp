@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/04/26 17:43:05 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/03 01:11:51 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -910,6 +910,90 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
 }
 
+
+// /*!
+// **	@brief		Validates a mode change request in the MODE command. For mode
+// **				changes that require an argument, the argument is returned in
+// **				the arg parameter and the next_arg iterator is updated for the
+// **				caller.
+// **
+// **	@details	This is an auxiliary function for exec_cmd_MODE(). It determines
+// **				whether a given mode change request is or is not valid. If valid
+// **				then true is returned, otherwise false is returned.
+// **
+// **				For valid mode changes that require an argument, the argument is
+// **				stored in the @a arg string passed by reference. For valid mode
+// **				changes with no argument, an the @a arg string is left empty.
+// **
+// **				Mode change rules are as follows:
+// **				- Type A MAY have an argument or not. If an argument is
+// **				available, it is assumed to have that argument. Type A changes
+// **				are always valid.
+// **				- Type B MUST have an argument. If an argument is unavailable,
+// **				the change is invalid.
+// **				- Type C MUST NOT have an argument if the mode is being unset
+// **				and MUST have an argument if the mode is being set. If being
+// **				set and no argument is available, the change is invalid.
+// **				Type C unsets are always valid, as any arguments are ignored.
+// **				- Type D MUST NOT have an argument. Type D changes are always
+// **				valid, as any arguments are ignored.
+// **	@param		type		Mode type, as returned by get_mode_type().
+// **	@param		sign		'+' for set or '-' for unset.
+// **	@param		next_arg	An iterator to the start of the next argument
+// **							substring in the arguments string.
+// **	@param		end_args	An iterator to the end of the arguments string.
+// **	@param		arg			A reference to a writable string where the argument
+// **							substring will be stored.
+// **	@return		true if the mode change is validated, otherwise false.
+// */
+// static bool	validateModeChange(char type, char sign, std::string::const_iterator & next_arg, std::string::const_iterator const & end_args, std::string & arg)
+// {
+// 	bool	has_arg = (next_arg != end_args);
+
+// 	if ((type == 'D') || (type == 'C' && sign == '-'))		//Type D MUST NEVER have arg and Type C MUST NOT have arg when being unset, so we ignore any args in those cases and validate
+// 	{
+// 		arg.clear();
+// 		return true;
+// 	}
+// 	if ((type == 'B' || type == 'C') && has_arg == false)	//Type C MUST have arg when being set and Type B MUST ALWAYS have arg, so change is invalid for these types if there is no arg
+// 		return false;
+// 	//Type A may either have arg or not; if there is an arg, we get it
+
+// 	std::string::const_iterator arg_end = next_arg;
+// 	while (arg_end != end_args && *arg_end != ' ')
+// 		++arg_end;
+// 	arg.assign(next_arg, arg_end);							//get arg, if there is one, or empty arg otherwise
+// 	while (arg_end != end_args && *arg_end == ' ')			//find next arg or end of args
+// 		++arg_end;
+// 	next_arg = arg_end;										//update next_arg for caller
+// 	return true;
+// }
+
+/*!
+** @brief	Validates a modestring received by exec_cmd_MODE().
+**
+** @details	A modestring is valid if it has at least one '+' or '-' sign and
+**			one non-'+' and non-'-' character after that sign, not counting any
+**			characters separated from the sign by a space ' ' or the space ' '
+**			itself.
+** @param	modestring	The modestring to validate.
+** @return	the position of the first valid sign in the modestring, or
+**			std::string::npos if none was found
+*/
+static size_t	validate_modestring(std::string const & modestring)
+{
+	size_t	end_modes = modestring.find_first_of(' ');
+	if (end_modes == std::string::npos)	
+		end_modes = modestring.size();
+	size_t	first_sign_pos = modestring.find_first_of("+-", 0, end_modes);
+	size_t	first_not_sign_pos;
+
+	if	(first_sign_pos != std::string::npos
+		&& (first_not_sign_pos = modestring.find_first_not_of("+-", first_sign_pos, end_modes - first_sign_pos)) != std::string::npos)
+			return first_sign_pos;
+	return std::string::npos;
+}
+
 /*!
 ** @brief	Executes a MODE command originating from @a sender.
 **
@@ -935,7 +1019,7 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 	if (argc < 2)
 		send_err_NEEDMOREPARAMS(sender, "MODE", "Not enough parameters");
 	size_t		hash_pos = argv[1].find_first_of("#");
-	if (hash_pos == std::string::npos) 					//it's a user
+	if (hash_pos == std::string::npos) 					//it's a user (all supported user modes are type D, so no args expected)
 	{
 		Client *						target = find_client_by_nick(argv[1]);
 		size_t							first_sign_pos;
@@ -945,8 +1029,7 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 		else if (case_insensitive_ascii_compare(sender.get_nick(), argv[1]) == false)	//sender is not the same as target
 			send_err_USERSDONTMATCH(sender, "Can't change mode for other users");
 		else if (argc < 3 ||
-				(first_sign_pos = argv[2].find_first_of("+-")) == std::string::npos ||
-				argv[2].find_first_not_of("+-", first_sign_pos) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
+				(first_sign_pos = validate_modestring(argv[2])) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
 			send_rpl_UMODEIS(sender);
 		else		//debug //shouldn't o be privileged????? :p pregunta a raul
 		{
@@ -967,17 +1050,26 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 
 		if (target == _channels.end())													//channel does not exist
 			send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");
+		// else if (argc < 3 ||
+		// 		(first_sign_pos = argv[2].find_first_of("+-")) == std::string::npos ||
+		// 		argv[2].find_first_not_of("+-", first_sign_pos) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
 		else if (argc < 3 ||
-				(first_sign_pos = argv[2].find_first_of("+-")) == std::string::npos ||
-				argv[2].find_first_not_of("+-", first_sign_pos) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
+				(first_sign_pos = validate_modestring(argv[2])) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
 			send_rpl_CHANNELMODEIS(sender, target->second);
 		else if (target->second.isChannelOperator(sender) == false)						//sender is not channel operator
 			send_err_ERR_CHANOPRIVSNEEDED(sender, target->second, "You're not a channel operator");
-		//else
-			//mode does not exist -> modeunknown
-			//type b or c mode exists but lacks required argument -> ignore
-			//type a mode exists but lacks argument -> send mode list to user
-			//m
+		// else
+		// 	{
+		// 		//std::string::const_iterator 
+		// 		//for each mode in modestring
+		// 		//	get set/unset flag
+		// 		//	get mode type
+		// 		//	get mode argument as applicable
+		// 		//	react as appropriate
+		// 		//mode does not exist -> modeunknown
+		// 		//type b or c mode exists but lacks required argument -> ignore
+		// 		//type a mode exists but lacks argument -> send mode list to user
+		// 	}
 		
 		
 		
