@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/03 01:11:51 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/03 22:58:09 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -910,6 +910,30 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
 }
 
+/*!
+** @brief	Validates a modestring received by exec_cmd_MODE().
+**
+** @details	A modestring is valid if it has at least one '+' or '-' sign and
+**			one non-'+' and non-'-' character after that sign, not counting any
+**			characters separated from the sign by a space ' ' or the space ' '
+**			itself.
+** @param	modestring	The modestring to validate.
+** @return	the position of the first valid sign in the modestring, or
+**			std::string::npos if none was found
+*/
+static size_t	validate_modestring(std::string const & modestring)
+{
+	size_t	end_modes = modestring.find_first_of(' ');
+	if (end_modes == std::string::npos)	
+		end_modes = modestring.size();
+	size_t	first_sign_pos = modestring.find_first_of("+-", 0, end_modes);
+	size_t	first_not_sign_pos;
+
+	if	(first_sign_pos != std::string::npos
+		&& (first_not_sign_pos = modestring.find_first_not_of("+-", first_sign_pos, end_modes - first_sign_pos)) != std::string::npos)
+			return first_sign_pos;
+	return std::string::npos;
+}
 
 // /*!
 // **	@brief		Validates a mode change request in the MODE command. For mode
@@ -969,30 +993,66 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 // 	return true;
 // }
 
-/*!
-** @brief	Validates a modestring received by exec_cmd_MODE().
-**
-** @details	A modestring is valid if it has at least one '+' or '-' sign and
-**			one non-'+' and non-'-' character after that sign, not counting any
-**			characters separated from the sign by a space ' ' or the space ' '
-**			itself.
-** @param	modestring	The modestring to validate.
-** @return	the position of the first valid sign in the modestring, or
-**			std::string::npos if none was found
-*/
-static size_t	validate_modestring(std::string const & modestring)
-{
-	size_t	end_modes = modestring.find_first_of(' ');
-	if (end_modes == std::string::npos)	
-		end_modes = modestring.size();
-	size_t	first_sign_pos = modestring.find_first_of("+-", 0, end_modes);
-	size_t	first_not_sign_pos;
+// /*!
+// **	@brief	Sets or unsets all modes in @a modes parameter if they were not
+// **			already set or unset, respectively, and indicates which changes were
+// **			applied in the @a applied_changes string. Modes requiring an
+// **			argument to be set/unset will only be set/unset if an argument is
+// **			available and valid. 
+// **
+// ** @param	modestring		Modes to set in the channel, and their arguments, if
+// **							any, in format [['sign''modes'...] ['arg'...]].
+// ** @param	applied_changes	An empty writable string where applied changes with
+// **							their arguments will be returned.
+// ** @return	false if any modes could not be set, otherwise true
+// */
+// bool	IRC_Server::execModeChanges(Channel & channel, std::string const & modestring, std::string & applied_changes)
+// {
+// 	std::string	applied_args;
+// 	size_t		start_pos = modestring.find_first_of("+-");
+// 	size_t		first_arg_pos;
+// 	size_t		del;
+// 	char		sign;
+// 	bool		ret;
 
-	if	(first_sign_pos != std::string::npos
-		&& (first_not_sign_pos = modestring.find_first_not_of("+-", first_sign_pos, end_modes - first_sign_pos)) != std::string::npos)
-			return first_sign_pos;
-	return std::string::npos;
-}
+// 	if (start_pos == std::string::npos)
+// 		return false;
+// 	first_arg_pos = modestring.find_first_of(' ', start_pos);
+// 	std::string::const_iterator next_arg = (first_arg_pos == std::string::npos ? modestring.end() : modestring.begin() + ++first_arg_pos);
+// 	std::string::const_iterator end_args = modestring.end();
+// 	ret = true;
+// 	for (std::string::const_iterator it = modestring.begin() + start_pos, end = modestring.end(); it != end; ++it)
+// 	{
+// 		if (std::strchr("+-", *it) != NULL)								//set sign
+// 		{
+// 			sign = *it;
+// 			applied_changes.push_back(*it);
+// 		}
+// 		else if (std::strchr(SUPPORTED_CHANNEL_MODES, *it) != NULL)		//mode is known
+// 		{
+// 			std::string	arg;
+// 			if (sign == '+'
+// 				&&	validateModeChange(get_mode_type(*it), sign, next_arg, end_args, arg) == true) //set requested and mode not already set and mode change validated
+// 				{
+// 					channel.setMode(*it); //try to set mode
+// 					//add to banlist, etc.
+// 					//add applied arg if applicable
+// 				}
+// 			else if (sign == '-'
+// 					&& validateModeChange(get_mode_type(*it), sign, next_arg, end_args, arg) == true)	//unset requested and mode not already unset and mode change validated
+// 				_modes.erase(del, 1);					//unset mode //debug // duda, si quitas ban mode sin arg, el banlist se borra o se guarda???
+// 			applied_changes.push_back(*it);
+// 		}
+// 		else															//mode is unknown
+// 			ret = false;
+// 	}
+// 	return (ret);
+// }
+
+// static void	getChanModeIterators(std::string::iterator & first_mode, std::string::iterator & end_modes, std::string::iterator & first_arg, std::string::iterator & end_args)
+// {
+	
+// }
 
 /*!
 ** @brief	Executes a MODE command originating from @a sender.
@@ -1040,8 +1100,7 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			send_rpl_MODE(sender, applied_changes);
 			if (all_modes_supported == false)
 				send_err_UMODEUNKNOWNFLAG(sender, "Unknown mode flag");
-		}
-			
+		}			
 	}
 	else												//it's a channel
 	{
@@ -1058,18 +1117,17 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			send_rpl_CHANNELMODEIS(sender, target->second);
 		else if (target->second.isChannelOperator(sender) == false)						//sender is not channel operator
 			send_err_ERR_CHANOPRIVSNEEDED(sender, target->second, "You're not a channel operator");
-		// else
-		// 	{
-		// 		//std::string::const_iterator 
-		// 		//for each mode in modestring
-		// 		//	get set/unset flag
-		// 		//	get mode type
-		// 		//	get mode argument as applicable
-		// 		//	react as appropriate
-		// 		//mode does not exist -> modeunknown
-		// 		//type b or c mode exists but lacks required argument -> ignore
-		// 		//type a mode exists but lacks argument -> send mode list to user
-		// 	}
+		else
+		{
+			//for each mode in modestring
+			//	get set/unset flag
+			//	get mode type
+			//	get mode argument as applicable
+			//	react as appropriate
+			//mode does not exist -> modeunknown
+			//type b or c mode exists but lacks required argument -> ignore
+			//type a mode exists but lacks argument -> send mode list to user
+		}
 		
 		
 		

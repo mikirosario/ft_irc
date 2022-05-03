@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/04/26 17:19:31 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/03 20:51:28 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv);
 
-
+bool	execModeChanges(Channel & channel, std::string const & modestring, std::string & applied_changes);
 
 //numeric replies
 std::string	numeric_reply_start(Client const & client, char const * numeric) const;

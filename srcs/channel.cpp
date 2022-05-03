@@ -200,47 +200,29 @@ void IRC_Server::Channel::setOwner(Client const & client)
     _owner = client.get_nick(); //se puede cambiar de owner? al cambiar, el antiguo owner sigue siendo miembro del canal?
 }
 
-/*!
-**	@brief	Sets all modes in @a modes parameter if they were not already set,
-**			and indicates which changes were applied in the @a applied_changes
-**			string.
-**
-** @param	modes			Modes to set in the channel.
-** @param	applied_changes	An empty writable string where applied changes will
-**							be returned.
-** @return	false if any modes could not be set, otherwise true
-*/
-bool	IRC_Server::Channel::setModes(std::string const & modes, std::string & applied_changes)
+bool	IRC_Server::Channel::setMode(char mode)
 {
-	size_t	start_pos = modes.find_first_of("+-");
-	size_t	del;
-	char	sign;
-	bool	ret;
-
-	if (start_pos == std::string::npos)
+	if (std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL || _modes.find_first_of(mode) != std::string::npos)
 		return false;
-	ret = true;
-	for (std::string::const_iterator it = modes.begin() + start_pos, end = modes.end(); it != end; ++it)
+	try
 	{
-		if (std::strchr("+-", *it) != NULL)								//set sign
-		{
-			sign = *it;
-			applied_changes.push_back(*it);
-		}
-		else if (std::strchr(SUPPORTED_CHANNEL_MODES, *it) != NULL)		//mode is known
-		{
-			if (sign == '+' && _modes.find(*it) == std::string::npos)				//set requested and mode not already set
-				_modes.push_back(*it);													//set mode
-			else if (sign == '-' && (del = _modes.find(*it)) != std::string::npos)	//unset requested and mode not already unset
-				_modes.erase(del, 1);													//unset mode //debug // duda, si quitas ban mode, el banlist se borra o se guarda???
-			applied_changes.push_back(*it);
-		}
-		else															//mode is unknown
-			ret = false;
+		_modes.push_back(mode);
+		return true;
 	}
-	return (ret);
+	catch (std::exception const & e)
+	{
+		return false;
+	}
 }
 
+bool	IRC_Server::Channel::unsetMode(char mode)
+{
+	size_t	del_pos;
+	if (std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL || (del_pos = _modes.find_first_of(mode)) == std::string::npos)
+		return false;
+	_modes.erase(del_pos, 1);
+	return true;
+}
 
 std::string const & IRC_Server::Channel::getOwner(void) const
 {

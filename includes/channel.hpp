@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/26 17:57:17 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/03 18:19:02 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,9 @@ class Channel
 		void	setTopic(std::string const &Topic);
 		bool	banUser(Client const & user);
 		bool	unbanUser(Client const & user);
-		bool	setModes(std::string const & modes, std::string & applied_changes);
+		bool	setMode(char mode);
+		bool	unsetMode(char mode);
+		//bool	setModes(std::string const & modestring, std::string & applied_changes);
 
 		bool findClient(Client const &client);
 		//bool	is_empty(void) const;
