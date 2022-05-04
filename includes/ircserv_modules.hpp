@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/03 20:51:28 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/04 22:20:53 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,10 @@
 # define IRCMODULES_H
 
 //parsing
-bool					nick_is_valid(std::string const & str) const;
-bool					username_is_valid(std::string const & username) const;
-bool					channel_name_is_valid(std::string const & channel_name) const;
+static bool				nick_is_valid(std::string const & str);
+static bool				username_is_valid(std::string const & username);
+//static bool				hostname_is_valid(std::string const & str); ??
+static bool				channel_name_is_valid(std::string const & channel_name);
 static std::string &	trim(std::string & str, std::string const & unwanted_chars);
 static std::string &	remove_adjacent_duplicates(std::string & str, char c);
 static std::string &	preprocess_list_param(std::string & str, char delimiter);
@@ -37,6 +38,7 @@ void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MOTD(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NOTICE(Client & sender, std::vector<std::string> const & argv);
+bool	doChanModeChange(char sign, char mode, std::string const & arg, Channel & channel);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 

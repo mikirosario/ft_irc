@@ -3,13 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/03 22:58:09 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/04 22:48:20 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <utility>
 #include "../includes/ircserv.hpp"
 
 /* ---- PARSING ---- */
@@ -36,7 +37,7 @@ void	IRC_Server::exec_cmd_BAILA(Client & sender, std::vector<std::string> const 
 ** @param	nick	A string proposed as a nickname.
 ** @return	true if @a nick is a valid nickname, otherwise false
 */
-bool	IRC_Server::nick_is_valid(std::string const & nick) const
+bool	IRC_Server::nick_is_valid(std::string const & nick)
 {
 	if (nick.size() < 1
 		|| nick.size() > 9
@@ -58,7 +59,7 @@ bool	IRC_Server::nick_is_valid(std::string const & nick) const
 ** @param	user	A string proposed as a username.
 ** @return	true if @a user is a valid username, otherwise false
 */
-bool	IRC_Server::username_is_valid(std::string const & username) const
+bool	IRC_Server::username_is_valid(std::string const & username)
 {
 	if (username.size() < 1 || username.size() > MAX_USERNAME_SIZE)
 			return (false);
@@ -77,7 +78,7 @@ bool	IRC_Server::username_is_valid(std::string const & username) const
 ** @param	channel_name	A string proposed as a channel name.
 ** @return	true of @a channel_name is a valid channel name, otherwise false
 */
-bool	IRC_Server::channel_name_is_valid(std::string const & channel_name) const
+bool	IRC_Server::channel_name_is_valid(std::string const & channel_name)
 {
 	if (channel_name.size() < 2
 		|| channel_name.size() > MAX_CHANNELNAME_SIZE
@@ -935,63 +936,70 @@ static size_t	validate_modestring(std::string const & modestring)
 	return std::string::npos;
 }
 
-// /*!
-// **	@brief		Validates a mode change request in the MODE command. For mode
-// **				changes that require an argument, the argument is returned in
-// **				the arg parameter and the next_arg iterator is updated for the
-// **				caller.
-// **
-// **	@details	This is an auxiliary function for exec_cmd_MODE(). It determines
-// **				whether a given mode change request is or is not valid. If valid
-// **				then true is returned, otherwise false is returned.
-// **
-// **				For valid mode changes that require an argument, the argument is
-// **				stored in the @a arg string passed by reference. For valid mode
-// **				changes with no argument, an the @a arg string is left empty.
-// **
-// **				Mode change rules are as follows:
-// **				- Type A MAY have an argument or not. If an argument is
-// **				available, it is assumed to have that argument. Type A changes
-// **				are always valid.
-// **				- Type B MUST have an argument. If an argument is unavailable,
-// **				the change is invalid.
-// **				- Type C MUST NOT have an argument if the mode is being unset
-// **				and MUST have an argument if the mode is being set. If being
-// **				set and no argument is available, the change is invalid.
-// **				Type C unsets are always valid, as any arguments are ignored.
-// **				- Type D MUST NOT have an argument. Type D changes are always
-// **				valid, as any arguments are ignored.
-// **	@param		type		Mode type, as returned by get_mode_type().
-// **	@param		sign		'+' for set or '-' for unset.
-// **	@param		next_arg	An iterator to the start of the next argument
-// **							substring in the arguments string.
-// **	@param		end_args	An iterator to the end of the arguments string.
-// **	@param		arg			A reference to a writable string where the argument
-// **							substring will be stored.
-// **	@return		true if the mode change is validated, otherwise false.
-// */
-// static bool	validateModeChange(char type, char sign, std::string::const_iterator & next_arg, std::string::const_iterator const & end_args, std::string & arg)
-// {
-// 	bool	has_arg = (next_arg != end_args);
+/*!
+**	@brief		Validates a mode change request in the MODE command. For mode
+**				changes that require an argument, the argument is returned in
+**				the arg parameter and the next_arg iterator is updated for the
+**				caller. This is meant to be called for each mode in modestring.
+**
+**	@details	This is an auxiliary function for exec_cmd_MODE(). It determines
+**				whether a given mode change request is or is not valid. If valid
+**				then true is returned, otherwise false is returned.
+**
+**				For valid mode changes that require an argument, the argument is
+**				stored in the @a arg string passed by reference. For valid mode
+**				changes with no argument, an the @a arg string is left empty.
+**
+**				Mode change rules are as follows:
+**				- Type A MAY have an argument or not. If an argument is
+**				available, it is assumed to have that argument. Type A changes
+**				are always valid.
+**				- Type B MUST have an argument. If an argument is unavailable,
+**				the change is invalid.
+**				- Type C MUST NOT have an argument if the mode is being unset
+**				and MUST have an argument if the mode is being set. If being
+**				set and no argument is available, the change is invalid.
+**				Type C unsets are always valid, as any arguments are ignored.
+**				- Type D MUST NOT have an argument. Type D changes are always
+**				valid, as any arguments are ignored.
+**
+**				Of course, the proposed @a mode MUST also be a supported channel
+**				mode.
+**	@param		mode		Proposed mode.
+**	@param		sign		'+' for set or '-' for unset (proposed change).
+**	@param		next_arg	An iterator to the start of the next argument
+**							substring in the arguments string.
+**	@param		end_args	An iterator to the end of the arguments string.
+**	@param		arg			A reference to a writable string where the argument
+**							substring will be stored.
+**	@return		true if the mode change is validated, otherwise false.
+*/
+static bool	validateChanModeChange(char mode, char sign, std::string::const_iterator & next_arg, std::string::const_iterator const & end_args, std::string & arg)
+{
+	if (std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL)
+		return false;
 
-// 	if ((type == 'D') || (type == 'C' && sign == '-'))		//Type D MUST NEVER have arg and Type C MUST NOT have arg when being unset, so we ignore any args in those cases and validate
-// 	{
-// 		arg.clear();
-// 		return true;
-// 	}
-// 	if ((type == 'B' || type == 'C') && has_arg == false)	//Type C MUST have arg when being set and Type B MUST ALWAYS have arg, so change is invalid for these types if there is no arg
-// 		return false;
-// 	//Type A may either have arg or not; if there is an arg, we get it
+	char	type = get_mode_type(mode);
+	bool	has_arg = (next_arg != end_args);
 
-// 	std::string::const_iterator arg_end = next_arg;
-// 	while (arg_end != end_args && *arg_end != ' ')
-// 		++arg_end;
-// 	arg.assign(next_arg, arg_end);							//get arg, if there is one, or empty arg otherwise
-// 	while (arg_end != end_args && *arg_end == ' ')			//find next arg or end of args
-// 		++arg_end;
-// 	next_arg = arg_end;										//update next_arg for caller
-// 	return true;
-// }
+	if ((type == 'D') || (type == 'C' && sign == '-'))		//Type D MUST NEVER have arg and Type C MUST NOT have arg when being unset, so we ignore any args in those cases and validate
+	{
+		arg.clear();
+		return true;
+	}
+	if ((type == 'B' || type == 'C') && has_arg == false)	//Type C MUST have arg when being set and Type B MUST ALWAYS have arg, so change is invalid for these types if there is no arg
+		return false;
+	//Type A may either have arg or not; if there is an arg, we get it
+
+	std::string::const_iterator arg_end = next_arg;
+	while (arg_end != end_args && *arg_end != ' ')
+		++arg_end;
+	arg.assign(next_arg, arg_end);							//get arg, if there is one, or empty arg otherwise
+	while (arg_end != end_args && *arg_end == ' ')			//find next arg or end of args
+		++arg_end;
+	next_arg = arg_end;										//update next_arg for caller
+	return true;
+}
 
 // /*!
 // **	@brief	Sets or unsets all modes in @a modes parameter if they were not
@@ -1053,6 +1061,49 @@ static size_t	validate_modestring(std::string const & modestring)
 // {
 	
 // }
+
+
+static bool	validateMask(std::string const & mask_candidate)
+{
+	std::string::const_iterator	begin = mask_candidate.begin();
+	std::string::const_iterator	end = mask_candidate.end();
+	size_t						excl_pos;
+	size_t						at_pos;
+
+	if (std::count(begin, end, '!') == 1 && std::count(begin, end, '@') == 1							//One '!' and one '@'
+		&& (excl_pos = mask_candidate.find_first_of('!')) < (at_pos = mask_candidate.find_first_of('@'))//'!' comes before '@'
+		&& excl_pos > 0																					//Any character comes before '!'
+		&& mask_candidate.find_first_not_of('!', excl_pos) < at_pos										//Any character(s) separate '!' and '@'
+		&& mask_candidate.find_first_not_of('@', at_pos) < std::string::npos)							//Any character(s) come after '@'
+			return true;
+	return false;
+}
+
+bool	IRC_Server::doChanModeChange(char sign, char mode, std::string const & arg, Channel & channel)
+{
+	if (std::strchr("+-", sign) == NULL || std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL)
+		return false;
+
+	char	type = get_mode_type(mode);
+	bool	ret;
+	if (type == 'A')
+	{
+		if (arg.size() == 0)	//return list
+		{
+			if (mode == 'b')	//return ban list
+				//wheeee returning the ban list
+			//else if...		//hypothetical future type A modes here
+			ret = true;
+		}
+		else if (mode == 'b' && validateMask(arg) == true) //apply ban
+			ret = sign == '+' ? channel.banMask(arg) : channel.unbanMask(arg);
+		//hypothetical future type A modes here
+		else
+			return false;
+	}
+	//else if (type == 'B') ... TO BE CONTINUED...
+	return false; //debug //tmp
+}
 
 /*!
 ** @brief	Executes a MODE command originating from @a sender.
@@ -1119,6 +1170,32 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			send_err_ERR_CHANOPRIVSNEEDED(sender, target->second, "You're not a channel operator");
 		else
 		{
+			//ok... fork it, i'm going with a pair vector... tired of this bs...
+			std::vector< std::pair<char, std::string> >	modesandargs;
+			size_t	end_modes_pos = argv[2].find_first_of(' ', first_sign_pos);
+			size_t	start_args_pos = argv[2].size();
+			size_t	tmp;	//in c++17 this would not have to exist because conditional declarations :p
+			if (end_modes_pos == std::string::npos)
+				end_modes_pos = argv[2].size();
+			else if ((tmp = argv[2].find_first_not_of(' ', end_modes_pos)) != std::string::npos)
+				start_args_pos = tmp;
+			
+			std::string arg;
+			
+			//for each mode in modestring
+			for (std::string::const_iterator mode_it = argv[2].begin() + first_sign_pos, modes_end = argv[2].begin() + end_modes_pos; mode_it != modes_end; ++mode_it)
+			{
+				char	sign = 0; //debug //bleh
+				std::string::const_iterator next_arg = argv[2].begin() + start_args_pos;
+
+				if (*mode_it == '+' || *mode_it == '-')
+					sign = *mode_it;
+				else if (validateChanModeChange(*mode_it, sign, next_arg, argv[2].end(), arg) == true) 
+				{
+
+					//chan.doChanModeChange()
+				}
+			}
 			//for each mode in modestring
 			//	get set/unset flag
 			//	get mode type

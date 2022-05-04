@@ -169,15 +169,17 @@ std::string const & IRC_Server::Channel::getTopic() const
 /*!
 ** @brief Attempts to add the client address of @a user to the ban list.
 **
+** @details	This function requires setMode to be successful if 'b' mode was not
+**			already set.
 ** @return	false if channel ban mode not set or unsuccessful for other reasons,
 **			otherwise true
 */
-bool	IRC_Server::Channel::banUser(Client const & user)
+bool	IRC_Server::Channel::banMask(std::string const & mask)
 {
-	bool ret = false;
-	if (_modes.find('b') != std::string::npos)
-		ret = _banlist.insert(user.get_clientaddr()).second;
-	return ret;
+	if (_modes.find('b') != std::string::npos || setMode('b') == true)
+		if (_banlist.insert(mask).second == true)
+			return true;
+	return false;
 }
 
 /*!
@@ -185,9 +187,9 @@ bool	IRC_Server::Channel::banUser(Client const & user)
 **
 ** @return false if address was not found on the list, otherwise true
 */
-bool	IRC_Server::Channel::unbanUser(Client const & user)
+bool	IRC_Server::Channel::unbanMask(std::string const & mask)
 {
-	return static_cast<bool>(_banlist.erase(user.get_clientaddr()));
+	return static_cast<bool>(_banlist.erase(mask));
 }
 
 void IRC_Server::Channel::setTopic(std::string const & topic)
