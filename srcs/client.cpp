@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/03 01:17:48 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/05 16:34:23 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -472,20 +472,18 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 ** @details	Supported modes are i (invisible), a (away) and o (operator). Modes
 **			should be prepended by '+' or '-' as they are to be added or removed
 **			and included in a string with no other delimiters.
-**			Ex. (+a, -i, -o+ai).
+**			Ex. (+a, -i, -o+ai). If no sign is provided, '+' will be assumed
+**			until and unless a sign is found.
 **
 **			A '+' or '-' sign will affect all subsequent modes until an opposite
 **			sign.
-**
-**			Modes with no '+' or '-' prepended are ignored and not applied.
 **
 **			Unsupported modes are ignored and not applied.
 ** @param	modes	Modes to set or unset, preceded by a '+' or '-' sign to set
 **					or unset, respectively.
 ** @param	applied_changes	An empty string in which all applied mode changes
 **			will be recorded.
-** @return	false if any mode was unsupported or if no '+' or '-' was present,
-**			otherwise true
+** @return	false if any mode was unsupported, otherwise true
 */
 bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & applied_changes)
 {
@@ -494,7 +492,7 @@ bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & appl
 	if (end_pos == std::string::npos)
 		end_pos = modes.size();
 	size_t	del;
-	char	sign;
+	char	sign = '+';
 	bool	ret;
 
 	if (start_pos == std::string::npos)
@@ -518,6 +516,8 @@ bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & appl
 		else															//mode is unknown
 			ret = false;
 	}
+	if (std::strchr("+-", applied_changes[0]) == NULL)
+		applied_changes.insert(applied_changes.begin(), '+');
 	return (ret);
 }
 

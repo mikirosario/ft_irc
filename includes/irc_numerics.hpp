@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/04/24 15:46:42 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/05 15:34:43 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@
 #define RPL_INVITING "341"
 #define RPL_NAMREPLY "353"
 #define RPL_ENDOFNAMES "366"
+#define RPL_BANLIST "367"
+#define RPL_ENDOFBANLIST "368"
 #define ERR_UNKNOWNMODE	"472"
 
 

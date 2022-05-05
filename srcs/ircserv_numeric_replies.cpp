@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/02 19:56:51 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/05 15:53:56 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,12 +202,37 @@ void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & c
 
 void		IRC_Server::send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel)
 {
-		std::string msg = numeric_reply_start(recipient, RPL_CHANNELMODEIS);
-		msg += channel.getChannelName() + " ";
-		msg += channel.getModes();
-		//debug //+ arguments??
-		non_numeric_reply_end(msg, std::string());
+	std::string msg = numeric_reply_start(recipient, RPL_CHANNELMODEIS);
+	msg += channel.getChannelName() + " ";
+	msg += channel.getModes();
+	//debug //+ arguments??
+	numeric_reply_end(msg, std::string());
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_ENDOFBANLIST(Client const & recipient, Channel const & channel, std::string const & description)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_ENDOFBANLIST);
+	msg += channel.getChannelName() + " ";
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_BANLIST(Client const & recipient, Channel const & channel)
+{
+	std::string msg_start = numeric_reply_start(recipient, RPL_BANLIST);
+	msg_start += channel.getChannelName() + " ";
+	Channel::t_ChannelMemberSet banlist = channel.getBanList();
+
+	for (Channel::t_ChannelMemberSet::const_iterator banmask = banlist.begin(), end = banlist.end(); banmask != end; ++banmask)
+	{
+		std::string msg;
+
+		msg = msg_start + *banmask;
+		numeric_reply_end(msg, std::string());
 		recipient.send_msg(msg);
+	}
+	send_rpl_ENDOFBANLIST(recipient, channel, "End of channel ban list");	
 }
 
 //debug //if user invisibility is implemented, we will need to account for this!!

@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/04 22:48:20 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/05 16:51:53 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -914,26 +914,17 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 /*!
 ** @brief	Validates a modestring received by exec_cmd_MODE().
 **
-** @details	A modestring is valid if it has at least one '+' or '-' sign and
-**			one non-'+' and non-'-' character after that sign, not counting any
-**			characters separated from the sign by a space ' ' or the space ' '
-**			itself.
+** @details	A modestring is valid if it has at least one character before any
+**			trailing space.
 ** @param	modestring	The modestring to validate.
-** @return	the position of the first valid sign in the modestring, or
+** @return	the position of the first valid character in the modestring, or
 **			std::string::npos if none was found
 */
-static size_t	validate_modestring(std::string const & modestring)
+static bool	validate_modestring(std::string const & modestring)
 {
 	size_t	end_modes = modestring.find_first_of(' ');
-	if (end_modes == std::string::npos)	
-		end_modes = modestring.size();
-	size_t	first_sign_pos = modestring.find_first_of("+-", 0, end_modes);
-	size_t	first_not_sign_pos;
-
-	if	(first_sign_pos != std::string::npos
-		&& (first_not_sign_pos = modestring.find_first_not_of("+-", first_sign_pos, end_modes - first_sign_pos)) != std::string::npos)
-			return first_sign_pos;
-	return std::string::npos;
+	//there is a space and a non-space before the space, orthere is no space but there as at least one non-space character
+	return ((end_modes != std::string::npos && end_modes > 0) ||(end_modes == std::string::npos && modestring.size() > 0));
 }
 
 /*!
@@ -1079,30 +1070,30 @@ static bool	validateMask(std::string const & mask_candidate)
 	return false;
 }
 
-bool	IRC_Server::doChanModeChange(char sign, char mode, std::string const & arg, Channel & channel)
+bool	IRC_Server::doChanModeChange(char sign, char mode, std::string const & arg, Client const & recipient, Channel & channel)
 {
 	if (std::strchr("+-", sign) == NULL || std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL)
 		return false;
 
 	char	type = get_mode_type(mode);
-	bool	ret;
+	bool	ret = false;
 	if (type == 'A')
 	{
-		if (arg.size() == 0)	//return list
+		if (arg.size() == 0)	//type A with no arg == return list// these are consultations, not changes, so all should return false
 		{
 			if (mode == 'b')	//return ban list
-				//wheeee returning the ban list
-			//else if...		//hypothetical future type A modes here
-			ret = true;
+				send_rpl_BANLIST(recipient, channel); //wheeee returning the ban list
+			//else if...		//hypothetical future type A modes without arg here (who the hell am I kidding? xD)
+			//ret = false; //según Oráculo de IRC rnavarre, consulta no cuenta como change, por lo tanto return false
 		}
 		else if (mode == 'b' && validateMask(arg) == true) //apply ban
 			ret = sign == '+' ? channel.banMask(arg) : channel.unbanMask(arg);
-		//hypothetical future type A modes here
-		else
-			return false;
+		//else if //hypothetical future type A modes with arg here (not if I can help it)
+		// else
+		// 	ret = false;
 	}
 	//else if (type == 'B') ... TO BE CONTINUED...
-	return false; //debug //tmp
+	return ret; //debug //tmp
 }
 
 /*!
@@ -1133,21 +1124,20 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 	if (hash_pos == std::string::npos) 					//it's a user (all supported user modes are type D, so no args expected)
 	{
 		Client *						target = find_client_by_nick(argv[1]);
-		size_t							first_sign_pos;
 
 		if (target == NULL)																//user does not exist
 			send_err_NOSUCHNICK(sender, argv[1], "No such nick");
 		else if (case_insensitive_ascii_compare(sender.get_nick(), argv[1]) == false)	//sender is not the same as target
 			send_err_USERSDONTMATCH(sender, "Can't change mode for other users");
 		else if (argc < 3 ||
-				(first_sign_pos = validate_modestring(argv[2])) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
+				(validate_modestring(argv[2])) == false)	//no modestring given; si fuera c++11 haría un lambda
 			send_rpl_UMODEIS(sender);
 		else		//debug //shouldn't o be privileged????? :p pregunta a raul
 		{
 			std::string	applied_changes;
 			bool		all_modes_supported;
 
-			all_modes_supported = target->set_modes(&argv[2][first_sign_pos], applied_changes);
+			all_modes_supported = target->set_modes(argv[2], applied_changes);
 			send_rpl_MODE(sender, applied_changes);
 			if (all_modes_supported == false)
 				send_err_UMODEUNKNOWNFLAG(sender, "Unknown mode flag");
@@ -1156,7 +1146,6 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 	else												//it's a channel
 	{
 		t_Channel_Map::iterator target = get_channel_by_name(argv[1]);
-		size_t					first_sign_pos;
 
 		if (target == _channels.end())													//channel does not exist
 			send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");
@@ -1164,7 +1153,7 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 		// 		(first_sign_pos = argv[2].find_first_of("+-")) == std::string::npos ||
 		// 		argv[2].find_first_not_of("+-", first_sign_pos) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
 		else if (argc < 3 ||
-				(first_sign_pos = validate_modestring(argv[2])) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
+				(validate_modestring(argv[2])) == false)	//no modestring given; si fuera c++11 haría un lambda
 			send_rpl_CHANNELMODEIS(sender, target->second);
 		else if (target->second.isChannelOperator(sender) == false)						//sender is not channel operator
 			send_err_ERR_CHANOPRIVSNEEDED(sender, target->second, "You're not a channel operator");
@@ -1172,7 +1161,7 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 		{
 			//ok... fork it, i'm going with a pair vector... tired of this bs...
 			std::vector< std::pair<char, std::string> >	modesandargs;
-			size_t	end_modes_pos = argv[2].find_first_of(' ', first_sign_pos);
+			size_t	end_modes_pos = argv[2].find_first_of(' ');
 			size_t	start_args_pos = argv[2].size();
 			size_t	tmp;	//in c++17 this would not have to exist because conditional declarations :p
 			if (end_modes_pos == std::string::npos)
@@ -1183,9 +1172,9 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			std::string arg;
 			
 			//for each mode in modestring
-			for (std::string::const_iterator mode_it = argv[2].begin() + first_sign_pos, modes_end = argv[2].begin() + end_modes_pos; mode_it != modes_end; ++mode_it)
+			for (std::string::const_iterator mode_it = argv[2].begin(), modes_end = argv[2].begin() + end_modes_pos; mode_it != modes_end; ++mode_it)
 			{
-				char	sign = 0; //debug //bleh
+				char	sign = '+';
 				std::string::const_iterator next_arg = argv[2].begin() + start_args_pos;
 
 				if (*mode_it == '+' || *mode_it == '-')

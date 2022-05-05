@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/04 22:20:53 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/05 16:47:23 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MOTD(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NOTICE(Client & sender, std::vector<std::string> const & argv);
-bool	doChanModeChange(char sign, char mode, std::string const & arg, Channel & channel);
+bool	doChanModeChange(char sign, char mode, std::string const & arg, Client const & recipient, Channel & channel);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 
@@ -76,7 +76,8 @@ void		send_rpl_LISTEND(Client const & recipient);
 void		send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel);
 void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
 void		send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel);
-
+void		send_rpl_ENDOFBANLIST(Client const & recipient, Channel const & channel, std::string const & description);
+void		send_rpl_BANLIST(Client const & recipient, Channel const & channel);
 
 // Esto no lo considero neceserio
 
