@@ -103,6 +103,8 @@ bool	IRC_Server::Channel::User_Privileges::privilege_is_set(char membership_pref
 
 IRC_Server::Channel::Channel(Client const & creator, IRC_Server & parent_server, std::string const &chName, std::string const &password) : _parent_server(parent_server), _channelName(chName), _channelPassword(password), _owner(creator.get_nick())
 {
+	if (_channelPassword.size() > 0)
+		setMode('k');
 }
 
 IRC_Server::Channel::Channel(Channel const &other)
@@ -166,6 +168,52 @@ std::string const & IRC_Server::Channel::getTopic() const
     return (_topic);
 }
 
+void IRC_Server::Channel::setTopic(std::string const & topic)
+{
+    _topic = topic;
+}
+
+/*!
+** @brief	Attempts to make @a key the channel password. If 'k' mode is not set
+**			already, it will be set. If setter is not a chanop or setMode fails
+**			for any reason, it will fail.
+**
+** @param	key	New channel password.
+** @return	true if successful, otherwise false
+*/
+bool	IRC_Server::Channel::setKey(Client const & setter, std::string const & key)
+{
+	bool mode_already_set;
+	if (isChannelOperator(setter) == true)
+		if ((mode_already_set = _modes.find('k') != std::string::npos) == true || setMode('k') == true)
+		{
+			if ((_channelPassword = key) == key)
+				return true;
+			else if (mode_already_set == false)
+				unsetMode('k');
+		}
+	return false;
+}
+
+/*!
+** @brief	Attempts to unset the channel password and make the channel
+**			passwordless. If @a key does not match the channel password, or
+**			@a unsetter is not a chanop, nothing will be done.
+**
+** @param	key	Existing channel password.
+** @
+*/
+bool	IRC_Server::Channel::unsetKey(Client const & unsetter, std::string const & key)
+{
+	if (isChannelOperator(unsetter) == true && _channelPassword == key)
+	{
+		_channelPassword.clear();
+		unsetMode('k');
+		return true;
+	}
+	return false;
+}
+
 /*!
 ** @brief Attempts to add the client address of @a user to the ban list.
 **
@@ -190,11 +238,6 @@ bool	IRC_Server::Channel::banMask(std::string const & mask)
 bool	IRC_Server::Channel::unbanMask(std::string const & mask)
 {
 	return static_cast<bool>(_banlist.erase(mask));
-}
-
-void IRC_Server::Channel::setTopic(std::string const & topic)
-{
-    _topic = topic;
 }
 
 void IRC_Server::Channel::setOwner(Client const & client)

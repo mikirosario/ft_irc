@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/05 16:51:53 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/05 20:49:36 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1092,8 +1092,16 @@ bool	IRC_Server::doChanModeChange(char sign, char mode, std::string const & arg,
 		// else
 		// 	ret = false;
 	}
-	//else if (type == 'B') ... TO BE CONTINUED...
-	return ret; //debug //tmp
+	else if (type == 'B' && arg.size() > 0)
+	{
+		if (mode == 'k')	//apply key mode
+			ret = sign == '+' ? channel.setKey(recipient, arg) : channel.unsetKey(recipient, arg);		
+	}
+	else if (type == 'D')
+		if (mode == 'i')	//apply invite-only mode
+			ret = sign == '+' ? channel.setMode(mode) : channel.unsetMode(mode);
+	//no type C modes supported
+	return ret;
 }
 
 /*!
@@ -1159,8 +1167,8 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			send_err_ERR_CHANOPRIVSNEEDED(sender, target->second, "You're not a channel operator");
 		else
 		{
-			//ok... fork it, i'm going with a pair vector... tired of this bs...
-			std::vector< std::pair<char, std::string> >	modesandargs;
+			//ok... fork it, i'm going with a pair... tired of this bs...
+			std::pair<std::string, std::string>	modesandargs;
 			size_t	end_modes_pos = argv[2].find_first_of(' ');
 			size_t	start_args_pos = argv[2].size();
 			size_t	tmp;	//in c++17 this would not have to exist because conditional declarations :p
@@ -1176,21 +1184,32 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			{
 				char	sign = '+';
 				std::string::const_iterator next_arg = argv[2].begin() + start_args_pos;
-
+				
+				bool	tonti = true; //debug
+				bool	tonti2 = true; //debug
 				if (*mode_it == '+' || *mode_it == '-')
-					sign = *mode_it;
-				else if (validateChanModeChange(*mode_it, sign, next_arg, argv[2].end(), arg) == true) 
 				{
-
-					//chan.doChanModeChange()
+					sign = *mode_it;
+					modesandargs.first += sign;
 				}
+				else if (	(tonti = validateChanModeChange(*mode_it, sign, next_arg, argv[2].end(), arg)) == true
+						&&	(tonti2 = doChanModeChange(sign, *mode_it, arg, sender, target->second)) == true)
+					modesandargs.first += *mode_it, modesandargs.second += arg;
+				std::cerr << "Mode Change Validated: " << tonti << '\n' << " Mode Change Done: " << tonti2 << std::endl; //debug
 			}
+			if (modesandargs.first.size() > 0 && std::strchr("+-", modesandargs.first[0]) == NULL) //debug //do no funciona con -b y cuando no hay cambios queda un signo sin nada al principio
+				modesandargs.first.insert(modesandargs.first.begin(), '+');
+			std::string applied_changes = modesandargs.first + " ";
+			applied_changes += modesandargs.second;
+			send_rpl_MODE(sender, target->second, applied_changes);
+
+			
 			//for each mode in modestring
 			//	get set/unset flag
 			//	get mode type
 			//	get mode argument as applicable
 			//	react as appropriate
-			//mode does not exist -> modeunknown
+			//mode does not exist -> modeunknown ???
 			//type b or c mode exists but lacks required argument -> ignore
 			//type a mode exists but lacks argument -> send mode list to user
 		}

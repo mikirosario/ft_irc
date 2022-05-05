@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/05 15:29:31 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/05 19:55:10 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,19 +206,16 @@ void		IRC_Server::send_rpl_MODE(Client const & recipient, std::string const & ap
 
 	msg += "MODE ";
 	msg += recipient.get_nick() + " ";
-	msg += applied_changes;
-	non_numeric_reply_end(msg, std::string());
+	non_numeric_reply_end(msg, applied_changes);
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_MODE(Client const & recipient, Channel const & channel, std::string const & applied_changes, std::string const & change_args) const
+void		IRC_Server::send_rpl_MODE(Client const & recipient, Channel const & channel, std::string const & applied_changes) const
 {
 	std::string msg = recipient.get_source() + " ";
 	msg += "MODE ";
 	msg += channel.getChannelName() + " ";
-	msg += applied_changes + " ";
-	msg += change_args;
-	non_numeric_reply_end(msg, std::string());
+	non_numeric_reply_end(msg, applied_changes);
 	
 	channel.send_msg(NULL, 0, msg);
 }

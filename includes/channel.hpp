@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/04 22:22:12 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/05 19:33:16 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,8 @@ class Channel
 		//bool setNewPrivilegeLevel(Client const & member, char privilege_level);	
 		void	setOwner(Client const &OwnerUser2);
 		void	setTopic(std::string const &Topic);
+		bool	setKey(Client const & setter, std::string const & key);
+		bool	unsetKey(Client const & unsetter, std::string const & key);
 		bool	banMask(std::string const & mask);
 		bool	unbanMask(std::string const & mask);
 		bool	setMode(char mode);
