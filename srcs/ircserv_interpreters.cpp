@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/07 20:23:17 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/07 20:51:59 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -985,7 +985,10 @@ static bool	validateChanModeChange(char mode, char sign, std::string::const_iter
 	std::string::const_iterator arg_end = next_arg;
 	while (arg_end != end_args && *arg_end != ' ')
 		++arg_end;
-	arg.assign(next_arg, arg_end);							//get arg, if there is one, or empty arg otherwise
+	if (next_arg != arg_end)								//get arg, if there is one, or empty arg otherwise
+		arg.assign(next_arg, arg_end);
+	else
+		arg.clear();	
 	while (arg_end != end_args && *arg_end == ' ')			//find next arg or end of args
 		++arg_end;
 	next_arg = arg_end;										//update next_arg for caller
@@ -1181,10 +1184,10 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			
 			char	sign = '+';
 			//for each mode in modestring
-			for (std::string::const_iterator mode_it = argv[2].begin(), modes_end = argv[2].begin() + end_modes_pos; mode_it != modes_end; ++mode_it)
+			for (std::string::const_iterator mode_it = argv[2].begin(),
+				modes_end = argv[2].begin() + end_modes_pos,
+				next_arg = argv[2].begin() + start_args_pos; mode_it != modes_end; ++mode_it)
 			{
-				std::string::const_iterator next_arg = argv[2].begin() + start_args_pos;
-
 				if (*mode_it == '+' || *mode_it == '-')
 				{
 					sign = *mode_it;
