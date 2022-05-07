@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/05 20:49:36 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/07 20:06:18 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1179,10 +1179,10 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			
 			std::string arg;
 			
+			char	sign = '+';
 			//for each mode in modestring
 			for (std::string::const_iterator mode_it = argv[2].begin(), modes_end = argv[2].begin() + end_modes_pos; mode_it != modes_end; ++mode_it)
 			{
-				char	sign = '+';
 				std::string::const_iterator next_arg = argv[2].begin() + start_args_pos;
 				
 				bool	tonti = true; //debug
@@ -1213,7 +1213,6 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			//type b or c mode exists but lacks required argument -> ignore
 			//type a mode exists but lacks argument -> send mode list to user
 		}
-		
 		
 		
 	}
