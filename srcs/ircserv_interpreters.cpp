@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/07 20:51:59 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/07 21:01:48 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -985,10 +985,11 @@ static bool	validateChanModeChange(char mode, char sign, std::string::const_iter
 	std::string::const_iterator arg_end = next_arg;
 	while (arg_end != end_args && *arg_end != ' ')
 		++arg_end;
-	if (next_arg != arg_end)								//get arg, if there is one, or empty arg otherwise
-		arg.assign(next_arg, arg_end);
-	else
-		arg.clear();	
+	// if (next_arg != arg_end)								//get arg, if there is one, or empty arg otherwise
+	// 	arg.assign(next_arg, arg_end);
+	// else
+	// 	arg.clear();
+	arg.assign(next_arg, arg_end);	
 	while (arg_end != end_args && *arg_end == ' ')			//find next arg or end of args
 		++arg_end;
 	next_arg = arg_end;										//update next_arg for caller
