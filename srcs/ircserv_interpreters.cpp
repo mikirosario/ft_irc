@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/07 20:06:18 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/07 20:16:53 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1197,7 +1197,9 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 					modesandargs.first += *mode_it, modesandargs.second += arg;
 				std::cerr << "Mode Change Validated: " << tonti << '\n' << " Mode Change Done: " << tonti2 << std::endl; //debug
 			}
-			if (modesandargs.first.size() > 0 && std::strchr("+-", modesandargs.first[0]) == NULL) //debug //do no funciona con -b y cuando no hay cambios queda un signo sin nada al principio
+			if (modesandargs.first.size() == 1 && std::strchr("+-", modesandargs.first[0]) != NULL)
+				modesandargs.first.clear();
+			else if (modesandargs.first.size() > 0 && std::strchr("+-", modesandargs.first[0]) == NULL) //debug //do no funciona con -b y cuando no hay cambios queda un signo sin nada al principio
 				modesandargs.first.insert(modesandargs.first.begin(), '+');
 			std::string applied_changes = modesandargs.first + " ";
 			applied_changes += modesandargs.second;
