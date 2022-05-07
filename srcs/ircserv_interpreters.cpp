@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/07 20:16:53 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/07 20:23:17 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1184,18 +1184,15 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 			for (std::string::const_iterator mode_it = argv[2].begin(), modes_end = argv[2].begin() + end_modes_pos; mode_it != modes_end; ++mode_it)
 			{
 				std::string::const_iterator next_arg = argv[2].begin() + start_args_pos;
-				
-				bool	tonti = true; //debug
-				bool	tonti2 = true; //debug
+
 				if (*mode_it == '+' || *mode_it == '-')
 				{
 					sign = *mode_it;
 					modesandargs.first += sign;
 				}
-				else if (	(tonti = validateChanModeChange(*mode_it, sign, next_arg, argv[2].end(), arg)) == true
-						&&	(tonti2 = doChanModeChange(sign, *mode_it, arg, sender, target->second)) == true)
+				else if (	validateChanModeChange(*mode_it, sign, next_arg, argv[2].end(), arg) == true
+						&&	doChanModeChange(sign, *mode_it, arg, sender, target->second) == true)
 					modesandargs.first += *mode_it, modesandargs.second += arg;
-				std::cerr << "Mode Change Validated: " << tonti << '\n' << " Mode Change Done: " << tonti2 << std::endl; //debug
 			}
 			if (modesandargs.first.size() == 1 && std::strchr("+-", modesandargs.first[0]) != NULL)
 				modesandargs.first.clear();
