@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/08 14:03:56 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/08 18:44:11 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,9 @@ struct case_insensitive_less : std::binary_function<std::string, std::string, bo
 	bool	operator() (std::string const & str1, std::string const & str2) const;
 };
 
-/* WILDCARD PATTERN MATCHING STRING COMPARE OBJECT */
-struct wildcard_matching_less : std::binary_function<std::string, std::string, bool>
-{
-	bool	operator() (std::string const & str1, std::string const & str2) const;
-};
+/* WILDCARD PATTERN MATCHING STRING COMPARE */
+static bool	wildcard_matching_equality(std::string const & normal_str, std::string const & wildcard_pattern);
+static bool	dual_wildcard_matching_equality(std::string const & str1, std::string const & str2);
 
 // NOTE: the STD::BINARY_FUNCTION inheritance above is to obtain the folowing:
 // result_type, first_argument_type and second_argument_type

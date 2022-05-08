@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/20 22:33:11 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/08 16:12:07 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,15 @@ int	IRC_Server::get_listener_socket(void) const
 	else //attempt to open socket and listen
 	{
 		//debug iterate results list for valid entry
+
+		// //debug print all IP addresses in getaddrinfo list //comento el comentario
+		// std::cout << "Empieza aquí" << std::endl;
+		// for (struct addrinfo * ptr = res; ptr != NULL; ptr = ptr->ai_next)
+		// {
+		// 	char *strptr = inet_ntoa(reinterpret_cast<sockaddr_in *>(ptr->ai_addr)->sin_addr);
+		// 	std::cout << strptr << std::endl;
+		// }
+		// //debug
 
 		int	connection_sockfd;
 

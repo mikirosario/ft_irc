@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/05 19:33:16 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/08 20:06:41 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Channel
 		bool	unsetKey(Client const & unsetter, std::string const & key);
 		bool	banMask(std::string const & mask);
 		bool	unbanMask(std::string const & mask);
+		bool	isBanned(std::string const & mask);
 		bool	setMode(char mode);
 		bool	unsetMode(char mode);
 		//bool	setModes(std::string const & modestring, std::string & applied_changes);

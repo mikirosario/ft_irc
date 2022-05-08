@@ -215,29 +215,73 @@ bool	IRC_Server::Channel::unsetKey(Client const & unsetter, std::string const & 
 }
 
 /*!
-** @brief Attempts to add the client address of @a user to the ban list.
+** @brief Attempts to add @a mask to the ban list.
 **
 ** @details	This function requires setMode to be successful if 'b' mode was not
 **			already set.
+**
+**			Wildcard matching is used, so if the banlist already has a wildcard
+**			that includes @a mask, then @a mask will be considered banned
+**			already and the ban will not be applied.
+**
+**			For example, if @a mask == "piscina" and the banlist contains "p*",
+**			"piscina" will be considered included in the "p*" case and so will
+**			NOT be explicitly banned.
+**
+**			This could be further tweaked with a ban exclude list. Any project
+**			partner is free to code one if they want it - I've done my bit for
+**			IRC. :P
 ** @return	false if channel ban mode not set or unsuccessful for other reasons,
 **			otherwise true
 */
 bool	IRC_Server::Channel::banMask(std::string const & mask)
 {
 	if (_modes.find('b') != std::string::npos || setMode('b') == true)
-		if (_banlist.insert(mask).second == true)
+	{
+		t_ChannelMemberSet::const_iterator it = _banlist.begin(), end = _banlist.end();
+		for ( ; it != end; ++it)
+			if (dual_wildcard_matching_equality(*it, mask) == true)
+				break ;
+		if (it == end && _banlist.insert(mask).second == true)
 			return true;
+	}
 	return false;
 }
 
 /*!
-** @brief Attempts to remove the client address of @a user from the ban list.
+** @brief	Attempts to remove all masks matching @a mask from the ban list as
+**			determined by a wildcard matching equality check.
 **
-** @return false if address was not found on the list, otherwise true
+** @return	false if no match was found, otherwise true
 */
 bool	IRC_Server::Channel::unbanMask(std::string const & mask)
 {
-	return static_cast<bool>(_banlist.erase(mask));
+	t_ChannelMemberSet::iterator				it = _banlist.begin();
+	t_ChannelMemberSet::const_iterator			end = _banlist.end();
+	std::vector<t_ChannelMemberSet::iterator>	del_vector;
+
+	for ( ; it != end; ++it)
+		if (dual_wildcard_matching_equality(*it, mask) == true)
+			del_vector.push_back(it);
+	if (del_vector.size() < 1) 																									//no match found
+		return false;
+	for (std::vector<t_ChannelMemberSet::iterator>::iterator it = del_vector.begin(), end = del_vector.end(); it != end; ++it)	//erase all matches
+		_banlist.erase(*it);
+	return true;
+}
+
+/*!
+** @brief	Attempts to find a case-insensitive, wildcard-sensitive match for
+**			@a mask in the banlist.
+**
+** @return	true if a match is found, otherwise false
+*/
+bool	IRC_Server::Channel::isBanned(std::string const & mask)
+{
+	for (t_ChannelMemberSet::const_iterator it = _banlist.begin(), end = _banlist.end(); it != end; ++it)
+		if (dual_wildcard_matching_equality(*it, mask) == true)
+			return true;
+	return false;
 }
 
 void IRC_Server::Channel::setOwner(Client const & client)
