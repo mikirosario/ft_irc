@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/07 21:01:48 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/08 20:50:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -553,7 +553,9 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 				{																	//but failed, because...
 					if (ret == -1)													//it gave the wrong key
 						send_err_BADCHANNELKEY(sender, chan_it->second, "Cannot join channel (+k)");
-					if (ret == 0)													//garden gnomes interfered; probably memory-related
+					else if (ret == -3)
+						send_err_BANNEDFROMCHAN(sender, chan_it->second, "Cannot join channel (+b)");
+					else if (ret == 0)												//garden gnomes interfered; probably memory-related
 						send_err_UNKNOWNERROR(sender, argv[0], "Server error: could not add channel");
 				}
 				//SEND_RPL

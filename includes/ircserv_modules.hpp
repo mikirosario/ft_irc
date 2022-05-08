@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/05 19:55:24 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/08 20:43:47 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ void		send_err_UMODEUNKNOWNFLAG(Client const & recipient, std::string const & de
 void		send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & channel_nick, std::string const & description) const;
 void		send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & command, std::string const & description) const;
 
-void		send_err_BANNEDFROMCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
+void		send_err_BANNEDFROMCHAN(Client const & recipient, Channel const & channel, std::string const & description) const;
 void		send_err_CHANNELISFULL (Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_INVITEONLYCHAN(Client const & recipient, std::string const & command, std::string const & description) const;
 void		send_err_ERR_UNKNOWNMODE(Client const & recipient, char const &command, std::string const & description) const;
@@ -138,11 +138,5 @@ void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel con
 void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
 void		send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const;
 void		send_rpl_MODE(Client const & recipient, Channel const & channel, std::string const & applied_changes) const;
-
-// Auxiliar methods
-
-void	exec_join(IRC_Server::Client & sender, std::vector<std::string> const & argv);
-void 	ft_add_mode(Client const &sender, std::string const &channelName, std::string const &modes);
-void	ft_remove_mode(Client const &sender, std::string const &channelName, std::string const &modes);
 
 #endif

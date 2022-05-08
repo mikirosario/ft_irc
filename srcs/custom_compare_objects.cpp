@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/27 19:19:59 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/08 20:35:32 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/08 21:00:40 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,9 @@ bool	wildcard_matching_equality(std::string const & normal_str, std::string cons
 {
 	std::string	str = normal_str;
 	std::string pattern = wildcard_pattern;
-	size_t	str_size = str.size();
-	size_t	pattern_size = pattern.size();
-	bool	lookup[str_size + 1][pattern_size + 1];											//bool matrix; x normal_str, y wildcard_str
+	size_t		str_size = str.size();
+	size_t		pattern_size = pattern.size();
+	bool		lookup[str_size + 1][pattern_size + 1];										//bool matrix; x normal_str, y wildcard_str
 
 	if (pattern_size == 0)																	//empty pattern can only match with empty string
 		return (str_size == 0);
@@ -110,7 +110,7 @@ bool	wildcard_matching_equality(std::string const & normal_str, std::string cons
 ** @param	str2	The second string to compare.
 ** @return	true if the strings compare as equal, otherwise false
 */
-static bool	dual_wildcard_matching_equality(std::string const & str1, std::string const & str2)
+bool	dual_wildcard_matching_equality(std::string const & str1, std::string const & str2)
 {
 	return wildcard_matching_equality(str1, str2) | wildcard_matching_equality(str2, str1);
 }

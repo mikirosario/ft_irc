@@ -267,20 +267,23 @@ bool	IRC_Server::Channel::unbanMask(std::string const & mask)
 		return false;
 	for (std::vector<t_ChannelMemberSet::iterator>::iterator it = del_vector.begin(), end = del_vector.end(); it != end; ++it)	//erase all matches
 		_banlist.erase(*it);
+	if (_banlist.size() < 1)
+		unsetMode('b');
 	return true;
 }
 
 /*!
 ** @brief	Attempts to find a case-insensitive, wildcard-sensitive match for
-**			@a mask in the banlist.
+**			@a mask in the banlist if the ban mode is set.
 **
 ** @return	true if a match is found, otherwise false
 */
 bool	IRC_Server::Channel::isBanned(std::string const & mask)
 {
-	for (t_ChannelMemberSet::const_iterator it = _banlist.begin(), end = _banlist.end(); it != end; ++it)
-		if (dual_wildcard_matching_equality(*it, mask) == true)
-			return true;
+	if (getModes().find('b') != std::string::npos)
+		for (t_ChannelMemberSet::const_iterator it = _banlist.begin(), end = _banlist.end(); it != end; ++it)
+			if (dual_wildcard_matching_equality(*it, mask) == true)
+				return true;
 	return false;
 }
 
@@ -393,17 +396,20 @@ bool											IRC_Server::Channel::isChannelOperator(IRC_Server::Client const &
 ** @param	client			The member to be added.
 ** @param	password		The password provided by the client.
 ** @param	privilege_level	The member's privilege level in the channel.
-**							@see SUPPORTED_CHANNEL_PREFIXESÇ
+**							@see SUPPORTED_CHANNEL_PREFIXES
 ** @return	1 if the member was successfully added to the channel's member list
 **			AND the channel was successfully added to the client's channel list.
 +*			Otherwise, -1 if the client's password was wrong, -2 if the client's
-**			privilege_level was not understood, and 0 if the member was not
-**			successfully added for any other reason.
+**			privilege_level was not understood, -3 if the client is banned from
+**			the channel, and 0 if the member was not successfully added for any
+**			other reason.
 */
 int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const &password, char privilege_level)
 {
     if (_channelPassword != password)
 		return(INVALID_PASSWORD_RETURN);
+	else if (chan_it->second.isBanned(std::string(client.get_source()).erase(0)))
+		return(-3);
 	else if (std::strchr(SUPPORTED_CHANNEL_PREFIXES, privilege_level) == NULL)
 		return(-2); //BAD PREFIX
 	else if (client.set_channel_membership(chan_it) == false)						//channel membership predicated on client member channel iterator set
