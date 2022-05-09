@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/08 20:50:52 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/09 20:17:24 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -600,15 +600,12 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 				if (hash_pos != std::string::npos) 								//it's a channel
 				{
 					size_t		chname_pos;
-					// if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
-					// 	(ch_recipient = _channels.find(channel.substr(chname_pos - 1))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
 					if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
 						(ch_recipient = _channels.find(channel)) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
 						send_err_NOSUCHCHANNEL(sender, channel, "No such channel");
-					//else if (sender.leave_channel(ch_recipient->second.getChannelName()) == false)
 					else if (sender.get_joined_channel(ch_recipient->second.getChannelName()).second == false)
 						send_err_NOTONCHANNEL(sender, ch_recipient->second, "You're not on that channel");
-					else																				//it's a channel and it exists in _channels
+					else																				//it's a channel and it exists in _channels 
 					{
 						send_rpl_PART(sender, ch_recipient->second, (argv.size() > 2 ? argv[2] : sender.get_nick()));
 						sender.leave_channel(ch_recipient->second.getChannelName());
@@ -666,18 +663,17 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[1]);	
 	if (target_channel == _channels.end())
 		send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");	
+	else if (sender.get_joined_channel(target_channel->second.getChannelName()).second == false)
+		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
 	else if (target_channel->second.isChannelOperator(sender) == false && argv_size > 2)								//sender lacks needed permissions
 		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
 	else if(argv_size == 2)
-		send_rpl_TOPIC(sender, target_channel->first, target_channel->second.getTopic());
+		send_rpl_TOPIC(sender, target_channel->second);
 	else
 	{
 		std::string	new_topic;
-
-		for(size_t i = 2; i < argv_size; i++)
-			new_topic += argv[i];
-		target_channel->second.setTopic(new_topic);
-		send_rpl_TOPIC(sender, target_channel->first, target_channel->second.getTopic());
+		target_channel->second.setTopic(argv[2]);
+		send_rpl_TOPIC(sender, target_channel->second);
 	}
 }
 
@@ -1279,6 +1275,8 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_KICK(client, argv);
 		else if (cmd == "MODE")
 			exec_cmd_MODE(client, argv);
+		else if (cmd == "TOPIC")
+			exec_cmd_TOPIC(client, argv);
 		else
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 	}
