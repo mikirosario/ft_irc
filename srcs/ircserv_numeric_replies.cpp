@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/05 15:53:56 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/10 21:54:39 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 */
 std::string	IRC_Server::numeric_reply_start(Client const & recipient, char const * numeric) const
 {
-	std::string	error;
+	std::string	rpl;
 
 	//part of the msg with controlled size:
 	//: IPv4Address SPACE NUMERIC SPACE CLIENT SPACE:
@@ -30,12 +30,23 @@ std::string	IRC_Server::numeric_reply_start(Client const & recipient, char const
 	//description
 	//NOTE: ensure NICK size is limited during registration...
 
-	error += get_source() + " ";
-	error += numeric;
-	error += " ";
+	rpl += get_source() + " ";
+	rpl += numeric;
+	rpl += " ";
 	if (recipient.is_registered() == true) //first parameter should be client name, but if client is unregistered this hasn't yet been recorded
-		error += recipient.get_nick() + " "; //debug //will have a get_client() for formatted replies: nick!user@userIP
-	return (error);
+		rpl += recipient.get_nick() + " "; //debug //will have a get_client() for formatted replies: nick!user@userIP
+	return (rpl);
+}
+
+std::string	IRC_Server::numeric_reply_start(Channel const & recipient, char const * numeric) const
+{
+	std::string	rpl;
+
+	rpl += get_source() + " ";
+	rpl += numeric;
+	rpl += " ";
+	rpl += recipient.getChannelName() + " ";
+	return (rpl);
 }
 
 /*!
@@ -288,6 +299,59 @@ void		IRC_Server::send_rpl_NAMREPLY(Client const & recipient, Channel const & ch
 	send_rpl_ENDOFNAMES(recipient, channel.getChannelName());
 }
 
+//debug //if user invisibility is implemented, we will need to account for this!!
+/*!
+** @brief	Builds and sends a NAMREPLY reply to @a recipient containing a list
+**			of all members of @a channel and terminates with an ENDOFNAMES reply
+**			when finished.
+**
+** @details If the NAMREPLY reply would overflow MSG_BUF_SIZE bytes, it will be
+**			split into separate replies fitting into MSG_BUF_SIZE bytes.
+**
+** @param	recipient	The client to whom the reply will be sent.
+** @param	channel		The channel regarding which member information was sent.
+*/
+void		IRC_Server::send_rpl_NAMREPLY(Channel const & recipient, Channel const & channel)
+{
+	typedef IRC_Server::Channel::t_ChannelMemberSet::const_iterator chan_it;
+
+	if (channel.size() > 0)
+	{
+		std::string msg = numeric_reply_start(recipient, RPL_NAMREPLY);
+		std::string member_list;
+
+			//debug //will want channel to give us this
+		msg += "= "; //debug //get channel status (= public, @ secret, *private), currently unimplemented so all channels are public
+		msg += channel.getChannelName();
+
+		member_list.reserve(MSG_BUF_SIZE * 2);
+		for (size_t memberc = channel.size(); memberc > 0; ) //main loop
+		{
+			std::string	msg_cpy;
+			size_t		bytes_used;
+			size_t		owneri = 0;
+			chan_it		chanops_it = channel.getChanops().begin();
+			chan_it		halfops_it = channel.getHalfops().begin();
+			chan_it 	user_it = channel.getUsers().begin();
+
+			msg_cpy = msg;
+			bytes_used = msg.size() + 4; //bytes used out of message buffer are current bytes occupied plus 4 for prepending " :" and appending "crlf".
+			for ( ; owneri < !channel.getOwner().empty() && bytes_used + channel.getOwner().size() + 2 < MSG_BUF_SIZE; ++owneri, bytes_used += channel.getOwner().size() + 2, --memberc)
+				member_list += "~" + channel.getOwner() + " ";
+			for ( ; chanops_it != channel.getChanops().end() && bytes_used + chanops_it->size() + 2 < MSG_BUF_SIZE; ++chanops_it, bytes_used += chanops_it->size() + 2, --memberc)
+				member_list += "@" + *chanops_it + " ";
+			for ( ; halfops_it != channel.getHalfops().end() && bytes_used + halfops_it->size() + 2 < MSG_BUF_SIZE; ++halfops_it, bytes_used += halfops_it->size() + 2, --memberc)
+				member_list += "%" + *halfops_it + " ";
+			for ( ; user_it != channel.getUsers().end() && bytes_used + user_it->size() + 1 < MSG_BUF_SIZE; ++user_it, bytes_used += user_it->size() + 1, --memberc)
+				member_list += *user_it + " ";
+			numeric_reply_end(msg_cpy, member_list);
+			recipient.send_msg(NULL, 0, msg_cpy);
+			//msg_cpy.erase(msg_cpy.begin() + msg.size(), msg_cpy.end()); alternative, but is it more efficient than msg_cpy = msg?? ;)
+		}
+	}
+	send_rpl_ENDOFNAMES(recipient, channel.getChannelName());
+}
+
 void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channelName)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_ENDOFNAMES); 
@@ -295,6 +359,15 @@ void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string cons
 	msg += channelName;
 	numeric_reply_end(msg, "End of /NAMES list");
 	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_ENDOFNAMES(Channel const & recipient, std::string const & channelName)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_ENDOFNAMES); 
+
+	msg += channelName;
+	numeric_reply_end(msg, "End of /NAMES list");
+	recipient.send_msg(NULL, 0, msg);
 }
 
 void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)

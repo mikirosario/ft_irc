@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/08 20:06:41 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/09 19:03:34 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class Channel
 		//Channel(Client const & creator, std::string const &chName);
 		Channel(Client const & creator, IRC_Server & parent_server, std::string const &chName, std::string const &password);
 		Channel(Channel const &other);
-		~Channel(void);
+		virtual ~Channel(void);
 
 		Channel &operator=(Channel const &other);
 

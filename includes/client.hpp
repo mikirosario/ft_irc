@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/04/24 01:21:28 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/09 19:03:05 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ class Client
 		void		leave_channel(t_ChanMap::iterator const & channel_it);
 	public:
 		Client(void);
-		~Client(void);
+		virtual ~Client(void);
 		Client &	operator=(Client const & src);
 
 		size_t const	pos; //Client's position in server's _clients array and _pfds array. Invariant.

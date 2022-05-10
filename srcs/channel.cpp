@@ -447,7 +447,6 @@ void IRC_Server::Channel::addInvitedMember(Client &client)
 	// return (static_cast<bool>(todalapesca)).
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-
 /*!
 ** @brief	Removes @a client_nick from this channel, if @a client_nick is a
 **			member. Destroys channel if client_nick was the last member of the
@@ -486,8 +485,13 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 			if ((ret = pMemberSet[i]->erase(client_nick)) > 0)
 				member_was_removed = true;
 	}
-	if (member_was_removed == true && size() == 0)
-		_parent_server.remove_channel(getChannelName());
+	if (member_was_removed == true)
+	{
+		if (size() == 0)
+			_parent_server.remove_channel(getChannelName());
+		else
+			_parent_server.send_rpl_NAMREPLY(*this, *this);
+	}
 	return (member_was_removed);
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/05 16:34:23 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/10 22:04:41 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -655,9 +655,10 @@ void	IRC_Server::Client::leave_channel(t_ChanMap::iterator const & channel_it)
 	// //debug
 	// bool ret_rmember;
 	// //debug
-	//ret_rmember = channel_it->second->second.removeMember(get_nick());
+
 	channel_it->second->second.removeMember(get_nick());
 	_channels.erase(channel_it);
+	
 	// //debug
 	// std::cout << "leave channel result: " << ret_rmember << std::endl;
 	// //debug
