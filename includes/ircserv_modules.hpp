@@ -6,7 +6,7 @@
 /*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/09 19:26:19 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/10 17:07:48 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ void		send_rpl_LISTEND(Client const & recipient);
 
 void		send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel);
 void		send_rpl_TOPIC(Client const & recipient, Channel const & channel);
+void		send_rpl_NOTOPIC(Client const & recipient, Channel const & channel);
 void		send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFBANLIST(Client const & recipient, Channel const & channel, std::string const & description);
 void		send_rpl_BANLIST(Client const & recipient, Channel const & channel);

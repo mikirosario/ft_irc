@@ -6,7 +6,7 @@
 /*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/09 19:27:26 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/10 17:29:26 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,6 +192,15 @@ void		IRC_Server::send_rpl_TOPIC(Client const & recipient, Channel const & chann
 
 	msg += channel.getChannelName() + " ";
 	numeric_reply_end(msg, channel.getTopic());
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_NOTOPIC(Client const & recipient, Channel const & channel)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_NOTOPIC); 
+
+	msg += channel.getChannelName() + " ";
+	numeric_reply_end(msg, "No topic is set");
 	recipient.send_msg(msg);
 }
 

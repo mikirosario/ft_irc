@@ -6,7 +6,7 @@
 /*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/09 20:17:24 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/10 17:28:17 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -667,14 +667,15 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
 	else if (target_channel->second.isChannelOperator(sender) == false && argv_size > 2)								//sender lacks needed permissions
 		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
-	else if(argv_size == 2)
-		send_rpl_TOPIC(sender, target_channel->second);
-	else
+	else if(argv_size > 2)
 	{
 		std::string	new_topic;
 		target_channel->second.setTopic(argv[2]);
-		send_rpl_TOPIC(sender, target_channel->second);
 	}
+	if (target_channel->second.getTopic().empty())
+		send_rpl_NOTOPIC(sender, target_channel->second);
+	else
+		send_rpl_TOPIC(sender, target_channel->second);
 }
 
 /****************************************
