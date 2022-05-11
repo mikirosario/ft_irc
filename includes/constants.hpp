@@ -6,7 +6,7 @@
 /*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/10 18:12:46 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/10 20:13:37 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,9 @@
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
 #define ISUPPORT_CHANTYPES "#"
-#define ISUPPORT_CHANMODES "b,k,,i"
+#define ISUPPORT_CHANMODES "b,k,,ia" // comprobar que a funciona DEBUG
 #define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp || //Founder (q)~ // Operator (o)@ // HalfOp(h)%
-#define SUPPORTED_CHANNEL_MODES "bik" // no a (all users can invite)? MIKIMIKIMIKI
+#define SUPPORTED_CHANNEL_MODES "abik" 
 #define SUPPORTED_USER_MODES "oai"
 #define UNSUPPORTED_CHANNEL_PREFIXES "&+" //we don't support Protected or Voice
 

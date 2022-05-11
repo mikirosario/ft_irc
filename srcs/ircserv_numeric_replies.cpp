@@ -6,7 +6,7 @@
 /*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/10 20:07:32 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/11 18:29:43 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -326,26 +326,28 @@ void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & ch
 void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
-	numeric_reply_end(msg, ":End of /LIST");
+	numeric_reply_end(msg, "End of /LIST");
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_rpl_INVITED(Client const & sender, Client *target, Channel const & channel)
+void	IRC_Server::send_rpl_INVITED(Client const & sender, Client const & target, Channel const & channel)
 {
 	std::string msg = numeric_reply_start(sender, RPL_INVITED);
 	msg += channel.getChannelName() + " ";
-	msg += target->get_username()  + " ";
+	msg += target.get_username()  + " ";
 	msg += sender.get_username()  + " : ";
-	msg += target->get_username() + " has been invited by ";
+	msg += target.get_username() + " has been invited by ";
 	msg += sender.get_username();
 	numeric_reply_end(msg, "Invited message");
-	channel.send_msg(NULL, 0, msg); // funciona msgs al canal? MIKIMIKIMIKI
+	channel.send_msg(NULL, 0, msg); 
+	msg = sender.get_username() + " invites you to join " + channel.getChannelName();
+	target.send_msg(msg); //MIKIMIKIMIKI, porque no recibe el msg?
 }
 
-void	IRC_Server::send_rpl_INVITING(Client const & sender, Client *target , Channel const & channel)
+void	IRC_Server::send_rpl_INVITING(Client const & sender, Client const & target , Channel const & channel)
 {
 	std::string msg = numeric_reply_start(sender, RPL_INVITING);
-	msg += target->get_nick() + " ";
+	msg += target.get_nick() + " ";
 	msg += channel.getChannelName();
 	sender.send_msg(msg);
 }

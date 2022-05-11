@@ -6,7 +6,7 @@
 /*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/10 19:58:31 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/11 18:41:19 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -819,13 +819,13 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 		send_err_NOSUCHCHANNEL(sender, argv[2], "No such channel");	
 	else if (sender.get_joined_channel(argv[2]).second == false)									//sender is not on affected channel
 		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
-	else if (target_channel->second.getModes() != "a" && target_channel->second.isChannelOperator(sender) == false) //MIKIMIKIMIKI						//sender lacks needed permissions
+	else if (target_channel->second.getModes() != "a" && target_channel->second.isChannelOperator(sender) == false) 						//sender lacks needed permissions
 		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
 	else
 	{
 		std::stringstream	raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
-//		do
-//		{
+		do
+		{
 			std::string				target_nick;
 			Channel &				channel = target_channel->second;
 			Client *				target;
@@ -840,13 +840,14 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 				send_err_USERONCHANNEL(sender, target->get_hostname(), target->get_nick(), channel);
 			else
 			{
-				send_rpl_JOIN(channel, sender);
-				send_rpl_NAMREPLY(sender, channel);
-				send_rpl_INVITED(sender, target, channel);
-				send_rpl_INVITING(sender, target, channel);
+				channel.addInvitedMember(*target);
+				if (channel.isInvited(target->get_nick()) == 1) {		
+					send_rpl_INVITED(sender, *target, channel);
+					send_rpl_INVITING(sender, *target, channel);
+				}
 			}
-//		}
-//		while (raw_target_list.eof() == false);
+		}
+		while (raw_target_list.eof() == false);
 	}
 }
 

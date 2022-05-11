@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/08 20:06:41 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/11 18:37:53 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ class Channel
 		bool	banMask(std::string const & mask);
 		bool	unbanMask(std::string const & mask);
 		bool	isBanned(std::string const & mask);
+		bool	isInvited(std::string const & mask);
 		bool	setMode(char mode);
 		bool	unsetMode(char mode);
 		//bool	setModes(std::string const & modestring, std::string & applied_changes);
@@ -96,6 +97,7 @@ class Channel
 		t_ChannelMemberSet const &	getHalfops(void) const;
 		t_ChannelMemberSet const &	getUsers(void) const;
 		t_ChannelMemberSet const &	getBanList(void) const;
+		t_ChannelMemberSet const &	getInviteList(void) const;
 		std::string	const &			getModes(void) const;
 		bool						isChannelOperator(Client const & client) const;
 	private:
@@ -106,6 +108,7 @@ class Channel
 		std::string			_channelPassword;
 		std::string			_modes;
 		t_ChannelMemberSet	_banlist;
+		t_ChannelMemberSet	_invitelist;
 		//t_ChannelMemberMap allClients; //debug //remove
 
 		std::string			_owner;
