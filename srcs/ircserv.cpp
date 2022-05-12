@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/11 09:10:11 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/12 12:19:45 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -641,7 +641,7 @@ void	IRC_Server::remove_client_from_server(size_t pos)
 	if (_remove_list.size() > pos && pos > 0)
 	{
 		_remove_list.set(pos, true);
-		_clients[pos].leave_all_channels();
+		//_clients[pos].leave_all_channels();
 	}
 }
 
