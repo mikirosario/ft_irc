@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/11 18:41:19 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/12 20:09:52 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -814,40 +814,23 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 
 	if (argc < 3)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[2]);	
-	if (target_channel == _channels.end())
+	Client *				target = find_client_by_nick(argv[1]);
+	t_Channel_Map::iterator	channel = get_channel_by_name(argv[2]);
+	if (target == NULL)
+		send_err_NOSUCHNICK(sender, argv[1], "No such nick");
+	else if (channel == _channels.end())
 		send_err_NOSUCHCHANNEL(sender, argv[2], "No such channel");	
 	else if (sender.get_joined_channel(argv[2]).second == false)									//sender is not on affected channel
-		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
-	else if (target_channel->second.getModes() != "a" && target_channel->second.isChannelOperator(sender) == false) 						//sender lacks needed permissions
-		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
+		send_err_NOTONCHANNEL(sender, channel->second, "You're not on that channel");
+	else if (channel->second.getModes() != "i" && channel->second.isChannelOperator(sender) == false) 						//sender lacks needed permissions
+		send_err_ERR_CHANOPRIVSNEEDED(sender, channel->second, "You're not a channel operator");
 	else
 	{
-		std::stringstream	raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
-		do
-		{
-			std::string				target_nick;
-			Channel &				channel = target_channel->second;
-			Client *				target;
-
-			std::getline(raw_target_list, target_nick, ',');
-
-			if (raw_target_list.fail() == true)												//weird getline error
-				send_err_NOSUCHCHANNEL(sender, argv[0], "Invalid target passed to std::getline()");
-			else if ((target = find_client_by_nick(target_nick)) == NULL)					//target user does not exist
-				send_err_NOSUCHNICK(sender, argv[0], "Target user does not exist");
-			else if (target->get_joined_channel(channel.getChannelName()).second == true)	//target user is already on channel
-				send_err_USERONCHANNEL(sender, target->get_hostname(), target->get_nick(), channel);
-			else
-			{
-				channel.addInvitedMember(*target);
-				if (channel.isInvited(target->get_nick()) == 1) {		
-					send_rpl_INVITED(sender, *target, channel);
-					send_rpl_INVITING(sender, *target, channel);
-				}
-			}
+		channel->second.addInvitedMember(*target);
+		if (channel->second.isInvited(target->get_nick()) == 1) {		
+			send_rpl_INVITED(sender, *target, channel->second);
+			send_rpl_INVITING(sender, *target, channel->second);
 		}
-		while (raw_target_list.eof() == false);
 	}
 }
 
