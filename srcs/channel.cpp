@@ -485,13 +485,8 @@ bool IRC_Server::Channel::removeMember(std::string const & client_nick)
 			if ((ret = pMemberSet[i]->erase(client_nick)) > 0)
 				member_was_removed = true;
 	}
-	if (member_was_removed == true)
-	{
-		if (size() == 0)
-			_parent_server.remove_channel(getChannelName());
-		else
-			_parent_server.send_rpl_NAMREPLY(*this, *this);
-	}
+	if (member_was_removed == true && size() == 0)
+		_parent_server.remove_channel(getChannelName());
 	return (member_was_removed);
 }
 

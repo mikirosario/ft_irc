@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/10 21:54:13 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/12 09:59:31 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ bool	execModeChanges(Channel & channel, std::string const & modestring, std::str
 
 //numeric replies
 std::string	numeric_reply_start(Client const & client, char const * numeric) const;
-std::string	numeric_reply_start(Channel const & recipient, char const * numeric) const;
+//std::string	numeric_reply_start(Channel const & recipient, char const * numeric) const;
 void		numeric_reply_end(std::string & reply, std::string const & description) const;
 	//standard numeric replies
 
@@ -68,9 +68,9 @@ void		send_rpl_ISUPPORT(Client const & recipient);
 void		send_rpl_UMODEIS(Client const & recipient);
 
 void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
-void		send_rpl_NAMREPLY(Channel const & recipient, Channel const & channel);
+//void		send_rpl_NAMREPLY(Channel const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
-void		send_rpl_ENDOFNAMES(Channel const & recipient, std::string const & channelName);
+//void		send_rpl_ENDOFNAMES(Channel const & recipient, std::string const & channelName);
 
 void		send_rpl_LISTSTART(Client const & recipient);
 void		send_rpl_LIST(Client const & recipient, std::string const &channel_name);
