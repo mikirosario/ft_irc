@@ -114,7 +114,6 @@ IRC_Server::Channel::Channel(Channel const &other)
 		_channelPassword(other._channelPassword),
 		_modes(other._modes),
 		_banlist(other._banlist),
-		_invitelist(other._invitelist),
 		_owner(other._owner),
 		_chanops(other._chanops),
 		_halfops(other._halfops),
@@ -130,7 +129,6 @@ IRC_Server::Channel &	IRC_Server::Channel::operator=(Channel const &other)
 	_channelPassword = other._channelPassword;
 	_modes = other._modes;
 	_banlist = other._banlist;
-	_invitelist = other._invitelist;
 	_channelName = other._channelName;
 	//allClients.clear();
 	//allClients = other.allClients;
@@ -289,14 +287,6 @@ bool	IRC_Server::Channel::isBanned(std::string const & mask)
 	return false;
 }
 
-bool	IRC_Server::Channel::isInvited(std::string const & mask)
-{
-	for (t_ChannelMemberSet::const_iterator it = _invitelist.begin(), end = _invitelist.end(); it != end; ++it)
-		if (dual_wildcard_matching_equality(*it, mask) == true)
-			return true;
-	return false;
-}
-
 void IRC_Server::Channel::setOwner(Client const & client)
 {
     _owner = client.get_nick(); //se puede cambiar de owner? al cambiar, el antiguo owner sigue siendo miembro del canal?
@@ -349,11 +339,6 @@ IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getUsers(vo
 IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getBanList(void) const
 {
 	return (_banlist);
-}
-
-IRC_Server::Channel::t_ChannelMemberSet const &	IRC_Server::Channel::getInviteList(void) const
-{
-	return (_invitelist);
 }
 
 std::string const & 							IRC_Server::Channel::getModes(void) const
@@ -444,11 +429,6 @@ int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::i
 		client.remove_channel_membership(chan_it);
     return (ret.second);
 } //MIKIMIKIMIKI aun no esta implementado el invite only, que es donde tengo que poner la excepcion si esta en el listado de invitaciones, no?
-
-void IRC_Server::Channel::addInvitedMember(Client &client)
-{
-	_invitelist.insert(client.get_nick());
-}
 
 // -miki
 	// map.erase tiene su propia sobrecarga de erase-by-key, que devuelve un

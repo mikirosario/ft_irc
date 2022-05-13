@@ -340,8 +340,6 @@ void	IRC_Server::send_rpl_INVITED(Client const & sender, Client const & target, 
 	msg += sender.get_username();
 	numeric_reply_end(msg, "Invited message");
 	channel.send_msg(NULL, 0, msg); 
-	msg = sender.get_username() + " invites you to join " + channel.getChannelName();
-	target.send_msg(msg); //MIKIMIKIMIKI, porque no recibe el msg?
 }
 
 void	IRC_Server::send_rpl_INVITING(Client const & sender, Client const & target , Channel const & channel)

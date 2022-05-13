@@ -47,7 +47,6 @@ class Channel
 		
 		/* SETTERS */
 		int		addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
-		void	addInvitedMember(Client & client);
 		bool	removeMember(std::string const & client_nick);
 		void	removeMember(t_ChannelMemberSet::iterator const & member, t_ChannelMemberSet & member_set);
 		void	removeAllMembers(void);
@@ -62,7 +61,6 @@ class Channel
 		bool	banMask(std::string const & mask);
 		bool	unbanMask(std::string const & mask);
 		bool	isBanned(std::string const & mask);
-		bool	isInvited(std::string const & mask);
 		bool	setMode(char mode);
 		bool	unsetMode(char mode);
 		//bool	setModes(std::string const & modestring, std::string & applied_changes);

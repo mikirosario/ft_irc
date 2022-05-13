@@ -112,5 +112,5 @@ bool	wildcard_matching_equality(std::string const & normal_str, std::string cons
 */
 bool	dual_wildcard_matching_equality(std::string const & str1, std::string const & str2)
 {
-	return wildcard_matching_equality(str1, str2) | wildcard_matching_equality(str2, str1);
+	return wildcard_matching_equality(str1, str2) || wildcard_matching_equality(str2, str1);
 }
