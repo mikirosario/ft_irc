@@ -43,6 +43,7 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_realname = src._realname;
 	_hostname = src._hostname;
 	//_channels = src._channels;
+	//_invitelist - src._invitelist;
 	return (*this);
 }
 
@@ -80,6 +81,7 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_modes, src._modes);
 	std::swap(this->_hostname, src._hostname);
 	//std::swap(this->_channels, src._channels);
+	//std::swap(this->_invitelist, src._invitelist);
 	src.clear();
 }
 
@@ -571,6 +573,22 @@ bool	IRC_Server::Client::set_channel_membership(IRC_Server::t_Channel_Map::itera
 	return (ret);
 }
 
+bool	IRC_Server::Client::set_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
+{
+	bool ret;
+
+	try
+	{
+		ret = _invitelist.insert(std::make_pair(channel_iterator->second.getChannelName(), channel_iterator)).second;
+	}
+	catch (std::exception & e)
+	{
+		std::cerr << e.what() << std::endl;
+		return (false);
+	}
+	return (ret);
+}
+
 /*!
 ** @brief	Removes channel membership from client object.
 **
@@ -585,6 +603,16 @@ void	IRC_Server::Client::remove_channel_membership(IRC_Server::t_Channel_Map::it
 void	IRC_Server::Client::remove_channel_membership(t_ChanMap::iterator const & channel_iterator)
 {
 	_channels.erase(channel_iterator);
+}
+
+void	IRC_Server::Client::remove_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator)
+{
+	_invitelist.erase(channel_iterator->second.getChannelName());
+}
+
+void	IRC_Server::Client::remove_channel_invitation(t_ChanMap::iterator const & channel_iterator)
+{
+	_invitelist.erase(channel_iterator);
 }
 
 /*!
@@ -606,6 +634,7 @@ void	IRC_Server::Client::clear(void)
 	_msg_buf.clear();
 	_message.clear();
 	//_channels.clear();
+	//_invitelist.clean();
 }
 
 /*!
@@ -1033,7 +1062,26 @@ std::pair<IRC_Server::Client::t_ChanMap::iterator, bool>	IRC_Server::Client::get
 	return (std::make_pair(it, (it == _channels.end() ? false : true)));
 }
 
-IRC_Server::Client::t_ChanMap &							IRC_Server::Client::get_chanlist(void)
+std::pair<IRC_Server::Client::t_ChanMap::iterator, bool>	IRC_Server::Client::get_invited_channel(std::string const & channel_name)
+{
+	IRC_Server::Client::t_ChanMap::iterator	it = _invitelist.find(channel_name);
+	return (std::make_pair(it, (it == _invitelist.end() ? false : true)));
+}
+
+std::string const	IRC_Server::Client::get_invites(void)
+{
+	std::string msg;
+	IRC_Server::Client::t_ChanMap::iterator	it = _invitelist.begin();
+	
+	do
+	{
+		msg += it->first + ", ";
+	} 
+	while (it++ != _invitelist.end());
+	return (msg);
+}
+  
+IRC_Server::Client::t_ChanMap &	IRC_Server::Client::get_chanlist(void)
 {
 	return _channels;
 }

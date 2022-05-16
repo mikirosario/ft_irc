@@ -43,6 +43,7 @@ class Client
 		std::string	_message;
 		std::string _modes;
 		t_ChanMap	_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
+		t_ChanMap	_invitelist;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
 
 		/* PRIVATE UTILS */
 		size_t		get_param_count(void) const;
@@ -83,8 +84,11 @@ class Client
 		void	set_state_registered(void);
 		void	set_state_disconnected(void);
 		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
+		bool	set_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	remove_channel_membership(t_ChanMap::iterator const & channel_iterator);
+		void	remove_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
+		void	remove_channel_invitation(t_ChanMap::iterator const & channel_iterator);
 
 		void	clear(void);
 
@@ -103,6 +107,8 @@ class Client
 		size_t									get_pos(void) const;
 		bool									get_pass_validated(void) const;
 		std::pair<t_ChanMap::iterator, bool>	get_joined_channel(std::string const & channel_name);
+		std::pair<t_ChanMap::iterator, bool>	get_invited_channel(std::string const & channel_name);
+		std::string const						get_invites(void);
 		t_ChanMap &								get_chanlist(void);
 		std::string const &						see_next_message(void) const;
 		std::string const &						see_msg_buf(void) const;
