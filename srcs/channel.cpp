@@ -442,7 +442,6 @@ int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::i
 	// return (static_cast<bool>(todalapesca)).
 // Error / Debug: en PRINCIPIO bien, pero aún no he escrito tests, así que queda
 // eso pendiente. ;)
-
 /*!
 ** @brief	Removes @a client_nick from this channel, if @a client_nick is a
 **			member. Destroys channel if client_nick was the last member of the

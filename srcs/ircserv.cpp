@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/08 16:12:07 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/16 18:40:20 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -570,16 +570,19 @@ void	IRC_Server::process_client_message(Client & client)
 {
 	char	server_msgbuf[MSG_BUF_SIZE];
 	int		nbytes = recv(client.get_sockfd(), server_msgbuf, MSG_BUF_SIZE, 0);
+	static const std::vector<std::string> argv(1, "QUIT");
 
 	switch (nbytes) //error cases and default successful data reception case
 	{
 		case 0 :
+			exec_cmd_QUIT(client, argv);
 			std::cerr << "pollserver: socket " << client.get_sockfd() << " hung up." << std::endl;
-			remove_client_from_server(client);
+			//remove_client_from_server(client); //QUIT does this now
 			break ;
 		case -1 :
+			exec_cmd_QUIT(client, argv);
 			std::cerr << "recv error" << std::endl;
-			remove_client_from_server(client);
+			//remove_client_from_server(client);
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
@@ -639,7 +642,10 @@ void	IRC_Server::process_client_message(Client & client)
 void	IRC_Server::remove_client_from_server(size_t pos)
 {
 	if (_remove_list.size() > pos && pos > 0)
+	{
 		_remove_list.set(pos, true);
+		//_clients[pos].leave_all_channels();
+	}
 }
 
 /*!

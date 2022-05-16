@@ -22,7 +22,7 @@
 */
 std::string	IRC_Server::numeric_reply_start(Client const & recipient, char const * numeric) const
 {
-	std::string	error;
+	std::string	rpl;
 
 	//part of the msg with controlled size:
 	//: IPv4Address SPACE NUMERIC SPACE CLIENT SPACE:
@@ -30,13 +30,24 @@ std::string	IRC_Server::numeric_reply_start(Client const & recipient, char const
 	//description
 	//NOTE: ensure NICK size is limited during registration...
 
-	error += get_source() + " ";
-	error += numeric;
-	error += " ";
+	rpl += get_source() + " ";
+	rpl += numeric;
+	rpl += " ";
 	if (recipient.is_registered() == true) //first parameter should be client name, but if client is unregistered this hasn't yet been recorded
-		error += recipient.get_nick() + " "; //debug //will have a get_client() for formatted replies: nick!user@userIP
-	return (error);
+		rpl += recipient.get_nick() + " "; //debug //will have a get_client() for formatted replies: nick!user@userIP
+	return (rpl);
 }
+
+// std::string	IRC_Server::numeric_reply_start(Channel const & recipient, char const * numeric) const
+// {
+// 	std::string	rpl;
+
+// 	rpl += get_source() + " ";
+// 	rpl += numeric;
+// 	rpl += " ";
+// 	rpl += recipient.getChannelName() + " ";
+// 	return (rpl);
+// }
 
 /*!
 ** @brief	The @a reply will be properly ended with the @a description, or with

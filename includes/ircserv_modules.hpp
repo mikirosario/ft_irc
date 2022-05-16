@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/11 18:20:16 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/16 17:55:41 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,6 @@ void	exec_cmd_NOTICE(Client & sender, std::vector<std::string> const & argv);
 bool	doChanModeChange(char sign, char mode, std::string const & arg, Client const & recipient, Channel & channel);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
-
-	//-adrian
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
@@ -50,10 +48,12 @@ void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv);
 
+void	exec_cmd_QUIT(Client & sender, std::vector<std::string> const & argv);
 bool	execModeChanges(Channel & channel, std::string const & modestring, std::string & applied_changes);
 
 //numeric replies
 std::string	numeric_reply_start(Client const & client, char const * numeric) const;
+//std::string	numeric_reply_start(Channel const & recipient, char const * numeric) const;
 void		numeric_reply_end(std::string & reply, std::string const & description) const;
 	//standard numeric replies
 
@@ -66,7 +66,9 @@ void		send_rpl_ISUPPORT(Client const & recipient);
 void		send_rpl_UMODEIS(Client const & recipient);
 
 void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
+//void		send_rpl_NAMREPLY(Channel const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
+//void		send_rpl_ENDOFNAMES(Channel const & recipient, std::string const & channelName);
 
 void		send_rpl_LISTSTART(Client const & recipient);
 void		send_rpl_LIST(Client const & recipient, std::string const &channel_name);
@@ -139,5 +141,6 @@ void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel con
 void		send_rpl_PONG(Client const & recipient, std::string const & token) const;
 void		send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const;
 void		send_rpl_MODE(Client const & recipient, Channel const & channel, std::string const & applied_changes) const;
+void		send_rpl_QUIT(Client & quitter, std::string const & reason);
 
 #endif

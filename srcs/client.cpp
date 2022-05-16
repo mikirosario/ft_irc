@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/05 16:34:23 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/16 18:19:35 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -542,6 +542,13 @@ void	IRC_Server::Client::set_state_registered(void)
 	_state = IRC_Server::Client::State(REGISTERED);
 }
 
+
+void	IRC_Server::Client::set_state_disconnected(void)
+{
+	//_state = IRC_Server::Client::State(DISCONNECTED)
+	_state = DISCONNECTED;
+}
+
 /*!
 ** @brief	Records channel membership in client object.
 **
@@ -643,6 +650,12 @@ bool	IRC_Server::Client::is_endline(char const c)
 	return (c == '\r' || c == '\n');
 }
 
+bool	IRC_Server::Client::is_disconnected()
+{
+	//return (_state == IRC_Server::Client::State::DISCONNECTED);
+	return (_state == DISCONNECTED);
+}
+
 /*!
 ** @brief	Retrieves the command from the Client's message.
 **
@@ -684,9 +697,10 @@ void	IRC_Server::Client::leave_channel(t_ChanMap::iterator const & channel_it)
 	// //debug
 	// bool ret_rmember;
 	// //debug
-	//ret_rmember = channel_it->second->second.removeMember(get_nick());
+
 	channel_it->second->second.removeMember(get_nick());
 	_channels.erase(channel_it);
+	
 	// //debug
 	// std::cout << "leave channel result: " << ret_rmember << std::endl;
 	// //debug
@@ -1065,6 +1079,10 @@ std::string const	IRC_Server::Client::get_invites(void)
 	} 
 	while (it++ != _invitelist.end());
 	return (msg);
+  
+IRC_Server::Client::t_ChanMap &							IRC_Server::Client::get_chanlist(void)
+{
+	return _channels;
 }
 
 /*!

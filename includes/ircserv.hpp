@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/08 20:59:49 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/10 22:12:10 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@
 
 #include "irc_numerics.hpp"
 #include "constants.hpp"
+
+//debug detect client disconnection and call remove_client_from_server on disconnect
 
 enum Args
 {

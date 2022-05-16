@@ -36,7 +36,7 @@ class Channel
 		//Channel(Client const & creator, std::string const &chName);
 		Channel(Client const & creator, IRC_Server & parent_server, std::string const &chName, std::string const &password);
 		Channel(Channel const &other);
-		~Channel(void);
+		virtual ~Channel(void);
 
 		Channel &operator=(Channel const &other);
 

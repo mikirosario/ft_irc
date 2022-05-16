@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/05 19:55:10 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/16 18:38:34 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,9 +151,9 @@ void		IRC_Server::send_rpl_NOTICE(Client const & recipient, Client const & sourc
 */
 void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source) const
 {
-	std::string msg = source.get_nick() + ": ";
+	std::string msg = ":" + source.get_nick();
 
-	msg += "JOIN ";
+	msg += " JOIN ";
 	msg += recipient.getChannelName();
 	non_numeric_reply_end(msg, std::string());
 	//debug
@@ -164,15 +164,16 @@ void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source
 
 void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const
 {
-	std::string msg_recipient = get_source() + " PART ";
-	std::string msg_channel = recipient.get_source() + " PART ";
+	//std::string msg_recipient = get_source() + " PART ";
+	// std::string msg_channel = recipient.get_source() + " PART ";
+	std::string msg_channel = ":" + recipient.get_nick() + " PART ";
 
-	msg_recipient += channel.getChannelName();
+	//msg_recipient += channel.getChannelName();
 	msg_channel += channel.getChannelName();
-	non_numeric_reply_end(msg_recipient, part_message);
+	//non_numeric_reply_end(msg_recipient, part_message);
 	non_numeric_reply_end(msg_channel, part_message);
-	recipient.send_msg(msg_recipient);
-	channel.send_msg(&recipient, 0, msg_channel);
+	//recipient.send_msg(msg_channel);
+	channel.send_msg(NULL, 0, msg_channel);
 }
 
 void		IRC_Server::send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const
@@ -218,4 +219,19 @@ void		IRC_Server::send_rpl_MODE(Client const & recipient, Channel const & channe
 	non_numeric_reply_end(msg, applied_changes);
 	
 	channel.send_msg(NULL, 0, msg);
+}
+
+void		IRC_Server::send_rpl_QUIT(Client & quitter, std::string const & reason)
+{
+	typedef IRC_Server::Client::t_ChanMap::iterator t_ChanMapIt;
+	std::string msg = quitter.get_source() + " ";
+	
+	msg += "QUIT ";
+	non_numeric_reply_end(msg, reason);
+	quitter.send_msg(msg);
+	for (t_ChanMapIt begin = quitter.get_chanlist().begin(), end = quitter.get_chanlist().end(); begin != end; ++begin)
+		begin->second->second.send_msg(&quitter, 0, msg);
+	remove_client_from_server(quitter);
+	if (quitter.is_disconnected() == false)
+		quitter.set_state_disconnected();
 }
