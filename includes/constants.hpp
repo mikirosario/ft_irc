@@ -32,7 +32,7 @@
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
 #define ISUPPORT_CHANTYPES "#"
-#define ISUPPORT_CHANMODES "b,k,,ia" // comprobar que a funciona DEBUG
+#define ISUPPORT_CHANMODES "b,k,,i" // comprobar que a funciona DEBUG
 #define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp || //Founder (q)~ // Operator (o)@ // HalfOp(h)%
 #define SUPPORTED_CHANNEL_MODES "bik" 
 #define SUPPORTED_USER_MODES "oai"
