@@ -107,8 +107,9 @@ class Client
 		size_t									get_pos(void) const;
 		bool									get_pass_validated(void) const;
 		std::pair<t_ChanMap::iterator, bool>	get_joined_channel(std::string const & channel_name);
-		std::string const						  get_invites(void);
-		t_ChanMap &								    get_chanlist(void);
+		std::pair<t_ChanMap::iterator, bool>	get_invited_channel(std::string const & channel_name);
+		std::string const						get_invites(void);
+		t_ChanMap &								get_chanlist(void);
 		std::string const &						see_next_message(void) const;
 		std::string const &						see_msg_buf(void) const;
 

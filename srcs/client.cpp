@@ -1079,8 +1079,9 @@ std::string const	IRC_Server::Client::get_invites(void)
 	} 
 	while (it++ != _invitelist.end());
 	return (msg);
+}
   
-IRC_Server::Client::t_ChanMap &							IRC_Server::Client::get_chanlist(void)
+IRC_Server::Client::t_ChanMap &	IRC_Server::Client::get_chanlist(void)
 {
 	return _channels;
 }
