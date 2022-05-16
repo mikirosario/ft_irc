@@ -549,6 +549,8 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 					else
 						ret = 1;															//map insert success
 				}
+				else if (chan_it->second.getModes().find('i') != std::string::npos && sender.get_invited_channel(channel).second == false)
+					send_err_INVITEONLYCHAN(sender, channel, ":Cannot join channel (+i)");				
 				else if	((ret = chan_it->second.addMember(sender, chan_it, key, 0)) != 1)	//channel exists, sender attempts to join channel...
 				{																	//but failed, because...
 					if (ret == -1)													//it gave the wrong key
@@ -817,7 +819,8 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 	std::string 			msg;
 
 	if (argc < 3)
-		send_rpl_NOTICE(sender, sender, sender.get_invites());
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	//	send_rpl_NOTICE(sender, sender, sender.get_invites()); IMPLEMENTACION NO TERMINADA DE /INVITE SIN PARAMETROS (NO OFICIAL)
 	if (target == NULL)
 		send_err_NOSUCHNICK(sender, argv[1], "No such nick");
 	else if (channelit == _channels.end())

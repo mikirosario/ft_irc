@@ -687,7 +687,6 @@ void	IRC_Server::Client::leave_channel(t_ChanMap::iterator const & channel_it)
 	//ret_rmember = channel_it->second->second.removeMember(get_nick());
 	channel_it->second->second.removeMember(get_nick());
 	_channels.erase(channel_it);
-	_invitelist.erase(channel_it);
 	// //debug
 	// std::cout << "leave channel result: " << ret_rmember << std::endl;
 	// //debug

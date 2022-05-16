@@ -106,7 +106,6 @@ class Channel
 		std::string			_channelPassword;
 		std::string			_modes;
 		t_ChannelMemberSet	_banlist;
-		t_ChannelMemberSet	_invitelist;
 		//t_ChannelMemberMap allClients; //debug //remove
 
 		std::string			_owner;
