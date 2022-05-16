@@ -34,7 +34,7 @@
 #define ISUPPORT_CHANTYPES "#"
 #define ISUPPORT_CHANMODES "b,k,,ia" // comprobar que a funciona DEBUG
 #define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp || //Founder (q)~ // Operator (o)@ // HalfOp(h)%
-#define SUPPORTED_CHANNEL_MODES "abik" 
+#define SUPPORTED_CHANNEL_MODES "bik" 
 #define SUPPORTED_USER_MODES "oai"
 #define UNSUPPORTED_CHANNEL_PREFIXES "&+" //we don't support Protected or Voice
 
