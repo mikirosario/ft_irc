@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/09 19:03:05 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/16 18:15:10 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,14 @@
 
 class Client
 {
-	typedef std::map<std::string, IRC_Server::t_Channel_Map::iterator, case_insensitive_less>	t_ChanMap;
+	public:
+		typedef std::map<std::string, IRC_Server::t_Channel_Map::iterator, case_insensitive_less>	t_ChanMap;
 	private:
 		enum State
 		{
 			UNREGISTERED,
-			REGISTERED
+			REGISTERED,
+			DISCONNECTED
 		}			_state;
 		enum Buffer_State
 		{
@@ -59,6 +61,7 @@ class Client
 
 		/* UTILS */
 		static bool	is_endline(char const c);
+		bool		is_disconnected();
 		bool		msg_is_ready(void) const;
 		bool		is_registered(void) const;
 		bool		reg_pass_attempt(void);
@@ -78,6 +81,7 @@ class Client
 		bool	set_modes(std::string const & modes, std::string & applied_changes);
 		void	set_pass_validated(bool state);
 		void	set_state_registered(void);
+		void	set_state_disconnected(void);
 		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	remove_channel_membership(t_ChanMap::iterator const & channel_iterator);
@@ -99,6 +103,7 @@ class Client
 		size_t									get_pos(void) const;
 		bool									get_pass_validated(void) const;
 		std::pair<t_ChanMap::iterator, bool>	get_joined_channel(std::string const & channel_name);
+		t_ChanMap &								get_chanlist(void);
 		std::string const &						see_next_message(void) const;
 		std::string const &						see_msg_buf(void) const;
 

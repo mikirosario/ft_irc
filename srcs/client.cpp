@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/10 22:04:41 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/16 18:19:35 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -540,6 +540,13 @@ void	IRC_Server::Client::set_state_registered(void)
 	_state = IRC_Server::Client::State(REGISTERED);
 }
 
+
+void	IRC_Server::Client::set_state_disconnected(void)
+{
+	//_state = IRC_Server::Client::State(DISCONNECTED)
+	_state = DISCONNECTED;
+}
+
 /*!
 ** @brief	Records channel membership in client object.
 **
@@ -612,6 +619,12 @@ void	IRC_Server::Client::clear(void)
 bool	IRC_Server::Client::is_endline(char const c)
 {
 	return (c == '\r' || c == '\n');
+}
+
+bool	IRC_Server::Client::is_disconnected()
+{
+	//return (_state == IRC_Server::Client::State::DISCONNECTED);
+	return (_state == DISCONNECTED);
 }
 
 /*!
@@ -1018,6 +1031,11 @@ std::pair<IRC_Server::Client::t_ChanMap::iterator, bool>	IRC_Server::Client::get
 {
 	IRC_Server::Client::t_ChanMap::iterator	it = _channels.find(channel_name);
 	return (std::make_pair(it, (it == _channels.end() ? false : true)));
+}
+
+IRC_Server::Client::t_ChanMap &							IRC_Server::Client::get_chanlist(void)
+{
+	return _channels;
 }
 
 /*!

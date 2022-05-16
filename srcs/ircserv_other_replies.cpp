@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/12 09:53:01 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/16 18:38:34 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,4 +219,19 @@ void		IRC_Server::send_rpl_MODE(Client const & recipient, Channel const & channe
 	non_numeric_reply_end(msg, applied_changes);
 	
 	channel.send_msg(NULL, 0, msg);
+}
+
+void		IRC_Server::send_rpl_QUIT(Client & quitter, std::string const & reason)
+{
+	typedef IRC_Server::Client::t_ChanMap::iterator t_ChanMapIt;
+	std::string msg = quitter.get_source() + " ";
+	
+	msg += "QUIT ";
+	non_numeric_reply_end(msg, reason);
+	quitter.send_msg(msg);
+	for (t_ChanMapIt begin = quitter.get_chanlist().begin(), end = quitter.get_chanlist().end(); begin != end; ++begin)
+		begin->second->second.send_msg(&quitter, 0, msg);
+	remove_client_from_server(quitter);
+	if (quitter.is_disconnected() == false)
+		quitter.set_state_disconnected();
 }

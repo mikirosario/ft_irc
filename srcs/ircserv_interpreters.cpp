@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/12 12:19:44 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/16 18:32:52 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1223,6 +1223,15 @@ void	IRC_Server::exec_cmd_MODE(Client & sender, std::vector<std::string> const &
 	}
 }
 
+void	IRC_Server::exec_cmd_QUIT(Client & sender, std::vector<std::string> const & argv)
+{
+	std::string 							reason = "Despedida a la francesa";
+
+	if (argv.size() > 1)
+		reason = argv[1];
+	send_rpl_QUIT(sender, reason);
+	sender.leave_all_channels();
+}
 
 
 /*!
@@ -1279,6 +1288,8 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_KICK(client, argv);
 		else if (cmd == "MODE")
 			exec_cmd_MODE(client, argv);
+		else if (cmd == "QUIT")
+			exec_cmd_QUIT(client, argv);
 		else
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 	}
