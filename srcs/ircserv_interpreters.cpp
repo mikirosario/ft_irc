@@ -779,17 +779,17 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 			{
 				std::string				channel;
 				t_Channel_Map::iterator chan_it;
-				int						ret; // 0 bad_alloc or other errors
+			//	int						ret; // 0 bad_alloc or other errors
 
 				std::getline(raw_channel_list, channel, ',');
 				if (raw_channel_list.fail() == true)
 				{
-					ret = 0;
+			//		ret = 0;
 					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
 				}
 				else if (channel_name_is_valid(channel) == false)
 				{
-					ret = 0;
+			//		ret = 0;
 					send_err_NOSUCHCHANNEL(sender, channel, "No such channel");	
 				}
 				else if ((chan_it = _channels.find(channel)) != _channels.end())
