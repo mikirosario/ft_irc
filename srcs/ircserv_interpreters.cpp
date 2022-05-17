@@ -838,7 +838,7 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 			send_rpl_INVITED(sender, *target, channel);
 			send_rpl_INVITING(sender, *target, channel);
 			msg = sender.get_username() + " invites you to join " + argv[2];
-			send_rpl_PRIVMSG(*target, sender, msg);
+			send_rpl_NOTICE(*target, sender, msg);
 		}
 	}
 }
