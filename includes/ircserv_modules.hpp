@@ -44,6 +44,7 @@ void	interpret_msg(Client & client);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
+void	exec_listtoall(IRC_Server::Client const * sender, t_Channel_Map::iterator chan_it, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv);
@@ -135,6 +136,7 @@ void		send_rpl_NICK(Client const & recipient, std::string const & old_source) co
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
 void		send_rpl_NOTICE(Client const & recipient, Client const & source, std::string const & message) const;
+void		send_rpl_INVITE(Client const & recipient, Client const & source, std::string const & channel) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
 void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const;

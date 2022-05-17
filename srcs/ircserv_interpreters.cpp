@@ -563,6 +563,8 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 				//SEND_RPL
 				if (ret == 1) //somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
 				{
+					exec_cmd_LIST(sender, argv);
+					exec_listtoall(chan_it, argv);
 					send_rpl_JOIN(chan_it->second, sender);
 					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
@@ -806,6 +808,13 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 		send_err_UNKNOWNERROR(sender, argv[0], "To many arguments");
 }
 
+void	IRC_Server::exec_listtoall(IRC_Server::Client const * sender, t_Channel_Map::iterator chan_it, std::vector<std::string> const & argv)
+{
+	for (t_ChannelMemberSet::iterator it = chan_it->second._users.begin(), end = chan_it->second._users.end(); it != end; ++it)
+		if ((recipient = chan_it->second._parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
+			recipient->send_msg(message);
+}
+
 /****************************************
 			INVITE COMMAND
 *****************************************/
@@ -816,7 +825,6 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 	Client *				target = find_client_by_nick(argv[1]);
 	t_Channel_Map::iterator	channelit = get_channel_by_name(argv[2]);
 	Channel & 				channel = channelit->second;
-	std::string 			msg;
 
 	if (argc < 3)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
@@ -835,10 +843,9 @@ void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const
 	{
 		target->set_channel_invitation(channelit);
 		if (target->get_invited_channel(argv[2]).second == true) {		
-			send_rpl_INVITED(sender, *target, channel);
+		//	send_rpl_INVITED(sender, *target, channel); implementacion no por defecto
 			send_rpl_INVITING(sender, *target, channel);
-			msg = sender.get_username() + " invites you to join " + argv[2];
-			send_rpl_NOTICE(*target, sender, msg);
+			send_rpl_INVITE(*target, sender, argv[2]);
 		}
 	}
 }
