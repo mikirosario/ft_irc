@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/05/08 20:44:45 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/10 20:22:57 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,7 +271,8 @@ void		IRC_Server::send_err_USERONCHANNEL(Client const & recipient, std::string c
 	msg += client_name + " ";
 	msg += client_nick + " ";
 	msg += channel.getChannelName();
-	msg += " :is already on channel"; //debug, not crlf-terminated -miki
+	std::string description = "is already on channel"; 
+	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
 

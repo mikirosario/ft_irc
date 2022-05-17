@@ -428,12 +428,7 @@ int IRC_Server::Channel::addMember(Client & client, IRC_Server::t_Channel_Map::i
 	if (ret.second == false)
 		client.remove_channel_membership(chan_it);
     return (ret.second);
-}
-
-void IRC_Server::Channel::addInvitedMember(Client &client)
-{
-	_users.insert(client.get_nick());
-}
+} //MIKIMIKIMIKI aun no esta implementado el invite only, que es donde tengo que poner la excepcion si esta en el listado de invitaciones, no?
 
 // -miki
 	// map.erase tiene su propia sobrecarga de erase-by-key, que devuelve un

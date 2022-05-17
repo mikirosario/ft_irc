@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/12 09:59:00 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/11 18:29:43 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,17 +197,21 @@ void		IRC_Server::send_rpl_UMODEIS(Client const & recipient)
 // Join: replies to command
 
 
-void		IRC_Server::send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic )
+void		IRC_Server::send_rpl_TOPIC(Client const & recipient, Channel const & channel)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_TOPIC); 
-	std::string	welcome_msg;
 
-	welcome_msg += recipient.get_username();
-	welcome_msg += " ";
-	welcome_msg += channelName;
-	welcome_msg += " : ";
-	welcome_msg += channelTopic;
-	numeric_reply_end(msg, welcome_msg);
+	msg += channel.getChannelName() + " ";
+	numeric_reply_end(msg, channel.getTopic());
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_NOTOPIC(Client const & recipient, Channel const & channel)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_NOTOPIC); 
+
+	msg += channel.getChannelName() + " ";
+	numeric_reply_end(msg, "No topic is set");
 	recipient.send_msg(msg);
 }
 
@@ -333,15 +337,26 @@ void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & ch
 void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
-	numeric_reply_end(msg, ":End of /LIST");
+	numeric_reply_end(msg, "End of /LIST");
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel)
+void	IRC_Server::send_rpl_INVITED(Client const & sender, Client const & target, Channel const & channel)
+{
+	std::string msg = numeric_reply_start(sender, RPL_INVITED);
+	msg += channel.getChannelName() + " ";
+	msg += target.get_username()  + " ";
+	msg += sender.get_username()  + " : ";
+	msg += target.get_username() + " has been invited by ";
+	msg += sender.get_username();
+	numeric_reply_end(msg, "Invited message");
+	channel.send_msg(NULL, 0, msg); 
+}
+
+void	IRC_Server::send_rpl_INVITING(Client const & sender, Client const & target , Channel const & channel)
 {
 	std::string msg = numeric_reply_start(sender, RPL_INVITING);
-	msg += client_name + " ";
-	msg += client_nick + " ";
+	msg += target.get_nick() + " ";
 	msg += channel.getChannelName();
 	sender.send_msg(msg);
 }

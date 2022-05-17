@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/05/05 15:34:43 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/10 18:41:30 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,11 @@
 #define RPL_LISTSTART "321"
 #define RPL_LIST "322"
 #define RPL_LISTEND "323"
+#define RPL_NOTOPIC "331"
 #define RPL_TOPIC "332"
 #define RPL_TOPICWHOTIME "333"
 #define RPL_INVITING "341"
+#define RPL_INVITED "345"
 #define RPL_NAMREPLY "353"
 #define RPL_ENDOFNAMES "366"
 #define RPL_BANLIST "367"

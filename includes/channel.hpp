@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/09 19:03:34 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/11 18:37:53 by ineumann         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ class Channel
 		
 		/* SETTERS */
 		int		addMember(Client & client, IRC_Server::t_Channel_Map::iterator & chan_it, std::string const & password, char privilege_level);
-		void	addInvitedMember(Client & client);
 		bool	removeMember(std::string const & client_nick);
 		void	removeMember(t_ChannelMemberSet::iterator const & member, t_ChannelMemberSet & member_set);
 		void	removeAllMembers(void);
@@ -96,6 +95,7 @@ class Channel
 		t_ChannelMemberSet const &	getHalfops(void) const;
 		t_ChannelMemberSet const &	getUsers(void) const;
 		t_ChannelMemberSet const &	getBanList(void) const;
+		t_ChannelMemberSet const &	getInviteList(void) const;
 		std::string	const &			getModes(void) const;
 		bool						isChannelOperator(Client const & client) const;
 	private:

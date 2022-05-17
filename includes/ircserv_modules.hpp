@@ -74,8 +74,10 @@ void		send_rpl_LISTSTART(Client const & recipient);
 void		send_rpl_LIST(Client const & recipient, std::string const &channel_name);
 void		send_rpl_LISTEND(Client const & recipient);
 
-void		send_rpl_INVITED(Client const & sender, std::string const &client_name, std::string const &client_nick, Channel const & channel);
-void		send_rpl_TOPIC(Client const & recipient, std::string const & channelName, std::string const & channelTopic );
+void		send_rpl_INVITED(Client const & sender, Client const & target, Channel const & channel);
+void		send_rpl_INVITING(Client const & sender, Client const & target, Channel const & channel);
+void		send_rpl_TOPIC(Client const & recipient, Channel const & channel);
+void		send_rpl_NOTOPIC(Client const & recipient, Channel const & channel);
 void		send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFBANLIST(Client const & recipient, Channel const & channel, std::string const & description);
 void		send_rpl_BANLIST(Client const & recipient, Channel const & channel);

@@ -549,6 +549,8 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 					else
 						ret = 1;															//map insert success
 				}
+				else if (chan_it->second.getModes().find('i') != std::string::npos && sender.get_invited_channel(channel).second == false)
+					send_err_INVITEONLYCHAN(sender, channel, ":Cannot join channel (+i)");				
 				else if	((ret = chan_it->second.addMember(sender, chan_it, key, 0)) != 1)	//channel exists, sender attempts to join channel...
 				{																	//but failed, because...
 					if (ret == -1)													//it gave the wrong key
@@ -600,15 +602,12 @@ void	IRC_Server::exec_cmd_PART(Client & sender, std::vector<std::string> const &
 				if (hash_pos != std::string::npos) 								//it's a channel
 				{
 					size_t		chname_pos;
-					// if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
-					// 	(ch_recipient = _channels.find(channel.substr(chname_pos - 1))) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
 					if ((chname_pos = channel.find_first_not_of("#", hash_pos)) == std::string::npos ||
 						(ch_recipient = _channels.find(channel)) == _channels.end())	//it's a channel, but with an empty name OR that does not exist in _channels
 						send_err_NOSUCHCHANNEL(sender, channel, "No such channel");
-					//else if (sender.leave_channel(ch_recipient->second.getChannelName()) == false)
 					else if (sender.get_joined_channel(ch_recipient->second.getChannelName()).second == false)
 						send_err_NOTONCHANNEL(sender, ch_recipient->second, "You're not on that channel");
-					else																				//it's a channel and it exists in _channels
+					else																				//it's a channel and it exists in _channels 
 					{
 						send_rpl_PART(sender, ch_recipient->second, (argv.size() > 2 ? argv[2] : sender.get_nick()));
 						sender.leave_channel(ch_recipient->second.getChannelName());
@@ -666,19 +665,19 @@ void	IRC_Server::exec_cmd_TOPIC(Client & sender, std::vector<std::string> const 
 	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[1]);	
 	if (target_channel == _channels.end())
 		send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");	
+	else if (sender.get_joined_channel(target_channel->second.getChannelName()).second == false)
+		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
 	else if (target_channel->second.isChannelOperator(sender) == false && argv_size > 2)								//sender lacks needed permissions
 		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
-	else if(argv_size == 2)
-		send_rpl_TOPIC(sender, target_channel->first, target_channel->second.getTopic());
-	else
+	else if(argv_size > 2)
 	{
 		std::string	new_topic;
-
-		for(size_t i = 2; i < argv_size; i++)
-			new_topic += argv[i];
-		target_channel->second.setTopic(new_topic);
-		send_rpl_TOPIC(sender, target_channel->first, target_channel->second.getTopic());
+		target_channel->second.setTopic(argv[2]);
 	}
+	if (target_channel->second.getTopic().empty())
+		send_rpl_NOTOPIC(sender, target_channel->second);
+	else
+		send_rpl_TOPIC(sender, target_channel->second);
 }
 
 /****************************************
@@ -779,7 +778,7 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 			{
 				std::string				channel;
 				t_Channel_Map::iterator chan_it;
-			//	int						ret; // 0 bad_alloc or other errors
+				//int						ret; // 0 bad_alloc or other errors NO COMPILA
 
 				std::getline(raw_channel_list, channel, ',');
 				if (raw_channel_list.fail() == true)
@@ -813,45 +812,34 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 
 void	IRC_Server::exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv)
 {
-	size_t argc = argv.size();
+	size_t 					argc = argv.size();
+	Client *				target = find_client_by_nick(argv[1]);
+	t_Channel_Map::iterator	channelit = get_channel_by_name(argv[2]);
+	Channel & 				channel = channelit->second;
+	std::string 			msg;
 
 	if (argc < 3)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	t_Channel_Map::iterator	target_channel = get_channel_by_name(argv[1]);	
-	if (target_channel == _channels.end())
+	//	send_rpl_NOTICE(sender, sender, sender.get_invites()); IMPLEMENTACION NO TERMINADA DE /INVITE SIN PARAMETROS (NO OFICIAL)
+	if (target == NULL)
+		send_err_NOSUCHNICK(sender, argv[1], "No such nick");
+	else if (channelit == _channels.end())
 		send_err_NOSUCHCHANNEL(sender, argv[2], "No such channel");	
 	else if (sender.get_joined_channel(argv[2]).second == false)									//sender is not on affected channel
-		send_err_NOTONCHANNEL(sender, target_channel->second, "You're not on that channel");
-	else if (target_channel->second.isChannelOperator(sender) == false)								//sender lacks needed permissions
-		send_err_ERR_CHANOPRIVSNEEDED(sender, target_channel->second, "You're not a channel operator");
+		send_err_NOTONCHANNEL(sender, channel, "You're not on that channel");
+	else if (channel.getModes() != "i" && channel.isChannelOperator(sender) == false) 						//sender lacks needed permissions
+		send_err_ERR_CHANOPRIVSNEEDED(sender, channel, "You're not a channel operator");
+	else if (target->get_joined_channel(argv[2]).second == true)									//sender is not on affected channel
+		send_err_USERONCHANNEL(sender, target->get_username(), argv[1], channel);
 	else
 	{
-		std::stringstream	raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
-		do
-		{
-			std::string				target_nick;
-			Channel &				channel = target_channel->second;
-			Client *				target;
-
-			std::getline(raw_target_list, target_nick, ',');
-
-			if (raw_target_list.fail() == true)												//weird getline error
-				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
-			else if ((target = find_client_by_nick(target_nick)) == NULL)					//target user does not exist
-				send_err_UNKNOWNERROR(sender, argv[0], "Target user does not exist");
-			else if (target->get_joined_channel(channel.getChannelName()).second == false)	//target user is not on channel
-				send_err_USERNOTINCHANNEL(sender, *target, channel, "They aren't on that channel");
-			else if (sender.get_nick() != channel.getOwner() && channel.isChannelOperator(*target))	//only channel owner can kick other operators
-				send_err_UNKNOWNERROR(sender, argv[0], "Target user is also a Channel Operator");
-			else
-			{
-				target->leave_channel(channel.getChannelName());
-				send_rpl_JOIN(channel, sender);
-				send_rpl_NAMREPLY(sender, channel);
-				send_rpl_INVITED(sender, target->get_hostname(), target->get_nick(), channel);
-			}
+		target->set_channel_invitation(channelit);
+		if (target->get_invited_channel(argv[2]).second == true) {		
+			send_rpl_INVITED(sender, *target, channel);
+			send_rpl_INVITING(sender, *target, channel);
+			msg = sender.get_username() + " invites you to join " + argv[2];
+			send_rpl_PRIVMSG(*target, sender, msg);
 		}
-		while (raw_target_list.eof() == false);
 	}
 }
 
@@ -1288,6 +1276,10 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_KICK(client, argv);
 		else if (cmd == "MODE")
 			exec_cmd_MODE(client, argv);
+		else if (cmd == "TOPIC")
+			exec_cmd_TOPIC(client, argv);
+		else if (cmd == "INVITE")
+			exec_cmd_INVITE(client, argv);
 		else if (cmd == "QUIT")
 			exec_cmd_QUIT(client, argv);
 		else
