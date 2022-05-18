@@ -70,12 +70,9 @@ void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
 //void		send_rpl_ENDOFNAMES(Channel const & recipient, std::string const & channelName);
 
-template <typename T>
-void		send_rpl_LISTSTART(T const & recipient);
-template <typename T>
-void		send_rpl_LIST(T const &, std::string const &channel_name);
-template <typename T>
-void		send_rpl_LISTEND(T const & recipient);
+void		send_rpl_LISTSTART(Client const & recipient);
+void		send_rpl_LIST(Client const &, std::string const &channel_name);
+void		send_rpl_LISTEND(Client const & recipient);
 
 void		send_rpl_INVITED(Client const & sender, Client const & target, Channel const & channel);
 void		send_rpl_INVITING(Client const & sender, Client const & target, Channel const & channel);

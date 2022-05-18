@@ -563,7 +563,6 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 				//SEND_RPL
 				if (ret == 1) //somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
 				{
-					exec_cmd_LIST(sender, argv);
 					send_rpl_JOIN(chan_it->second, sender);
 					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
@@ -763,18 +762,18 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 
 	if (argc == 1)
 	{
-		send_rpl_LISTSTART<Client>(sender);
+		send_rpl_LISTSTART(sender);
 		for (IRC_Server::t_Channel_Map::iterator i = _channels.begin();	i != _channels.end(); i++)
 		{
 				if (sender.get_joined_channel(i->second.getChannelName()).second == true || i->second.getModes().find('i') == std::string::npos)
-					send_rpl_LIST<Client>(sender, i->first);
+					send_rpl_LIST(sender, i->first);
 		}
-		send_rpl_LISTEND<Client>(sender);
+		send_rpl_LISTEND(sender);
 	}
 	else if (argc == 2)						
 	{
 			std::stringstream	raw_channel_list(argv[1]);
-			send_rpl_LISTSTART<Client>(sender);
+			send_rpl_LISTSTART(sender);
 			do
 			{
 				std::string				channel;
@@ -792,13 +791,13 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 				else if ((chan_it = _channels.find(channel)) != _channels.end())
 				{
 					if (sender.get_joined_channel(channel).second == true || chan_it->second.getModes().find('i') == std::string::npos)
-						send_rpl_LIST<Client>(sender, chan_it->first);
+						send_rpl_LIST(sender, chan_it->first);
 				}
 				else
 					send_err_NOSUCHCHANNEL(sender, channel, "No such channel");	
 			}
 			while (raw_channel_list.eof() == false);
-			send_rpl_LISTEND<Client>(sender);
+			send_rpl_LISTEND(sender);
 	}
 	else
 		send_err_UNKNOWNERROR(sender, argv[0], "To many arguments");

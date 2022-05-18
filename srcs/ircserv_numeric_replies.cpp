@@ -312,16 +312,14 @@ void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string cons
 	recipient.send_msg(msg);
 }
 
-template <typename T>
-void		IRC_Server::send_rpl_LISTSTART(T const & recipient)
+void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
 	numeric_reply_end(msg, "Channel :Users  Name");
 	recipient.send_msg(msg);
 }
 
-template <typename T>
-void		IRC_Server::send_rpl_LIST(T const & recipient, std::string const & channelName)
+void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & channelName)
 {
 	
 	 //"<client> <channel> <client count> :<topic>"
@@ -336,8 +334,7 @@ void		IRC_Server::send_rpl_LIST(T const & recipient, std::string const & channel
 	recipient.send_msg(msg);
 }
 
-template <typename T>
-void		IRC_Server::send_rpl_LISTEND(T const & recipient)
+void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
 	numeric_reply_end(msg, "End of /LIST");
