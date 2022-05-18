@@ -44,7 +44,6 @@ void	interpret_msg(Client & client);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_TOPIC(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_LIST(Client & sender, std::vector<std::string> const & argv);
-void	exec_listtoall(IRC_Server::Client const * sender, t_Channel_Map::iterator chan_it, std::vector<std::string> const & argv);
 void	exec_cmd_INVITE(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_KICK(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MODE(Client & sender, std::vector<std::string> const & argv);
@@ -71,9 +70,12 @@ void		send_rpl_NAMREPLY(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_name);
 //void		send_rpl_ENDOFNAMES(Channel const & recipient, std::string const & channelName);
 
-void		send_rpl_LISTSTART(Client const & recipient);
-void		send_rpl_LIST(Client const & recipient, std::string const &channel_name);
-void		send_rpl_LISTEND(Client const & recipient);
+template <typename T>
+void		send_rpl_LISTSTART(T const & recipient);
+template <typename T>
+void		send_rpl_LIST(T const &, std::string const &channel_name);
+template <typename T>
+void		send_rpl_LISTEND(T const & recipient);
 
 void		send_rpl_INVITED(Client const & sender, Client const & target, Channel const & channel);
 void		send_rpl_INVITING(Client const & sender, Client const & target, Channel const & channel);

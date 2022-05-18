@@ -564,7 +564,6 @@ void	IRC_Server::exec_cmd_JOIN(IRC_Server::Client & sender, std::vector<std::str
 				if (ret == 1) //somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
 				{
 					exec_cmd_LIST(sender, argv);
-					exec_listtoall(chan_it, argv);
 					send_rpl_JOIN(chan_it->second, sender);
 					send_rpl_NAMREPLY(sender, chan_it->second);
 				}
@@ -764,55 +763,45 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 
 	if (argc == 1)
 	{
-		send_rpl_LISTSTART(sender);
+		send_rpl_LISTSTART<Client>(sender);
 		for (IRC_Server::t_Channel_Map::iterator i = _channels.begin();	i != _channels.end(); i++)
 		{
 				if (sender.get_joined_channel(i->second.getChannelName()).second == true || i->second.getModes().find('i') == std::string::npos)
-					send_rpl_LIST(sender, i->first);
+					send_rpl_LIST<Client>(sender, i->first);
 		}
-		send_rpl_LISTEND(sender);
+		send_rpl_LISTEND<Client>(sender);
 	}
 	else if (argc == 2)						
 	{
 			std::stringstream	raw_channel_list(argv[1]);
-			send_rpl_LISTSTART(sender);
+			send_rpl_LISTSTART<Client>(sender);
 			do
 			{
 				std::string				channel;
 				t_Channel_Map::iterator chan_it;
-				//int						ret; // 0 bad_alloc or other errors NO COMPILA
 
 				std::getline(raw_channel_list, channel, ',');
 				if (raw_channel_list.fail() == true)
 				{
-			//		ret = 0;
 					send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
 				}
 				else if (channel_name_is_valid(channel) == false)
 				{
-			//		ret = 0;
 					send_err_NOSUCHCHANNEL(sender, channel, "No such channel");	
 				}
 				else if ((chan_it = _channels.find(channel)) != _channels.end())
 				{
 					if (sender.get_joined_channel(channel).second == true || chan_it->second.getModes().find('i') == std::string::npos)
-						send_rpl_LIST(sender, chan_it->first);
+						send_rpl_LIST<Client>(sender, chan_it->first);
 				}
 				else
 					send_err_NOSUCHCHANNEL(sender, channel, "No such channel");	
 			}
 			while (raw_channel_list.eof() == false);
-			send_rpl_LISTEND(sender);
+			send_rpl_LISTEND<Client>(sender);
 	}
 	else
 		send_err_UNKNOWNERROR(sender, argv[0], "To many arguments");
-}
-
-void	IRC_Server::exec_listtoall(IRC_Server::Client const * sender, t_Channel_Map::iterator chan_it, std::vector<std::string> const & argv)
-{
-	for (t_ChannelMemberSet::iterator it = chan_it->second._users.begin(), end = chan_it->second._users.end(); it != end; ++it)
-		if ((recipient = chan_it->second._parent_server.find_client_by_nick(*it)) != NULL && recipient != sender)
-			recipient->send_msg(message);
 }
 
 /****************************************
