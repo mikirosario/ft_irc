@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/19 19:41:53 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/19 19:54:41 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,9 +74,8 @@ class Channel
 			//USA case_insensitive_ascii_compare()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		bool operator==(const Channel &other) const 
-		{						
-			return (_channelName == other._channelName);
-			//return case_insensitive_ascii_compare()
+		{
+			return case_insensitive_ascii_compare(_channelName, other._channelName);
 		}
 		
 		bool operator!=(const Channel &other) const 

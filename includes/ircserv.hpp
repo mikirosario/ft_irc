@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/19 19:41:35 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/19 19:52:54 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ struct case_insensitive_less : std::binary_function<std::string, std::string, bo
 /* WILDCARD PATTERN MATCHING STRING COMPARE */
 bool	wildcard_matching_equality(std::string const & normal_str, std::string const & wildcard_pattern);
 bool	dual_wildcard_matching_equality(std::string const & str1, std::string const & str2);
-
+bool	case_insensitive_ascii_compare(std::string const & str1, std::string const & str2);
 // NOTE: the STD::BINARY_FUNCTION inheritance above is to obtain the folowing:
 // result_type, first_argument_type and second_argument_type
 // in this case: string, string and bool, respectively
@@ -104,7 +104,6 @@ class IRC_Server
 		/* PRIVATE MEMBER FUNCTIONS */
 		//Parsing
 		bool			get_network_info(std::string const & arg);
-		static bool		case_insensitive_ascii_compare(std::string const & str1, std::string const & str2);
 		Client *		find_client_by_nick(std::string const & nick);
 		Client const *	find_client_by_nick(std::string const & nick) const;
 		static void		remove_source(std::string & message);
