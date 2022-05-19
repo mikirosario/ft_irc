@@ -762,7 +762,7 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 
 	if (argc == 1 || (argc == 2 && argv[1] == ">0"))
 	{
-		// send_rpl_LISTSTART(sender); obsolete
+		send_rpl_LISTSTART(sender);
 		for (IRC_Server::t_Channel_Map::iterator i = _channels.begin();	i != _channels.end(); i++)
 		{
 				if (sender.get_joined_channel(i->second.getChannelName()).second == true || i->second.getModes().find('i') == std::string::npos)
@@ -770,15 +770,15 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 		}
 		send_rpl_LISTEND(sender);
 	}
-	else if (argc == 2)						
+	else				
 	{
-			std::stringstream	raw_channel_list(argv[1]);
-			// send_rpl_LISTSTART(sender); obsolete
+			std::stringstream		raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
+			std::string				channel;
+			t_Channel_Map::iterator chan_it;
+
+			send_rpl_LISTSTART(sender);
 			do
 			{
-				std::string				channel;
-				t_Channel_Map::iterator chan_it;
-
 				std::getline(raw_channel_list, channel, ',');
 				if (raw_channel_list.fail() == true)
 				{
@@ -799,8 +799,6 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 			while (raw_channel_list.eof() == false);
 			send_rpl_LISTEND(sender);
 	}
-	else
-		send_err_UNKNOWNERROR(sender, argv[0], "To many arguments");
 }
 
 /****************************************

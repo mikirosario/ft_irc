@@ -531,7 +531,6 @@ void		IRC_Server::accept_connection(void)
 		<< " on socket " << new_connection
 		<< " to server " << _serveraddr
 		<< std::endl;
-		exec_cmd_LIST(_clients[_connections - 1], argv);
 	}
 }
 

@@ -324,23 +324,16 @@ void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & ch
 	//<channel> <# visible> :<topic>
 
 	std::string msg = numeric_reply_start(recipient, RPL_LIST);
-	std::string copy_msg;
-	std::string notset = "not set ";
  	std::string topic = _channels.find(channelName)->second.getTopic() + " ";
-
 	msg += channelName + " ";
 	msg += INT_TO_STR(_channels.find(channelName)->second.size());
-	if (topic.size() > 2)
-		copy_msg += topic;
-	else 
-		copy_msg += notset;
-	numeric_reply_end(msg, copy_msg);
+	numeric_reply_end(msg, topic);
 	recipient.send_msg(msg);
 }
 
 void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
+	std::string msg = numeric_reply_start(recipient, RPL_LISTEND);
 	numeric_reply_end(msg, "End of /LIST");
 	recipient.send_msg(msg);
 }
