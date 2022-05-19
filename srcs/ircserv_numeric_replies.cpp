@@ -314,8 +314,8 @@ void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string cons
 
 void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
-	numeric_reply_end(msg, "Channel :Users  Name");
+	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART) + "Channel ";
+	numeric_reply_end(msg, "Users  Name");
 	recipient.send_msg(msg);
 }
 
