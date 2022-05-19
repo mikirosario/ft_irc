@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/16 18:40:20 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/19 19:42:45 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 ** @param	str2	Second string to compare.
 ** @return			true if both strings compare equal, otherwise false
 */
-bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const
+bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::string const & str2)
 {
 	if (str1.size() == str2.size())
 	{

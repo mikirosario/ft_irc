@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/11 18:37:53 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/19 19:41:53 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ class Channel
 		bool operator==(const Channel &other) const 
 		{						
 			return (_channelName == other._channelName);
+			//return case_insensitive_ascii_compare()
 		}
 		
 		bool operator!=(const Channel &other) const 

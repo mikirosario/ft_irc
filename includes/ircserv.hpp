@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/10 22:12:10 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/19 19:41:35 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ class IRC_Server
 		/* PRIVATE MEMBER FUNCTIONS */
 		//Parsing
 		bool			get_network_info(std::string const & arg);
-		bool			case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const;
+		static bool		case_insensitive_ascii_compare(std::string const & str1, std::string const & str2);
 		Client *		find_client_by_nick(std::string const & nick);
 		Client const *	find_client_by_nick(std::string const & nick) const;
 		static void		remove_source(std::string & message);
