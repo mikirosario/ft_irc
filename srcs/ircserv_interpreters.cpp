@@ -760,9 +760,9 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 {
 	size_t 	argc = argv.size();
 
-	if (argc == 1)
+	if (argc == 1 || (argc == 2 && argv[1] == ">0"))
 	{
-		send_rpl_LISTSTART(sender);
+		// send_rpl_LISTSTART(sender); obsolete
 		for (IRC_Server::t_Channel_Map::iterator i = _channels.begin();	i != _channels.end(); i++)
 		{
 				if (sender.get_joined_channel(i->second.getChannelName()).second == true || i->second.getModes().find('i') == std::string::npos)
@@ -773,7 +773,7 @@ void	IRC_Server::exec_cmd_LIST(Client & sender, std::vector<std::string> const &
 	else if (argc == 2)						
 	{
 			std::stringstream	raw_channel_list(argv[1]);
-			send_rpl_LISTSTART(sender);
+			// send_rpl_LISTSTART(sender); obsolete
 			do
 			{
 				std::string				channel;
@@ -1213,7 +1213,7 @@ void	IRC_Server::exec_cmd_QUIT(Client & sender, std::vector<std::string> const &
 	if (argv.size() > 1)
 		reason = argv[1];
 	send_rpl_QUIT(sender, reason);
-	sender.leave_all_channels();
+//	sender.leave_all_channels();
 }
 
 
@@ -1275,6 +1275,8 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_TOPIC(client, argv);
 		else if (cmd == "INVITE")
 			exec_cmd_INVITE(client, argv);
+		else if (cmd == "LIST" || cmd == "list" )
+			exec_cmd_LIST(client, argv);
 		else if (cmd == "QUIT")
 			exec_cmd_QUIT(client, argv);
 		else

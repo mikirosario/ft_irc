@@ -321,15 +321,19 @@ void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)
 
 void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & channelName)
 {
-	
-	 //"<client> <channel> <client count> :<topic>"
+	//<channel> <# visible> :<topic>
 
 	std::string msg = numeric_reply_start(recipient, RPL_LIST);
 	std::string copy_msg;
+	std::string notset = "not set ";
+ 	std::string topic = _channels.find(channelName)->second.getTopic() + " ";
 
-	copy_msg += channelName + " ";
-	copy_msg += INT_TO_STR(_channels.find(channelName)->second.size());
-	copy_msg += " " + _channels.find(channelName)->second.getTopic() + " ";
+	msg += channelName + " ";
+	msg += INT_TO_STR(_channels.find(channelName)->second.size());
+	if (topic.size() > 2)
+		copy_msg += topic;
+	else 
+		copy_msg += notset;
 	numeric_reply_end(msg, copy_msg);
 	recipient.send_msg(msg);
 }
