@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/16 18:32:52 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/25 20:20:57 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -256,6 +256,7 @@ void	IRC_Server::exec_cmd_PASS(Client & sender, std::vector<std::string> const &
 */
 void	IRC_Server::exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv)
 {
+	IRC_Server::Client *	client;
 	if (argv.size() < 2)
 		send_err_NONICKNAMEGIVEN(sender, "No nickname given");
 	else if (nick_is_valid(argv[1]) == false)

@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/19 20:09:26 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/25 19:58:23 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,10 @@ IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::
 																											_connections(0)
 {
 	for (size_t i = 0; i < MAX_CONNECTIONS; ++i)
+	{
 		const_cast<size_t &>(_clients[i].pos) = i;
+		_clients[i].set_parent_server(this);
+	}
 	init(netinfo);
 }
 
@@ -930,7 +933,12 @@ void	IRC_Server::server_loop(void)
 			//Poll clients
 			for (int i = 1; poll_count > 0; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
 			{
-				if (poll_client(i) == true)
+				if (_clients[i].output_buf_has_unsent_data() == true && _pfds[i].revents & POLLOUT)
+				{
+					_clients[i].send_output_buf();
+					--poll_count;
+				}
+				else if (poll_client(i) == true)
 				{
 					process_client_message(_clients[i]);
 					--poll_count;

@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/19 19:54:41 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/19 20:33:11 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,9 +70,7 @@ class Channel
 
 
 		bool 	send_msg(Client const * sender, char privilege_level, std::string const & message) const;
-		// - miki
-			//USA case_insensitive_ascii_compare()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 		bool operator==(const Channel &other) const 
 		{
 			return case_insensitive_ascii_compare(_channelName, other._channelName);
