@@ -38,6 +38,9 @@
 #define RPL_ENDOFNAMES "366"
 #define RPL_BANLIST "367"
 #define RPL_ENDOFBANLIST "368"
+#define RPL_MOTDSTART "375"
+#define RPL_MOTD "372"
+#define RPL_ENDOFMOTD "376"
 #define ERR_UNKNOWNMODE	"472"
 
 

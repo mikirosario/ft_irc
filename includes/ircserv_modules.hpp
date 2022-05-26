@@ -81,6 +81,11 @@ void		send_rpl_NOTOPIC(Client const & recipient, Channel const & channel);
 void		send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFBANLIST(Client const & recipient, Channel const & channel, std::string const & description);
 void		send_rpl_BANLIST(Client const & recipient, Channel const & channel);
+void		send_MOTD(Client const & recipient);
+void		send_rpl_MOTDSTART(Client const & recipient);
+void		send_rpl_MOTD(Client const & recipient, std::string	motd_msg);
+void		send_rpl_ENDOFMOTD(Client const & recipient);
+
 
 // Esto no lo considero neceserio
 

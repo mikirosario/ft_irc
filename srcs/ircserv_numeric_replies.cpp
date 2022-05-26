@@ -250,6 +250,50 @@ void		IRC_Server::send_rpl_BANLIST(Client const & recipient, Channel const & cha
 	send_rpl_ENDOFBANLIST(recipient, channel, "End of channel ban list");	
 }
 
+void		IRC_Server::send_rpl_MOTDSTART(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_MOTDSTART); 
+
+	std::string	motd_msg;
+	motd_msg += "- ";
+	motd_msg += _serveraddr;
+	motd_msg += "Message of the day - ";
+
+	numeric_reply_end(msg, motd_msg);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_ENDOFMOTD(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_ENDOFMOTD); 
+
+	std::string	motd_msg = "End of /MOTD command";
+
+	numeric_reply_end(msg, motd_msg);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_MOTD(Client const & recipient)
+{
+	send_rpl_MOTDSTART(recipient);
+
+	send_rpl_MOTD(recipient, ">=>       >=>     >=>           >==>    >=> >=======> >===>>=====>");
+	send_rpl_MOTD(recipient, ">> >=>   >>=>  >> >=>       >>  >> >=>  >=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=> >=> > >=>     >=>  >=>      >=> >=> >=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=>  >=>  >=> >=> >=> >=>  >=>  >=>  >=>>=> >=====>        >=>");
+	send_rpl_MOTD(recipient, ">=>   >>  >=> >=> >=>=>    >=>  >=>   > >=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=>       >=> >=> >=> >=>  >=>  >=>    >>=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=>       >=> >=> >=>  >=> >=>  >=>     >=> >=======>      >=>");
+	send_rpl_ENDOFMOTD(recipient);
+}
+
+void		IRC_Server::send_rpl_MOTD(Client const & recipient, std::string	motd_msg)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_MOTD); 
+	numeric_reply_end(msg, motd_msg);
+	recipient.send_msg(msg);
+}
+
 //debug //if user invisibility is implemented, we will need to account for this!!
 /*!
 ** @brief	Builds and sends a NAMREPLY reply to @a recipient containing a list
