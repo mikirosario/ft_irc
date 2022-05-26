@@ -167,7 +167,6 @@ bool IRC_Server::register_client(Client &client)
 		send_rpl_MYINFO(client);
 		send_rpl_ISUPPORT(client);
 		send_MOTD(client);
-		//send_err_NOMOTD(client, "MOTD file is missing"); // debug //temporary, no MOTD implemented yet
 	}
 
 	return (true);

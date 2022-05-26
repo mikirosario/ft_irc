@@ -273,7 +273,7 @@ void		IRC_Server::send_rpl_ENDOFMOTD(Client const & recipient)
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_MOTD(Client const & recipient)
+/*void		IRC_Server::send_MOTD(Client const & recipient) //hardcoded, replaced by file modt.txt
 {
 	send_rpl_MOTDSTART(recipient);
 
@@ -284,6 +284,23 @@ void		IRC_Server::send_MOTD(Client const & recipient)
 	send_rpl_MOTD(recipient, ">=>   >>  >=> >=> >=>=>    >=>  >=>   > >=> >=>            >=>");
 	send_rpl_MOTD(recipient, ">=>       >=> >=> >=> >=>  >=>  >=>    >>=> >=>            >=>");
 	send_rpl_MOTD(recipient, ">=>       >=> >=> >=>  >=> >=>  >=>     >=> >=======>      >=>");
+	send_rpl_ENDOFMOTD(recipient);
+}*/
+
+void		IRC_Server::send_MOTD(Client const & recipient) {
+
+	std::fstream file;
+	std::string line;
+
+	send_rpl_MOTDSTART(recipient);
+	file.open("motd.txt", std::ifstream::in);
+	if( !file ) { 
+		send_err_NOMOTD(recipient, "MOTD file is missing");
+   	}
+	else {
+		while (std::getline(file, line))
+			send_rpl_MOTD(recipient, line);
+	}
 	send_rpl_ENDOFMOTD(recipient);
 }
 
