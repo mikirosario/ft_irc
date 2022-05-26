@@ -298,8 +298,11 @@ void		IRC_Server::send_MOTD(Client const & recipient) {
 		send_err_NOMOTD(recipient, "MOTD file is missing");
    	}
 	else {
-		while (std::getline(file, line))
+		while (std::getline(file, line)) {
+			if (line.size() > 510)
+				line = "ERROR: LINE IS TOO BIG, MAX 510 CHARS";
 			send_rpl_MOTD(recipient, line);
+		}
 	}
 	send_rpl_ENDOFMOTD(recipient);
 }
