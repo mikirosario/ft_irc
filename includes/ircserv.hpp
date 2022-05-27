@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/19 19:52:54 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/27 10:15:50 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ class IRC_Server
 		#include "channel.hpp"
 		#include "database.hpp"
 		#include "ircserv_modules.hpp"
+		std::string								_oper_info[2];
 		std::string								_nethost; //no longer needed?? what??
 		std::string								_netport;
 		std::string								_netpass;

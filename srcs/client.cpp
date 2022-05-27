@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/25 19:59:11 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/27 10:06:16 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -768,7 +768,7 @@ void		IRC_Server::Client::send_msg(std::string const & msg) const
 	ssize_t	bytes_copied = send(_sockfd, msg.data(), msg.size(), 0);
 	if (bytes_copied < 0)
 	{
-		//ya me lo pensaré
+		//ya me lo pensaré //DEBUG
 	}
 	else if (static_cast<size_t>(bytes_copied) < msg.size())
 	{
@@ -791,7 +791,7 @@ void	IRC_Server::Client::send_output_buf(void)
 	ssize_t bytes_copied = send(_sockfd, _out_buf.data(), _out_buf.size(), 0);
 	if (bytes_copied < 0)
 	{
-		//ya me lo pensaré
+		//ya me lo pensaré// DEBUG
 	}
 	else if (static_cast<size_t>(bytes_copied) < _out_buf.size())
 	{
