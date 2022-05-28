@@ -515,7 +515,7 @@ void		IRC_Server::accept_connection(void)
 	socklen_t					addrlen = sizeof(remoteaddr);
 	char *						remoteIP;
 	int							new_connection;
-	static const std::vector<std::string> argv(1, "LIST");
+	static const std::vector<std::string> argv(1, "LIST"); //debug //quitar, probablemente
 	
 	new_connection = accept(_pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
 	if (new_connection == -1)
