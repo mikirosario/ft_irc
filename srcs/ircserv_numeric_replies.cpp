@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/11 18:29:43 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/28 16:28:03 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void		IRC_Server::numeric_reply_end(std::string & reply, std::string const & des
 	reply += "\r\n";
 }
 
-void		IRC_Server::send_rpl_WELCOME(Client const & recipient)
+void		IRC_Server::send_rpl_WELCOME(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_WELCOME); 
 
@@ -107,7 +107,7 @@ void		IRC_Server::send_rpl_WELCOME(Client const & recipient)
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_YOURHOST(Client const & recipient)
+void		IRC_Server::send_rpl_YOURHOST(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_YOURHOST); 
 
@@ -121,7 +121,7 @@ void		IRC_Server::send_rpl_YOURHOST(Client const & recipient)
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_CREATED(Client const & recipient)
+void		IRC_Server::send_rpl_CREATED(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_CREATED);
 	std::string created_msg;
@@ -133,7 +133,7 @@ void		IRC_Server::send_rpl_CREATED(Client const & recipient)
 }
 
 //debug //finish these
-void		IRC_Server::send_rpl_MYINFO(Client const & recipient)
+void		IRC_Server::send_rpl_MYINFO(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_MYINFO); 
 	msg += _servername + " ";
@@ -144,7 +144,7 @@ void		IRC_Server::send_rpl_MYINFO(Client const & recipient)
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
+void		IRC_Server::send_rpl_ISUPPORT(Client & recipient)
 {
 	std::ostringstream	ss1;
 	std::ostringstream	ss2;
@@ -183,7 +183,7 @@ void		IRC_Server::send_rpl_ISUPPORT(Client const & recipient)
 	// //debug
 }
 
-void		IRC_Server::send_rpl_UMODEIS(Client const & recipient)
+void		IRC_Server::send_rpl_UMODEIS(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_UMODEIS);
 
@@ -197,7 +197,7 @@ void		IRC_Server::send_rpl_UMODEIS(Client const & recipient)
 // Join: replies to command
 
 
-void		IRC_Server::send_rpl_TOPIC(Client const & recipient, Channel const & channel)
+void		IRC_Server::send_rpl_TOPIC(Client & recipient, Channel const & channel)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_TOPIC); 
 
@@ -206,7 +206,7 @@ void		IRC_Server::send_rpl_TOPIC(Client const & recipient, Channel const & chann
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_NOTOPIC(Client const & recipient, Channel const & channel)
+void		IRC_Server::send_rpl_NOTOPIC(Client & recipient, Channel const & channel)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_NOTOPIC); 
 
@@ -215,7 +215,7 @@ void		IRC_Server::send_rpl_NOTOPIC(Client const & recipient, Channel const & cha
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel)
+void		IRC_Server::send_rpl_CHANNELMODEIS(Client & recipient, Channel const & channel)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_CHANNELMODEIS);
 	msg += channel.getChannelName() + " ";
@@ -225,7 +225,7 @@ void		IRC_Server::send_rpl_CHANNELMODEIS(Client const & recipient, Channel const
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_ENDOFBANLIST(Client const & recipient, Channel const & channel, std::string const & description)
+void		IRC_Server::send_rpl_ENDOFBANLIST(Client & recipient, Channel const & channel, std::string const & description)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_ENDOFBANLIST);
 	msg += channel.getChannelName() + " ";
@@ -233,7 +233,7 @@ void		IRC_Server::send_rpl_ENDOFBANLIST(Client const & recipient, Channel const 
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_BANLIST(Client const & recipient, Channel const & channel)
+void		IRC_Server::send_rpl_BANLIST(Client & recipient, Channel const & channel)
 {
 	std::string msg_start = numeric_reply_start(recipient, RPL_BANLIST);
 	msg_start += channel.getChannelName() + " ";
@@ -250,6 +250,13 @@ void		IRC_Server::send_rpl_BANLIST(Client const & recipient, Channel const & cha
 	send_rpl_ENDOFBANLIST(recipient, channel, "End of channel ban list");	
 }
 
+void		IRC_Server::send_rpl_YOUREOPER(Client & recipient, std::string const & description)
+{
+	std::string	msg = numeric_reply_start(recipient, RPL_YOUREOPER);
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
 //debug //if user invisibility is implemented, we will need to account for this!!
 /*!
 ** @brief	Builds and sends a NAMREPLY reply to @a recipient containing a list
@@ -262,7 +269,7 @@ void		IRC_Server::send_rpl_BANLIST(Client const & recipient, Channel const & cha
 ** @param	recipient	The client to whom the reply will be sent.
 ** @param	channel		The channel regarding which member information was sent.
 */
-void		IRC_Server::send_rpl_NAMREPLY(Client const & recipient, Channel const & channel)
+void		IRC_Server::send_rpl_NAMREPLY(Client & recipient, Channel const & channel)
 {
 	typedef IRC_Server::Channel::t_ChannelMemberSet::const_iterator chan_it;
 
@@ -303,7 +310,7 @@ void		IRC_Server::send_rpl_NAMREPLY(Client const & recipient, Channel const & ch
 	send_rpl_ENDOFNAMES(recipient, channel.getChannelName());
 }
 
-void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channelName)
+void		IRC_Server::send_rpl_ENDOFNAMES(Client & recipient, std::string const & channelName)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_ENDOFNAMES); 
 
@@ -312,14 +319,14 @@ void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string cons
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)
+void		IRC_Server::send_rpl_LISTSTART(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
 	numeric_reply_end(msg, "Channel :Users  Name");
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & channelName)
+void		IRC_Server::send_rpl_LIST(Client & recipient, std::string const & channelName)
 {
 	
 	 //"<client> <channel> <client count> :<topic>"
@@ -334,14 +341,14 @@ void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & ch
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
+void		IRC_Server::send_rpl_LISTEND(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
 	numeric_reply_end(msg, "End of /LIST");
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_rpl_INVITED(Client const & sender, Client const & target, Channel const & channel)
+void	IRC_Server::send_rpl_INVITED(Client & sender, Client const & target, Channel const & channel)
 {
 	std::string msg = numeric_reply_start(sender, RPL_INVITED);
 	msg += channel.getChannelName() + " ";
@@ -353,7 +360,7 @@ void	IRC_Server::send_rpl_INVITED(Client const & sender, Client const & target, 
 	channel.send_msg(NULL, 0, msg); 
 }
 
-void	IRC_Server::send_rpl_INVITING(Client const & sender, Client const & target , Channel const & channel)
+void	IRC_Server::send_rpl_INVITING(Client & sender, Client const & target , Channel const & channel)
 {
 	std::string msg = numeric_reply_start(sender, RPL_INVITING);
 	msg += target.get_nick() + " ";

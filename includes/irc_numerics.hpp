@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc_numerics.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/05/10 18:41:30 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/27 16:43:35 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@
 #define RPL_ENDOFNAMES "366"
 #define RPL_BANLIST "367"
 #define RPL_ENDOFBANLIST "368"
+#define RPL_YOUREOPER "381"
 #define ERR_UNKNOWNMODE	"472"
 
 
@@ -68,6 +69,7 @@
 #define ERR_BANNEDFROMCHAN "474"
 #define ERR_BADCHANNELKEY "475"
 #define ERR_BADCHANMASK	"476"
+#define ERR_NOPRIVILEGES "481"
 #define ERR_CHANOPRIVSNEEDED "482"
 #define ERR_UMODEUNKNOWNFLAG "501"
 #define ERR_USERSDONTMATCH "502"

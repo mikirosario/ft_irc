@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/27 10:24:46 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 16:32:40 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -888,7 +888,6 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 		}
 		while (raw_target_list.eof() == false);
 	}
-
 	//	Comprobacion de que el usuario pertenece al canal del que busca eliminar a alguien. Error: ERR_NOTONCHANNEL
 
 	// Comprobacion de si el usuario tiene permisos suficientes para ejecutar el kick. Error: ERR_CHANOPRIVSNEEDED
@@ -899,6 +898,20 @@ void	IRC_Server::exec_cmd_KICK(Client & sender, std::vector<std::string> const &
 
 	// Eliminamos al usuario. De tener mas de tres argumentos depuramos el mensaje al igual que hacemos en TOPIC, con la diferencia de que
 	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
+}
+
+void	IRC_Server::exec_cmd_OPER(Client & sender, std::vector<std::string> const & argv)
+{
+	if (argv.size() < 3)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (argv[1] != _oper_info[0] || argv[2] != _oper_info[1])
+		send_err_PASSWDMISMATCH(sender, "Username/password combination incorrect");
+	else
+	{
+		sender.set_operator_mode();
+		send_rpl_YOUREOPER(sender, "You are now an IRC operator");
+		send_rpl_MODE(sender, "+o");
+	}
 }
 
 /*!
@@ -1064,7 +1077,7 @@ static bool	validateMask(std::string const & mask_candidate)
 	return false;
 }
 
-bool	IRC_Server::doChanModeChange(char sign, char mode, std::string const & arg, Client const & recipient, Channel & channel)
+bool	IRC_Server::doChanModeChange(char sign, char mode, std::string const & arg, Client & recipient, Channel & channel)
 {
 	if (std::strchr("+-", sign) == NULL || std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL)
 		return false;
@@ -1222,6 +1235,19 @@ void	IRC_Server::exec_cmd_QUIT(Client & sender, std::vector<std::string> const &
 }
 
 
+void	IRC_Server::exec_cmd_KILL(Client & sender, std::vector<std::string> const & argv)
+{
+	Client *	target;
+	if (argv.size() < 3)
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
+	else if (sender.get_modes().find('o') == std::string::npos)
+		send_err_NOPRIVILEGES(sender, "Permission Denied: You are not an IRC operator");
+	else if ((target = find_client_by_nick(argv[1])) == NULL)
+		send_err_NOSUCHNICK(sender, argv[1], "No such nick");
+	else
+		send_rpl_KILL(sender, *target, argv[2]);
+}
+
 /*!
 ** @brief	Takes the message from the Client as an argument vector, identifies
 **			the command portion (argument at position 0) and sends the message
@@ -1282,6 +1308,10 @@ void	IRC_Server::interpret_msg(Client & client)
 			exec_cmd_INVITE(client, argv);
 		else if (cmd == "QUIT")
 			exec_cmd_QUIT(client, argv);
+		else if (cmd == "OPER")
+			exec_cmd_OPER(client, argv);
+		else if (cmd == "KILL")
+			exec_cmd_KILL(client, argv);
 		else
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
 	}

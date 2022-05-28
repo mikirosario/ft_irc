@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/27 10:06:16 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 16:43:13 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -512,7 +512,7 @@ bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & appl
 			sign = *it;
 			applied_changes.push_back(*it);
 		}
-		else if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL)		//mode is known
+		else if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL && !(sign == '+' && *it == 'o'))		//mode is known (must use OPER to set o mode)
 		{
 			if (sign == '+' && _modes.find(*it) == std::string::npos)				//set requested and mode not already set
 				_modes.push_back(*it);													//set mode
@@ -526,6 +526,14 @@ bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & appl
 	if (std::strchr("+-", applied_changes[0]) == NULL)
 		applied_changes.insert(applied_changes.begin(), '+');
 	return (ret);
+}
+
+bool	IRC_Server::Client::set_operator_mode(void)
+{
+	if (_modes.find('o') != std::string::npos)
+		return false;
+	_modes.push_back('o');
+	return true;
 }
 
 /*!
@@ -759,39 +767,36 @@ bool		IRC_Server::Client::is_registered(void) const
 	return (_state == IRC_Server::Client::State(REGISTERED));
 }
 
-void		IRC_Server::Client::send_msg(std::string const & msg) const
+void		IRC_Server::Client::send_msg(std::string const & msg)
 {
-	//debug
-	std::cerr << msg << std::endl;
-	//debug
-	//std::string
-	ssize_t	bytes_copied = send(_sockfd, msg.data(), msg.size(), 0);
-	if (bytes_copied < 0)
+	// // debug
+	// std::cerr << msg << std::endl;
+	//// debug
+	_out_buf.append(msg, 0, std::string::npos);
+	if (_out_buf_state == Client::Buffer_State(UNREADY))
 	{
-		//ya me lo pensaré //DEBUG
+		_out_buf_state = Client::Buffer_State(READY);
+		_parent_server->_pfds[pos].events = POLLOUT;	//notify when sending can resume
 	}
-	else if (static_cast<size_t>(bytes_copied) < msg.size())
-	{
-		//send_msg is *usually* const, but since buf is stored in client object it needs
-		//to be deconsted here. sorry. :p proposal for C++ committee: usually_const type.
-		const_cast<std::string &>(_out_buf).append(msg, bytes_copied, std::string::npos);
-		if (_out_buf_state == Client::Buffer_State(UNREADY))
-		{
-			const_cast<Client::Buffer_State &>(_out_buf_state) = Client::Buffer_State(READY);
-			_parent_server->_pfds[pos].events = POLLOUT;	//notify when sending can resume
-		}
 		//buffer time
-	}
+	//}
 	
 	
 }
 
 void	IRC_Server::Client::send_output_buf(void)
 {
+	//debug
+	std::cerr << "OUTBUF CONTENT\n" << _out_buf << std::endl;
 	ssize_t bytes_copied = send(_sockfd, _out_buf.data(), _out_buf.size(), 0);
 	if (bytes_copied < 0)
 	{
-		//ya me lo pensaré// DEBUG
+		std::vector<std::string>	argv;
+
+		argv.push_back("KILL");
+		argv.push_back(this->get_nick());
+		argv.push_back("Fatal connection error");
+		_parent_server->exec_cmd_KILL(_parent_server->_clients[0], argv);
 	}
 	else if (static_cast<size_t>(bytes_copied) < _out_buf.size())
 	{

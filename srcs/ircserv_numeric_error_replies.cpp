@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_error_replies.cpp                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 15:12:34 by miki              #+#    #+#             */
-/*   Updated: 2022/05/10 20:22:57 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/28 16:36:04 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@
 ** @param	command		The command from the recipient that was not recognized.
 ** @param	description	Description of the problem.
 */
-void		IRC_Server::send_err_UNKNOWNERROR(Client const & recipient, std::string const & command, std::string const & description) const
+void		IRC_Server::send_err_UNKNOWNERROR(Client & recipient, std::string const & command, std::string const & description) const
 {
 	std::string	msg = numeric_reply_start(recipient, ERR_UNKNOWNERROR);
 	msg += command;
@@ -55,7 +55,7 @@ void		IRC_Server::send_err_UNKNOWNERROR(Client const & recipient, std::string co
 ** @param	command		The command from the recipient that was not recognized.
 ** @param	description	Optional additional description of the problem.
 */
-void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_UNKNOWNCOMMAND(Client & recipient, std::string const & command, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNCOMMAND);
 
@@ -64,7 +64,7 @@ void	IRC_Server::send_err_UNKNOWNCOMMAND(Client const & recipient, std::string c
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_err_ERR_UNKNOWNMODE(Client const & recipient, char const &command, std::string const & description) const
+void		IRC_Server::send_err_ERR_UNKNOWNMODE(Client & recipient, char const &command, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_UNKNOWNMODE);
 
@@ -89,7 +89,7 @@ void		IRC_Server::send_err_ERR_UNKNOWNMODE(Client const & recipient, char const 
 ** @param	recipient	The client to whom the reply will be sent.
 ** @param	description	Optional additional description of the problem.
 */
-void	IRC_Server::send_err_ALREADYREGISTERED(Client const & recipient, std::string const & description) const
+void	IRC_Server::send_err_ALREADYREGISTERED(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_ALREADYREGISTERED);
 
@@ -114,7 +114,7 @@ void	IRC_Server::send_err_ALREADYREGISTERED(Client const & recipient, std::strin
 ** @param	command		The command from @a recipient that was not executed.
 ** @param	description	Optional additional description of the problem.
 */
-void	IRC_Server::send_err_NEEDMOREPARAMS(Client const & recipient, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_NEEDMOREPARAMS(Client & recipient, std::string const & command, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NEEDMOREPARAMS); 
 
@@ -123,7 +123,7 @@ void	IRC_Server::send_err_NEEDMOREPARAMS(Client const & recipient, std::string c
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_NONICKNAMEGIVEN(Client const & recipient, std::string const & description) const
+void	IRC_Server::send_err_NONICKNAMEGIVEN(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NONICKNAMEGIVEN); 
 
@@ -131,7 +131,7 @@ void	IRC_Server::send_err_NONICKNAMEGIVEN(Client const & recipient, std::string 
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_NICKNAMEINUSE(Client const & recipient, std::string const & nick, std::string const & description) const
+void	IRC_Server::send_err_NICKNAMEINUSE(Client & recipient, std::string const & nick, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NICKNAMEINUSE); 
 	
@@ -140,7 +140,7 @@ void	IRC_Server::send_err_NICKNAMEINUSE(Client const & recipient, std::string co
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_ERRONEOUSNICKNAME(Client const & recipient, std::string const & nick, std::string const & description) const
+void	IRC_Server::send_err_ERRONEOUSNICKNAME(Client & recipient, std::string const & nick, std::string const & description) const
 {
 	std::string	msg = numeric_reply_start(recipient, ERR_ERRONEOUSNICKNAME);
 
@@ -149,7 +149,7 @@ void	IRC_Server::send_err_ERRONEOUSNICKNAME(Client const & recipient, std::strin
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_PASSWDMISMATCH(Client const & recipient, std::string const & description) const
+void	IRC_Server::send_err_PASSWDMISMATCH(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_PASSWDMISMATCH); 
 	
@@ -157,7 +157,7 @@ void	IRC_Server::send_err_PASSWDMISMATCH(Client const & recipient, std::string c
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_INPUTTOOLONG(Client const & recipient, std::string const & description) const
+void	IRC_Server::send_err_INPUTTOOLONG(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_INPUTTOOLONG); 
 
@@ -165,7 +165,7 @@ void	IRC_Server::send_err_INPUTTOOLONG(Client const & recipient, std::string con
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_NOTREGISTERED(Client const & recipient, std::string const & description) const
+void	IRC_Server::send_err_NOTREGISTERED(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOTREGISTERED); 
 
@@ -173,7 +173,7 @@ void	IRC_Server::send_err_NOTREGISTERED(Client const & recipient, std::string co
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_NOTEXTTOSEND(Client const & recipient, std::string const & description) const
+void	IRC_Server::send_err_NOTEXTTOSEND(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOTEXTTOSEND); 
 
@@ -181,7 +181,7 @@ void	IRC_Server::send_err_NOTEXTTOSEND(Client const & recipient, std::string con
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_NORECIPIENT(Client const & recipient, std::string const & description) const
+void	IRC_Server::send_err_NORECIPIENT(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NORECIPIENT); 
 
@@ -189,7 +189,7 @@ void	IRC_Server::send_err_NORECIPIENT(Client const & recipient, std::string cons
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_NOSUCHNICK(Client const & recipient, std::string const & nick, std::string const & description) const
+void	IRC_Server::send_err_NOSUCHNICK(Client & recipient, std::string const & nick, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOSUCHNICK); 
 
@@ -200,7 +200,7 @@ void	IRC_Server::send_err_NOSUCHNICK(Client const & recipient, std::string const
 
 // Join errors
 
-void	IRC_Server::send_err_NOSUCHCHANNEL(Client const & recipient, std::string const & channel_name, std::string const & description) const
+void	IRC_Server::send_err_NOSUCHCHANNEL(Client & recipient, std::string const & channel_name, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOSUCHCHANNEL); 
 
@@ -209,7 +209,7 @@ void	IRC_Server::send_err_NOSUCHCHANNEL(Client const & recipient, std::string co
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_TOOMANYCHANNELS(Client const & recipient, std::string const & channel_name, std::string const & description) const
+void	IRC_Server::send_err_TOOMANYCHANNELS(Client & recipient, std::string const & channel_name, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_TOOMANYCHANNELS); 
 
@@ -218,7 +218,7 @@ void	IRC_Server::send_err_TOOMANYCHANNELS(Client const & recipient, std::string 
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_BADCHANMASK(Client const & recipient, std::string const & channel_name, std::string const & description) const
+void	IRC_Server::send_err_BADCHANMASK(Client & recipient, std::string const & channel_name, std::string const & description) const
 {
 	std::string	msg = numeric_reply_start(recipient, ERR_BADCHANMASK);
 
@@ -227,7 +227,7 @@ void	IRC_Server::send_err_BADCHANMASK(Client const & recipient, std::string cons
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, Channel const & channel, std::string const & description) const
+void	IRC_Server::send_err_BADCHANNELKEY(Client & recipient, Channel const & channel, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_BADCHANNELKEY); 
 
@@ -236,7 +236,7 @@ void	IRC_Server::send_err_BADCHANNELKEY(Client const & recipient, Channel const 
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_USERNOTINCHANNEL(Client const & recipient, Client const & target, Channel const & channel, std::string const & description) const
+void	IRC_Server::send_err_USERNOTINCHANNEL(Client & recipient, Client const & target, Channel const & channel, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_USERNOTINCHANNEL);
 
@@ -246,7 +246,7 @@ void	IRC_Server::send_err_USERNOTINCHANNEL(Client const & recipient, Client cons
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_NOTONCHANNEL(Client const & recipient, Channel const & channel, std::string const & description) const
+void	IRC_Server::send_err_NOTONCHANNEL(Client & recipient, Channel const & channel, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOTONCHANNEL);
 
@@ -255,7 +255,7 @@ void	IRC_Server::send_err_NOTONCHANNEL(Client const & recipient, Channel const &
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_err_INVITEONLYCHAN(Client const & recipient, std::string const & channel_name) const
+void		IRC_Server::send_err_INVITEONLYCHAN(Client & recipient, std::string const & channel_name) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_INVITEONLYCHAN);
 
@@ -265,7 +265,7 @@ void		IRC_Server::send_err_INVITEONLYCHAN(Client const & recipient, std::string 
 
 }
 
-void		IRC_Server::send_err_USERONCHANNEL(Client const & recipient, std::string const &client_name, std::string const &client_nick, Channel const & channel) const
+void		IRC_Server::send_err_USERONCHANNEL(Client & recipient, std::string const &client_name, std::string const &client_nick, Channel const & channel) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_USERONCHANNEL);
 	msg += client_name + " ";
@@ -276,7 +276,7 @@ void		IRC_Server::send_err_USERONCHANNEL(Client const & recipient, std::string c
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_err_NOSUCHSERVER(Client const & recipient, std::string const & server_name, std::string const & description) const
+void		IRC_Server::send_err_NOSUCHSERVER(Client & recipient, std::string const & server_name, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOSUCHSERVER);
 	msg += server_name;
@@ -284,14 +284,14 @@ void		IRC_Server::send_err_NOSUCHSERVER(Client const & recipient, std::string co
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_err_NOMOTD(Client const & recipient, std::string const & description) const
+void		IRC_Server::send_err_NOMOTD(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_NOMOTD);
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channel const & channel, std::string const & description) const
+void		IRC_Server::send_err_ERR_CHANOPRIVSNEEDED(Client & recipient, Channel const & channel, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_CHANOPRIVSNEEDED);
 
@@ -300,21 +300,21 @@ void		IRC_Server::send_err_ERR_CHANOPRIVSNEEDED(Client const & recipient, Channe
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_err_USERSDONTMATCH(Client const & recipient, std::string const & description) const
+void		IRC_Server::send_err_USERSDONTMATCH(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_USERSDONTMATCH);
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_err_UMODEUNKNOWNFLAG(Client const & recipient, std::string const & description) const
+void		IRC_Server::send_err_UMODEUNKNOWNFLAG(Client & recipient, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_UMODEUNKNOWNFLAG);
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_BANNEDFROMCHAN(Client const & recipient, Channel const & channel, std::string const & description) const
+void	IRC_Server::send_err_BANNEDFROMCHAN(Client & recipient, Channel const & channel, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_BANNEDFROMCHAN); 
 
@@ -323,7 +323,7 @@ void	IRC_Server::send_err_BANNEDFROMCHAN(Client const & recipient, Channel const
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_CHANNELISFULL(Client const & recipient, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_CHANNELISFULL(Client & recipient, std::string const & command, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_CHANNELISFULL); 
 
@@ -332,11 +332,18 @@ void	IRC_Server::send_err_CHANNELISFULL(Client const & recipient, std::string co
 	recipient.send_msg(msg);
 }
 
-void	IRC_Server::send_err_INVITEONLYCHAN(Client const & recipient, std::string const & command, std::string const & description) const
+void	IRC_Server::send_err_INVITEONLYCHAN(Client & recipient, std::string const & command, std::string const & description) const
 {
 	std::string msg = numeric_reply_start(recipient, ERR_INVITEONLYCHAN); 
 
 	msg += command;
+	numeric_reply_end(msg, description);
+	recipient.send_msg(msg);
+}
+
+void	IRC_Server::send_err_NOPRIVILEGES(Client & recipient, std::string const & description) const
+{
+	std::string msg = numeric_reply_start(recipient, ERR_NOPRIVILEGES);
 	numeric_reply_end(msg, description);
 	recipient.send_msg(msg);
 }

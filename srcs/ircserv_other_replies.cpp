@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/16 18:38:34 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 16:38:22 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ void		IRC_Server::non_numeric_reply_end(std::string & reply, std::string const &
 **						(call get_source() on sender before implementing nick
 **						change to get this).
 */
-void	IRC_Server::send_rpl_NICK(Client const & recipient, std::string const & old_source) const
+void	IRC_Server::send_rpl_NICK(Client & recipient, std::string const & old_source) const
 {
 	std::string msg = old_source;	//:old_nickname!username@hostname
 
@@ -83,7 +83,7 @@ void	IRC_Server::send_rpl_NICK(Client const & recipient, std::string const & old
 ** @param	source		The message sender.
 ** @param	message		The message text input by the user @a source.
 */
-void		IRC_Server::send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const
+void		IRC_Server::send_rpl_PRIVMSG(Client & recipient, Client const & source, std::string const & message) const
 {
 	std::string msg = source.get_source() + " ";
 
@@ -132,7 +132,7 @@ void		IRC_Server::send_rpl_PRIVMSG(Channel const & recipient, Client const & sou
 ** @param	source		The message sender.
 ** @param	message		The message text input by the user @a source.
 */
-void		IRC_Server::send_rpl_NOTICE(Client const & recipient, Client const & source, std::string const & message) const
+void		IRC_Server::send_rpl_NOTICE(Client & recipient, Client const & source, std::string const & message) const
 {
 	std::string msg = source.get_source() + " ";
 
@@ -162,7 +162,7 @@ void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source
 	recipient.send_msg(NULL, 0, msg);
 }
 
-void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const
+void		IRC_Server::send_rpl_PART(Client & recipient, Channel const & channel, std::string const & part_message) const
 {
 	//std::string msg_recipient = get_source() + " PART ";
 	// std::string msg_channel = recipient.get_source() + " PART ";
@@ -176,7 +176,7 @@ void		IRC_Server::send_rpl_PART(Client const & recipient, Channel const & channe
 	channel.send_msg(NULL, 0, msg_channel);
 }
 
-void		IRC_Server::send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const
+void		IRC_Server::send_rpl_KICK(Client const & kicker, Client & recipient, Channel const & channel, std::string const & kick_message) const
 {
 	std::string msg = kicker.get_source() + " KICK ";
 
@@ -187,7 +187,7 @@ void		IRC_Server::send_rpl_KICK(Client const & kicker, Client const & recipient,
 	channel.send_msg(NULL, 0, msg);
 }
 
-void		IRC_Server::send_rpl_PONG(Client const & recipient, std::string const & token) const
+void		IRC_Server::send_rpl_PONG(Client & recipient, std::string const & token) const
 {
 	std::string msg = get_source() + " ";
 	
@@ -201,7 +201,7 @@ void		IRC_Server::send_rpl_PONG(Client const & recipient, std::string const & to
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_MODE(Client const & recipient, std::string const & applied_changes) const
+void		IRC_Server::send_rpl_MODE(Client & recipient, std::string const & applied_changes) const
 {
 	std::string msg = recipient.get_source() + " ";
 
@@ -211,7 +211,7 @@ void		IRC_Server::send_rpl_MODE(Client const & recipient, std::string const & ap
 	recipient.send_msg(msg);
 }
 
-void		IRC_Server::send_rpl_MODE(Client const & recipient, Channel const & channel, std::string const & applied_changes) const
+void		IRC_Server::send_rpl_MODE(Client & recipient, Channel const & channel, std::string const & applied_changes) const
 {
 	std::string msg = recipient.get_source() + " ";
 	msg += "MODE ";
@@ -234,4 +234,16 @@ void		IRC_Server::send_rpl_QUIT(Client & quitter, std::string const & reason)
 	remove_client_from_server(quitter);
 	if (quitter.is_disconnected() == false)
 		quitter.set_state_disconnected();
+}
+
+void		IRC_Server::send_rpl_KILL(Client & killer, Client & killed, std::string const & reason)
+{
+	std::string	msg = killer.get_source() + " ";
+	std::string	quitmsg = "Closing Link: " + _servername + " (Killed (" + killer.get_nick() + " (" + reason + ")))";
+
+	msg += "KILL ";
+	msg += killed.get_nick();
+	non_numeric_reply_end(msg, reason);
+	killer.send_msg(msg);
+	send_rpl_QUIT(killed, quitmsg);
 }

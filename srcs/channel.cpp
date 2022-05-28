@@ -558,7 +558,7 @@ void	IRC_Server::Channel::removeAllMembers(void)
 */
 bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privilege_level, std::string const & message) const
 {
-	IRC_Server::Client const *	recipient = NULL;
+	IRC_Server::Client *	recipient = NULL;
 
 	//debug
 	std::cerr << message << std::endl;
