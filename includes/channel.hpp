@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/11 18:37:53 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/19 20:33:11 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,12 +70,10 @@ class Channel
 
 
 		bool 	send_msg(Client const * sender, char privilege_level, std::string const & message) const;
-		// - miki
-			//USA case_insensitive_ascii_compare()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 		bool operator==(const Channel &other) const 
-		{						
-			return (_channelName == other._channelName);
+		{
+			return case_insensitive_ascii_compare(_channelName, other._channelName);
 		}
 		
 		bool operator!=(const Channel &other) const 

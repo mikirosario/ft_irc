@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/16 18:15:10 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 17:44:10 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,22 +28,25 @@ class Client
 		{
 			UNREADY,
 			READY
-		}			_buf_state;
-		std::string	_serveraddr;	//Server to which the Client is connected; can be used in replies requiring <servername>
-		int			_sockfd;		//Client's sockfd
-		int			_pass_attempts;	//Number of PASS commands sent by client on registration; limiting this to 10
-		bool		_pass_validated;
-		std::string	_nick;			//Client's nick
-		std::string _clientaddr;	//Client's IP or canonical hostname, done by getaddrinfo() lookup
-		std::string _hostname;		//Client's self-reported hostname?
-		std::string _username;		//Client's username
-		std::string _realname;		//Client's "real" name (sure it is, Gandalf Baggins)
+		}					_in_buf_state;
+		enum Buffer_State	_out_buf_state;
+		std::string			_serveraddr;	//Server to which the Client is connected; can be used in replies requiring <servername>
+		int					_sockfd;		//Client's sockfd
+		int					_pass_attempts;	//Number of PASS commands sent by client on registration; limiting this to 10
+		bool				_pass_validated;
+		std::string			_nick;			//Client's nick
+		std::string 		_clientaddr;	//Client's IP or canonical hostname, done by getaddrinfo() lookup
+		std::string 		_hostname;		//Client's self-reported hostname?
+		std::string 		_username;		//Client's username
+		std::string 		_realname;		//Client's "real" name (sure it is, Gandalf Baggins)
 		//std::string	_longname;		//Client's name in format nickname!username@hostname. maybe replace build_source with this
-		std::string	_msg_buf;
-		std::string	_message;
-		std::string _modes;
-		t_ChanMap	_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
-		t_ChanMap	_invitelist;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
+		std::string			_msg_buf;
+		std::string			_out_buf;
+		std::string			_message;
+		std::string 		_modes;
+		t_ChanMap			_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
+		t_ChanMap			_invitelist;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
+		IRC_Server *		_parent_server;
 
 		/* PRIVATE UTILS */
 		size_t		get_param_count(void) const;
@@ -64,9 +67,11 @@ class Client
 		static bool	is_endline(char const c);
 		bool		is_disconnected();
 		bool		msg_is_ready(void) const;
+		bool		output_buf_has_unsent_data(void) const;
 		bool		is_registered(void) const;
 		bool		reg_pass_attempt(void);
-		void		send_msg(std::string const & msg) const;
+		void		send_msg(std::string const & msg);
+		void		send_output_buf(void);
 		bool		leave_channel(std::string const & channel_name);
 		void		leave_all_channels(void);
 
@@ -80,11 +85,14 @@ class Client
 		bool	set_clientaddr(char const * remoteIP);
 		//void	set_hostname(std::string const & hostname);
 		bool	set_modes(std::string const & modes, std::string & applied_changes);
+		bool	set_operator_mode(void);
 		void	set_pass_validated(bool state);
 		void	set_state_registered(void);
 		void	set_state_disconnected(void);
 		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		bool	set_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
+		void	set_parent_server(IRC_Server * parent_server);
+		bool	set_out_buf(std::string const & msg);
 		void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	remove_channel_membership(t_ChanMap::iterator const & channel_iterator);
 		void	remove_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator);

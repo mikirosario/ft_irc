@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   constants.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ineumann <ineumann@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/10 20:13:37 by ineumann         ###   ########.fr       */
+/*   Updated: 2022/05/28 17:56:59 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #define INT_TO_STR( x ) static_cast< std::ostringstream & >( ( std::ostringstream() << std::dec << x ) ).str() //itoa-like macro for std::string that saves me from loading up my functions with ugly stringstreams :p
 #define MAX_CONNECTIONS 1024	//maximum number of simultaneous connections
 #define MSG_BUF_SIZE 512		//maximum message length in IRC RFC including \r\n termination.
+#define OUT_BUF_SIZE 1000448	//maximum output buffer length before user is kicked (about 1MB, multiple of 512 bytes)
 #define MAX_NICK_SIZE 9 		//maximum nickname length
 #define MAX_HOSTNAME_SIZE 20	//maximum hostname size; //debug use clientaddr instead if this is too long
 #define MAX_USERNAME_SIZE 25	//maximum username size

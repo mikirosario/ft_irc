@@ -6,14 +6,15 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/16 18:19:35 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 17:46:47 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ircserv.hpp"
 
 IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED)),
-									_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),
+									_in_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),
+									_out_buf_state(IRC_Server::Client::Buffer_State(UNREADY)),
 									_pass_attempts(0),
 									_pass_validated(false),
 									pos(0)
@@ -30,13 +31,15 @@ IRC_Server::Client::Client(void) :	_state(IRC_Server::Client::State(UNREGISTERED
 IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 {
 	_state = src._state;
-	_buf_state = src._buf_state;
+	_in_buf_state = src._in_buf_state;
+	_out_buf_state = src._out_buf_state;
 	_serveraddr = src._serveraddr;
 	_sockfd = src._sockfd;
 	_pass_attempts = src._pass_attempts;
 	_pass_validated = src._pass_validated;
 	_nick = src._nick;
 	_msg_buf = src._msg_buf;
+	_out_buf = src._out_buf;
 	_message = src._message;
 	_modes = src._modes;
 	_username = src._username;
@@ -68,7 +71,8 @@ IRC_Server::Client::~Client(void)
 void		IRC_Server::Client::move(Client & src)
 {
 	_state = src._state;
-	_buf_state = src._buf_state;
+	_in_buf_state = src._in_buf_state;
+	_out_buf_state = src._out_buf_state;
 	std::swap(this->_serveraddr, src._serveraddr);
 	_sockfd = src._sockfd;
 	_pass_attempts = src._pass_attempts;
@@ -77,6 +81,7 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_username, src._username);
 	std::swap(this->_realname, src._realname);
 	std::swap(this->_msg_buf, src._msg_buf);
+	std::swap(this->_out_buf, src._out_buf);
 	std::swap(this->_message, src._message);
 	std::swap(this->_modes, src._modes);
 	std::swap(this->_hostname, src._hostname);
@@ -120,7 +125,7 @@ void	IRC_Server::Client::flush_msg_buf(size_t stop)
 // {
 // 	_msg_buf.erase(0, stop);
 // 	if (msg_buf_is_crlf_terminated() == false)
-// 		_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	
+// 		_in_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	
 // }
 
 /*!
@@ -291,7 +296,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 		end_pos = incoming_data.find_first_not_of("\r\n", end_pos);											//find first character after crlf-termination, or npos if it's the end of the string
 		incoming_data.erase(0, end_pos);																	//flush the part of the incoming data pertaining to the appended message (including any truncated bits)
 		_msg_buf.assign(incoming_data);																		//copy remaining part of the incoming data to msg_buf; if empty, nothing will be copied, of course
-		_buf_state = IRC_Server::Client::Buffer_State(READY);												//set client buffer state to READY
+		_in_buf_state = IRC_Server::Client::Buffer_State(READY);												//set client buffer state to READY
 		ret = !(message_overflowed_buffer | message_overflows_buffer);										//in case of buffer overflow, whether detected in past or present input, return false; otherwise return true
 		message_overflowed_buffer = false;																	//overflowed message is handled here, so reset static overflowed flag.
 	}
@@ -308,7 +313,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 // **			crlf-terminated. If a buffer is filled to MSG_BUF_SIZE, it will
 // **			automatically be crlf-terminated and any extra bytes will be
 // **			truncated. If calling this function leads to crlf-termination of the
-// **			message buffer, the @a _buf_state changes to READY.
+// **			message buffer, the @a _in_buf_state changes to READY.
 // **
 // ** @param	msg_register	Incoming message data.
 // ** @param	nbytes			Number of bytes in incoming message data.
@@ -320,7 +325,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 // 	int	bytes_remaining = MSG_BUF_SIZE - _msg_buf.size();
 // 	int ret;
 
-// 	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
+// 	if (_in_buf_state == IRC_Server::Client::Buffer_State(READY))
 // 		ret = false;
 // 	else if (nbytes > bytes_remaining)
 // 	{
@@ -334,7 +339,7 @@ bool	IRC_Server::Client::append_to_msg_buf(char const (& data_received)[MSG_BUF_
 // 		ret = true;
 // 	}
 // 	if (msg_buf_is_crlf_terminated())
-// 		_buf_state = IRC_Server::Client::Buffer_State(READY);
+// 		_in_buf_state = IRC_Server::Client::Buffer_State(READY);
 // 	return (ret);
 // }
 
@@ -507,7 +512,7 @@ bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & appl
 			sign = *it;
 			applied_changes.push_back(*it);
 		}
-		else if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL)		//mode is known
+		else if (std::strchr(SUPPORTED_USER_MODES, *it) != NULL && !(sign == '+' && *it == 'o'))		//mode is known (must use OPER to set o mode)
 		{
 			if (sign == '+' && _modes.find(*it) == std::string::npos)				//set requested and mode not already set
 				_modes.push_back(*it);													//set mode
@@ -521,6 +526,14 @@ bool	IRC_Server::Client::set_modes(std::string const & modes, std::string & appl
 	if (std::strchr("+-", applied_changes[0]) == NULL)
 		applied_changes.insert(applied_changes.begin(), '+');
 	return (ret);
+}
+
+bool	IRC_Server::Client::set_operator_mode(void)
+{
+	if (_modes.find('o') != std::string::npos)
+		return false;
+	_modes.push_back('o');
+	return true;
 }
 
 /*!
@@ -589,6 +602,18 @@ bool	IRC_Server::Client::set_channel_invitation(IRC_Server::t_Channel_Map::itera
 	return (ret);
 }
 
+void	IRC_Server::Client::set_parent_server(IRC_Server * parent_server)
+{
+	_parent_server = parent_server;
+}
+
+bool	IRC_Server::Client::set_out_buf(std::string const & msg)
+{
+	if (_out_buf.assign(msg) == msg)
+		return true;
+	return false;
+}
+
 /*!
 ** @brief	Removes channel membership from client object.
 **
@@ -620,8 +645,9 @@ void	IRC_Server::Client::remove_channel_invitation(t_ChanMap::iterator const & c
 */
 void	IRC_Server::Client::clear(void)
 {
-	_state = Client::State(UNREADY);
-	_buf_state = Client::Buffer_State(UNREGISTERED);
+	_state = Client::State(UNREGISTERED);
+	_in_buf_state = Client::Buffer_State(UNREADY);
+	_out_buf_state = Client::Buffer_State(UNREADY);
 	_serveraddr.clear();
 	_sockfd = 0;
 	_pass_attempts = 0;
@@ -632,6 +658,7 @@ void	IRC_Server::Client::clear(void)
 	_username.clear();
 	_realname.clear();
 	_msg_buf.clear();
+	_out_buf.clear();
 	_message.clear();
 	//_channels.clear();
 	//_invitelist.clear();
@@ -717,9 +744,22 @@ void	IRC_Server::Client::leave_channel(t_ChanMap::iterator const & channel_it)
 bool	IRC_Server::Client::msg_is_ready(void) const
 {
 	//debug
-	//std::cerr << _buf_state << std::endl;
+	//std::cerr << _in_buf_state << std::endl;
 	//debug
-	return (_buf_state == IRC_Server::Client::Buffer_State(READY));
+	return (_in_buf_state == IRC_Server::Client::Buffer_State(READY));
+}
+
+/*!
+** @brief	Determines whether or not the output buffer has queued unsent data.
+**
+** @details	If at any point an output stream is cut off due to suspension of a
+**			client's connection, unsent bytes will be stored in an output buffer
+**			pending reconnection.
+** @return	true if Client has unsent data in output buffer, otherwise false.
+**/
+bool		IRC_Server::Client::output_buf_has_unsent_data(void) const
+{
+	return (_out_buf_state == IRC_Server::Client::Buffer_State(READY));
 }
 
 /*!
@@ -734,12 +774,42 @@ bool		IRC_Server::Client::is_registered(void) const
 	return (_state == IRC_Server::Client::State(REGISTERED));
 }
 
-void		IRC_Server::Client::send_msg(std::string const & msg) const
+void		IRC_Server::Client::send_msg(std::string const & msg)
+{
+	// // debug
+	// std::cerr << msg << std::endl;
+	//// debug
+	if (this->_out_buf.size() + msg.size() <= OUT_BUF_SIZE)
+	{
+			//buffer time
+		_out_buf.append(msg, 0, std::string::npos);
+		if (_out_buf_state == Client::Buffer_State(UNREADY))
+		{
+			_out_buf_state = Client::Buffer_State(READY);
+			_parent_server->_pfds[pos].events = POLLOUT;	//notify when sending can resume
+		}
+	}
+	else
+		_parent_server->send_rpl_KILL(*this, "Flood control");
+}
+
+void	IRC_Server::Client::send_output_buf(void)
 {
 	//debug
-	std::cerr << msg << std::endl;
-	//debug
-	send(_sockfd, msg.data(), msg.size(), 0);
+	std::cerr << "OUTBUF CONTENT\n" << _out_buf << std::endl;
+	ssize_t bytes_copied = send(_sockfd, _out_buf.data(), _out_buf.size(), 0);
+	if (bytes_copied < 0) //send errors will lead to kill command to avoid zombie clients
+		_parent_server->send_rpl_KILL(*this, "Fatal connection error");
+	else if (static_cast<size_t>(bytes_copied) < _out_buf.size())
+	{
+		_out_buf.erase(0, bytes_copied);
+	}
+	else
+	{
+		_out_buf.clear();
+		_out_buf_state = Client::Buffer_State(UNREADY);
+		_parent_server->_pfds[pos].events = POLLIN;
+	}
 }
 
 /*!
@@ -778,7 +848,7 @@ void		IRC_Server::Client::leave_all_channels(void)
 **			rest are parameters, changing the buffer state to UNREADY if the
 **			client has no more crlf-terminated strings to reap.
 **
-** @details This method MUST be called when the @a _buf_state is READY in order
+** @details This method MUST be called when the @a _in_buf_state is READY in order
 **			to reap the message from the buffer, though there is a redundant
 **			check to prevent unready message buffers from being reaped.
 **
@@ -827,7 +897,7 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 {
 	std::vector<std::string>	ret;
 
-	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
+	if (_in_buf_state == IRC_Server::Client::Buffer_State(READY))
 	{
 		std::string	cmd = get_cmd();
 		size_t		start_pos = 0;
@@ -871,7 +941,7 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 		else								//no, there is not another message
 		{
 			_message.clear();
-			_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
+			_in_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
 		}
 	}
 	// //debug
@@ -886,7 +956,7 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 // {
 // 	std::vector<std::string>	ret;
 
-// 	if (_buf_state == IRC_Server::Client::Buffer_State(READY))
+// 	if (_in_buf_state == IRC_Server::Client::Buffer_State(READY))
 // 	{
 // 		std::string	cmd = get_cmd();
 // 		size_t		start_pos = 0;

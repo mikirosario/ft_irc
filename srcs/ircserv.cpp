@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/16 18:40:20 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 16:59:52 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,13 @@ IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::
 																											_connections(0)
 {
 	for (size_t i = 0; i < MAX_CONNECTIONS; ++i)
+	{
 		const_cast<size_t &>(_clients[i].pos) = i;
+		_clients[i].set_parent_server(this);
+	}
+	_clients[0].set_operator_mode();
+	_oper_info[0] = "oper";
+	_oper_info[1] = _servpass + "oper";
 	init(netinfo);
 }
 
@@ -104,32 +110,6 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 		// //debug
 	}
 	return (ret);
-}
-
-/*!
-** @brief	Performs a case-insensitive comparison of str1 with str2 in which
-**			ASCII characters 97-122 (a-z) are equal to ASCII characters 65-90
-**			(A-Z). This is meant ONLY for username, servername and channelname
-**			comparisons!
-**
-** @details	Use in std::locale("C") only and only with strings containing
-**			exclusively ASCII characters. This is the default C++ locale, but to
-**			be extra sure it is explicitly set at program initiation. For
-**			casemapping=ascii mode.
-** @param	str1	First string to compare.
-** @param	str2	Second string to compare.
-** @return			true if both strings compare equal, otherwise false
-*/
-bool		IRC_Server::case_insensitive_ascii_compare(std::string const & str1, std::string const & str2) const
-{
-	if (str1.size() == str2.size())
-	{
-		for (std::string::size_type i = 0, strsize = str1.size(); i < strsize; ++i)
-			if (std::toupper(str1[i]) != std::toupper(str2[i])) //locale is "C"; names are limited to ASCII alphanumeric
-				return (false);
-		return (true);
-	}
-	return (false);
 }
 
 /*!
@@ -957,7 +937,12 @@ void	IRC_Server::server_loop(void)
 			//Poll clients
 			for (int i = 1; poll_count > 0; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
 			{
-				if (poll_client(i) == true)
+				if (_clients[i].output_buf_has_unsent_data() == true && _pfds[i].revents & POLLOUT)
+				{
+					_clients[i].send_output_buf();
+					--poll_count;
+				}
+				else if (poll_client(i) == true)
 				{
 					process_client_message(_clients[i]);
 					--poll_count;
