@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:54:08 by miki              #+#    #+#             */
-/*   Updated: 2022/05/27 16:43:35 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 19:36:30 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,9 @@
 #define RPL_BANLIST "367"
 #define RPL_ENDOFBANLIST "368"
 #define RPL_YOUREOPER "381"
+#define RPL_MOTDSTART "375"
+#define RPL_MOTD "372"
+#define RPL_ENDOFMOTD "376"
 #define ERR_UNKNOWNMODE	"472"
 
 

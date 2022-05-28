@@ -495,6 +495,7 @@ void		IRC_Server::accept_connection(void)
 	socklen_t					addrlen = sizeof(remoteaddr);
 	char *						remoteIP;
 	int							new_connection;
+	static const std::vector<std::string> argv(1, "LIST"); //debug //quitar, probablemente
 	
 	new_connection = accept(_pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
 	if (new_connection == -1)
@@ -580,7 +581,7 @@ void	IRC_Server::process_client_message(Client & client)
 			// 		if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
 			// 			std::cerr << "send error" << std::endl;
 			// //debug
-
+			
 			while (client.msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
 				interpret_msg(client);
 

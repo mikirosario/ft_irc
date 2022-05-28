@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/28 17:05:43 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 19:39:28 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,10 @@ void		send_rpl_NOTOPIC(Client & recipient, Channel const & channel);
 void		send_rpl_CHANNELMODEIS(Client & recipient, Channel const & channel);
 void		send_rpl_ENDOFBANLIST(Client & recipient, Channel const & channel, std::string const & description);
 void		send_rpl_BANLIST(Client & recipient, Channel const & channel);
+void		send_MOTD(Client & recipient);
+void		send_rpl_MOTDSTART(Client & recipient);
+void		send_rpl_MOTD(Client & recipient, std::string	motd_msg);
+void		send_rpl_ENDOFMOTD(Client & recipient);
 void		send_rpl_YOUREOPER(Client & recipient, std::string const & description);
 void		send_rpl_KILL(Client & killer, Client & killed, std::string const & description);
 void		send_rpl_KILL(Client & killed, std::string const & reason);
@@ -139,6 +143,7 @@ void		send_rpl_NICK(Client & recipient, std::string const & old_source) const;
 void		send_rpl_PRIVMSG(Client & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
 void		send_rpl_NOTICE(Client & recipient, Client const & source, std::string const & message) const;
+void		send_rpl_INVITE(Client & recipient, Client const & source, std::string const & channel) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 void		send_rpl_PART(Client & recipient, Channel const & channel, std::string const & part_message) const;
 void		send_rpl_KICK(Client const & kicker, Client & recipient, Channel const & channel, std::string const & kick_message) const;

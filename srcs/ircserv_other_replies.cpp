@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 17:50:22 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 19:42:46 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,18 @@ void		IRC_Server::send_rpl_NOTICE(Client & recipient, Client const & source, std
 	msg += "NOTICE ";
 	msg += recipient.get_nick();
 	non_numeric_reply_end(msg, message);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_INVITE(Client & recipient, Client const & source, std::string const & channel) const
+{
+	std::string msg = source.get_source() + " ";
+	std::string notice = source.get_source() + " ";
+
+	msg += "INVITE ";
+	msg += recipient.get_nick();
+	notice += source.get_nick() + " invites you to join " + channel;
+	non_numeric_reply_end(msg, channel);
 	recipient.send_msg(msg);
 }
 
