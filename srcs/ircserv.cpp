@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 15:52:02 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 16:59:52 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::
 		const_cast<size_t &>(_clients[i].pos) = i;
 		_clients[i].set_parent_server(this);
 	}
+	_clients[0].set_operator_mode();
 	_oper_info[0] = "oper";
 	_oper_info[1] = _servpass + "oper";
 	init(netinfo);

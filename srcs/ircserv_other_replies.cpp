@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 16:38:22 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 17:50:22 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -246,4 +246,22 @@ void		IRC_Server::send_rpl_KILL(Client & killer, Client & killed, std::string co
 	non_numeric_reply_end(msg, reason);
 	killer.send_msg(msg);
 	send_rpl_QUIT(killed, quitmsg);
+}
+
+//special overload for server-directed kills
+void		IRC_Server::send_rpl_KILL(Client & killed, std::string const & reason)
+{
+	typedef IRC_Server::Client::t_ChanMap::iterator t_ChanMapIt;
+	std::string msg = killed.get_source() + " ";
+	std::string	quitmsg = "Closing Link: " + _servername + " (Killed (" + _servername + " (" + reason + ")))";
+	
+	msg += "QUIT ";
+	non_numeric_reply_end(msg, quitmsg);
+	killed.set_out_buf(msg);
+	killed.send_output_buf();
+	for (t_ChanMapIt begin = killed.get_chanlist().begin(), end = killed.get_chanlist().end(); begin != end; ++begin)
+		begin->second->second.send_msg(&killed, 0, msg);
+	remove_client_from_server(killed);
+	if (killed.is_disconnected() == false)
+		killed.set_state_disconnected();
 }

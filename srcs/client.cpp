@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/28 16:43:13 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 17:46:47 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -607,6 +607,13 @@ void	IRC_Server::Client::set_parent_server(IRC_Server * parent_server)
 	_parent_server = parent_server;
 }
 
+bool	IRC_Server::Client::set_out_buf(std::string const & msg)
+{
+	if (_out_buf.assign(msg) == msg)
+		return true;
+	return false;
+}
+
 /*!
 ** @brief	Removes channel membership from client object.
 **
@@ -772,16 +779,18 @@ void		IRC_Server::Client::send_msg(std::string const & msg)
 	// // debug
 	// std::cerr << msg << std::endl;
 	//// debug
-	_out_buf.append(msg, 0, std::string::npos);
-	if (_out_buf_state == Client::Buffer_State(UNREADY))
+	if (this->_out_buf.size() + msg.size() <= OUT_BUF_SIZE)
 	{
-		_out_buf_state = Client::Buffer_State(READY);
-		_parent_server->_pfds[pos].events = POLLOUT;	//notify when sending can resume
+			//buffer time
+		_out_buf.append(msg, 0, std::string::npos);
+		if (_out_buf_state == Client::Buffer_State(UNREADY))
+		{
+			_out_buf_state = Client::Buffer_State(READY);
+			_parent_server->_pfds[pos].events = POLLOUT;	//notify when sending can resume
+		}
 	}
-		//buffer time
-	//}
-	
-	
+	else
+		_parent_server->send_rpl_KILL(*this, "Flood control");
 }
 
 void	IRC_Server::Client::send_output_buf(void)
@@ -789,15 +798,8 @@ void	IRC_Server::Client::send_output_buf(void)
 	//debug
 	std::cerr << "OUTBUF CONTENT\n" << _out_buf << std::endl;
 	ssize_t bytes_copied = send(_sockfd, _out_buf.data(), _out_buf.size(), 0);
-	if (bytes_copied < 0)
-	{
-		std::vector<std::string>	argv;
-
-		argv.push_back("KILL");
-		argv.push_back(this->get_nick());
-		argv.push_back("Fatal connection error");
-		_parent_server->exec_cmd_KILL(_parent_server->_clients[0], argv);
-	}
+	if (bytes_copied < 0) //send errors will lead to kill command to avoid zombie clients
+		_parent_server->send_rpl_KILL(*this, "Fatal connection error");
 	else if (static_cast<size_t>(bytes_copied) < _out_buf.size())
 	{
 		_out_buf.erase(0, bytes_copied);

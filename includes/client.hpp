@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 16:22:34 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 17:44:10 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,7 @@ class Client
 		bool	set_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		bool	set_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	set_parent_server(IRC_Server * parent_server);
+		bool	set_out_buf(std::string const & msg);
 		void	remove_channel_membership(IRC_Server::t_Channel_Map::iterator const & channel_iterator);
 		void	remove_channel_membership(t_ChanMap::iterator const & channel_iterator);
 		void	remove_channel_invitation(IRC_Server::t_Channel_Map::iterator const & channel_iterator);

@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/28 16:38:41 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/28 17:05:43 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ void		send_rpl_ENDOFBANLIST(Client & recipient, Channel const & channel, std::st
 void		send_rpl_BANLIST(Client & recipient, Channel const & channel);
 void		send_rpl_YOUREOPER(Client & recipient, std::string const & description);
 void		send_rpl_KILL(Client & killer, Client & killed, std::string const & description);
+void		send_rpl_KILL(Client & killed, std::string const & reason);
 // Esto no lo considero neceserio
 
 /*
