@@ -71,7 +71,7 @@ void		send_rpl_ENDOFNAMES(Client const & recipient, std::string const & channel_
 //void		send_rpl_ENDOFNAMES(Channel const & recipient, std::string const & channelName);
 
 void		send_rpl_LISTSTART(Client const & recipient);
-void		send_rpl_LIST(Client const & recipient, std::string const &channel_name);
+void		send_rpl_LIST(Client const &, std::string const &channel_name);
 void		send_rpl_LISTEND(Client const & recipient);
 
 void		send_rpl_INVITED(Client const & sender, Client const & target, Channel const & channel);
@@ -81,6 +81,11 @@ void		send_rpl_NOTOPIC(Client const & recipient, Channel const & channel);
 void		send_rpl_CHANNELMODEIS(Client const & recipient, Channel const & channel);
 void		send_rpl_ENDOFBANLIST(Client const & recipient, Channel const & channel, std::string const & description);
 void		send_rpl_BANLIST(Client const & recipient, Channel const & channel);
+void		send_MOTD(Client const & recipient);
+void		send_rpl_MOTDSTART(Client const & recipient);
+void		send_rpl_MOTD(Client const & recipient, std::string	motd_msg);
+void		send_rpl_ENDOFMOTD(Client const & recipient);
+
 
 // Esto no lo considero neceserio
 
@@ -135,6 +140,7 @@ void		send_rpl_NICK(Client const & recipient, std::string const & old_source) co
 void		send_rpl_PRIVMSG(Client const & recipient, Client const & source, std::string const & message) const;
 void		send_rpl_PRIVMSG(Channel const & recipient, Client const & source, std::string const & privileges, std::string const & message) const;
 void		send_rpl_NOTICE(Client const & recipient, Client const & source, std::string const & message) const;
+void		send_rpl_INVITE(Client const & recipient, Client const & source, std::string const & channel) const;
 void		send_rpl_JOIN(Channel const & recipient, Client const & source) const;
 void		send_rpl_PART(Client const & recipient, Channel const & channel, std::string const & part_message) const;
 void		send_rpl_KICK(Client const & kicker, Client const & recipient, Channel const & channel, std::string const & kick_message) const;

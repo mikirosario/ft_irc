@@ -634,7 +634,7 @@ void	IRC_Server::Client::clear(void)
 	_msg_buf.clear();
 	_message.clear();
 	//_channels.clear();
-	//_invitelist.clean();
+	//_invitelist.clear();
 }
 
 /*!

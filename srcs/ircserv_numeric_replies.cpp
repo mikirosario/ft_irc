@@ -250,6 +250,70 @@ void		IRC_Server::send_rpl_BANLIST(Client const & recipient, Channel const & cha
 	send_rpl_ENDOFBANLIST(recipient, channel, "End of channel ban list");	
 }
 
+void		IRC_Server::send_rpl_MOTDSTART(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_MOTDSTART); 
+
+	std::string	motd_msg;
+	motd_msg += "- ";
+	motd_msg += _serveraddr;
+	motd_msg += "Message of the day - ";
+
+	numeric_reply_end(msg, motd_msg);
+	recipient.send_msg(msg);
+}
+
+void		IRC_Server::send_rpl_ENDOFMOTD(Client const & recipient)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_ENDOFMOTD); 
+
+	std::string	motd_msg = "End of /MOTD command";
+
+	numeric_reply_end(msg, motd_msg);
+	recipient.send_msg(msg);
+}
+
+/*void		IRC_Server::send_MOTD(Client const & recipient) //hardcoded, replaced by file modt.txt
+{
+	send_rpl_MOTDSTART(recipient);
+
+	send_rpl_MOTD(recipient, ">=>       >=>     >=>           >==>    >=> >=======> >===>>=====>");
+	send_rpl_MOTD(recipient, ">> >=>   >>=>  >> >=>       >>  >> >=>  >=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=> >=> > >=>     >=>  >=>      >=> >=> >=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=>  >=>  >=> >=> >=> >=>  >=>  >=>  >=>>=> >=====>        >=>");
+	send_rpl_MOTD(recipient, ">=>   >>  >=> >=> >=>=>    >=>  >=>   > >=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=>       >=> >=> >=> >=>  >=>  >=>    >>=> >=>            >=>");
+	send_rpl_MOTD(recipient, ">=>       >=> >=> >=>  >=> >=>  >=>     >=> >=======>      >=>");
+	send_rpl_ENDOFMOTD(recipient);
+}*/
+
+void		IRC_Server::send_MOTD(Client const & recipient) {
+
+	std::fstream file;
+	std::string line;
+
+	send_rpl_MOTDSTART(recipient);
+	file.open("motd.txt", std::ifstream::in);
+	if( !file ) { 
+		send_err_NOMOTD(recipient, "MOTD file is missing");
+   	}
+	else {
+		while (std::getline(file, line)) {
+			if (line.size() > 510)
+				line = "ERROR: LINE IS TOO BIG, MAX 510 CHARS";
+			send_rpl_MOTD(recipient, line);
+		}
+	}
+	send_rpl_ENDOFMOTD(recipient);
+}
+
+void		IRC_Server::send_rpl_MOTD(Client const & recipient, std::string	motd_msg)
+{
+	std::string msg = numeric_reply_start(recipient, RPL_MOTD); 
+	numeric_reply_end(msg, motd_msg);
+	recipient.send_msg(msg);
+}
+
 //debug //if user invisibility is implemented, we will need to account for this!!
 /*!
 ** @brief	Builds and sends a NAMREPLY reply to @a recipient containing a list
@@ -314,29 +378,26 @@ void		IRC_Server::send_rpl_ENDOFNAMES(Client const & recipient, std::string cons
 
 void		IRC_Server::send_rpl_LISTSTART(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
-	numeric_reply_end(msg, "Channel :Users  Name");
+	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART) + "Channel ";
+	numeric_reply_end(msg, "Users  Name");
 	recipient.send_msg(msg);
 }
 
 void		IRC_Server::send_rpl_LIST(Client const & recipient, std::string const & channelName)
 {
-	
-	 //"<client> <channel> <client count> :<topic>"
+	//<channel> <# visible> :<topic>
 
 	std::string msg = numeric_reply_start(recipient, RPL_LIST);
-	std::string copy_msg;
-
-	copy_msg += channelName + " ";
-	copy_msg += INT_TO_STR(_channels.find(channelName)->second.size());
-	copy_msg += " " + _channels.find(channelName)->second.getTopic() + " ";
-	numeric_reply_end(msg, copy_msg);
+ 	std::string topic = _channels.find(channelName)->second.getTopic() + " ";
+	msg += channelName + " ";
+	msg += INT_TO_STR(_channels.find(channelName)->second.size());
+	numeric_reply_end(msg, topic);
 	recipient.send_msg(msg);
 }
 
 void		IRC_Server::send_rpl_LISTEND(Client const & recipient)
 {
-	std::string msg = numeric_reply_start(recipient, RPL_LISTSTART);
+	std::string msg = numeric_reply_start(recipient, RPL_LISTEND);
 	numeric_reply_end(msg, "End of /LIST");
 	recipient.send_msg(msg);
 }
