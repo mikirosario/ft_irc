@@ -257,7 +257,7 @@ void		IRC_Server::send_rpl_MOTDSTART(Client const & recipient)
 	std::string	motd_msg;
 	motd_msg += "- ";
 	motd_msg += _serveraddr;
-	motd_msg += "Message of the day - ";
+	motd_msg += " Message of the day - ";
 
 	numeric_reply_end(msg, motd_msg);
 	recipient.send_msg(msg);
