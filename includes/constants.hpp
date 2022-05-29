@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   constants.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 17:56:59 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 14:21:31 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #define MSG_BUF_SIZE 512		//maximum message length in IRC RFC including \r\n termination.
 #define OUT_BUF_SIZE 1000448	//maximum output buffer length before user is kicked (about 1MB, multiple of 512 bytes)
 #define MAX_NICK_SIZE 9 		//maximum nickname length
-#define MAX_HOSTNAME_SIZE 20	//maximum hostname size; //debug use clientaddr instead if this is too long
+#define MAX_HOSTNAME_SIZE 20	//maximum hostname size;
 #define MAX_USERNAME_SIZE 25	//maximum username size
 #define MAX_REALNAME_SIZE 35	//maximum real name size
 #define MAX_PASS_ATTEMPTS 10	//maximum number of PASS commands allowed during registration before we reject connection
@@ -33,17 +33,12 @@
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
 #define ISUPPORT_CHANTYPES "#"
-#define ISUPPORT_CHANMODES "b,k,,i" // comprobar que a funciona DEBUG
+#define ISUPPORT_CHANMODES "b,k,,i"
 #define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp || //Founder (q)~ // Operator (o)@ // HalfOp(h)%
 #define SUPPORTED_CHANNEL_MODES "bik" 
-#define SUPPORTED_USER_MODES "oai"
+#define SUPPORTED_USER_MODES "oi"
 #define UNSUPPORTED_CHANNEL_PREFIXES "&+" //we don't support Protected or Voice
-
-
-#define CLIENT_ALREADY_EXIST_RETURN	0
 #define INVALID_PASSWORD_RETURN	-1
-
-//#define CHANNEL_MODES "isp"
 
 /*!
 ** @brief	Returns channel mode type of @a mode.

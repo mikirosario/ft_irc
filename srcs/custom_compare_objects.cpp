@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   custom_compare_objects.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/27 19:19:59 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/19 19:54:04 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 17:08:27 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,5 +138,5 @@ bool	wildcard_matching_equality(std::string const & normal_str, std::string cons
 */
 bool	dual_wildcard_matching_equality(std::string const & str1, std::string const & str2)
 {
-	return wildcard_matching_equality(str1, str2) || wildcard_matching_equality(str2, str1);
+	return wildcard_matching_equality(str1, str2) | wildcard_matching_equality(str2, str1);
 }

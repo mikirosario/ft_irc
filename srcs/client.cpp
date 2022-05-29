@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/28 17:46:47 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 15:03:03 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,8 @@ IRC_Server::Client &	IRC_Server::Client::operator=(Client const & src)
 	_username = src._username;
 	_realname = src._realname;
 	_hostname = src._hostname;
-	//_channels = src._channels;
-	//_invitelist - src._invitelist;
+	_channels = src._channels;
+	_invitelist = src._invitelist;
 	return (*this);
 }
 
@@ -85,8 +85,8 @@ void		IRC_Server::Client::move(Client & src)
 	std::swap(this->_message, src._message);
 	std::swap(this->_modes, src._modes);
 	std::swap(this->_hostname, src._hostname);
-	//std::swap(this->_channels, src._channels);
-	//std::swap(this->_invitelist, src._invitelist);
+	std::swap(this->_channels, src._channels);
+	std::swap(this->_invitelist, src._invitelist);
 	src.clear();
 }
 
@@ -360,7 +360,6 @@ void	IRC_Server::Client::set_sockfd(int sockfd)
 	if (getsockname(sockfd, &serverIP, &addrlen) == -1)
 		perror("getsockname() failed in set_sockfd");
 	else
-		//debug inet_ntoa in_addr must be IPv4, but rereading the subject requirements inet_ntop is not officially allowed... :/
 		_serveraddr = inet_ntoa(*(reinterpret_cast<struct in_addr *>(IRC_Server::get_in_addr(&serverIP))));	
 }
 
@@ -389,6 +388,9 @@ bool	IRC_Server::Client::reg_pass_attempt(void)
 */
 void	IRC_Server::Client::set_nick(std::string const & nick)
 {
+	
+	for (t_ChanMap::iterator chan_it = _channels.begin(), chan_end = _channels.end(); chan_it != chan_end; ++chan_it)
+		chan_it->second->second.changeNick(_nick, nick);
 	_nick = nick;
 	// //debug
 	// std::cout << _nick << std::endl;
@@ -461,7 +463,7 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 	{
 		_clientaddr = remoteaddrinfo->ai_canonname;
 		//debug
-		std::cout << "My canonical name is? " << remoteaddrinfo->ai_canonname << std::endl; //debug
+		std::cout << "My canonical name is? " << remoteaddrinfo->ai_canonname << std::endl;
 		//debug	
 		freeaddrinfo(remoteaddrinfo);
 	}
@@ -660,8 +662,8 @@ void	IRC_Server::Client::clear(void)
 	_msg_buf.clear();
 	_out_buf.clear();
 	_message.clear();
-	//_channels.clear();
-	//_invitelist.clear();
+	_channels.clear();
+	_invitelist.clear();
 }
 
 /*!
@@ -721,16 +723,8 @@ bool	IRC_Server::Client::msg_buf_is_crlf_terminated(void) const
 */
 void	IRC_Server::Client::leave_channel(t_ChanMap::iterator const & channel_it)
 {
-	// //debug
-	// bool ret_rmember;
-	// //debug
-
 	channel_it->second->second.removeMember(get_nick());
 	_channels.erase(channel_it);
-	
-	// //debug
-	// std::cout << "leave channel result: " << ret_rmember << std::endl;
-	// //debug
 }
 
 /*!
@@ -797,6 +791,7 @@ void	IRC_Server::Client::send_output_buf(void)
 {
 	//debug
 	std::cerr << "OUTBUF CONTENT\n" << _out_buf << std::endl;
+	//debug
 	ssize_t bytes_copied = send(_sockfd, _out_buf.data(), _out_buf.size(), 0);
 	if (bytes_copied < 0) //send errors will lead to kill command to avoid zombie clients
 		_parent_server->send_rpl_KILL(*this, "Fatal connection error");
@@ -904,8 +899,6 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 		size_t		end_pos;
 		if (cmd.empty() == false)												//if there is a command, we retrieve command and parameters
 		{
-			//size_t	end_pos;
-
 			ret.push_back(cmd);													//add command
 			start_pos = _message.find(cmd);										//set start_pos to beginning of cmd
 			start_pos = _message.find_first_of(" \r\n", start_pos);				//get first space or endline after cmd
@@ -919,9 +912,6 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 				}
 				else															//general param case (if starting pos >= _message.size(), npos is returned, but this should NOT happen here as everything MUST be cr or lf terminated)
 					end_pos = _message.find_first_of(" \r\n", start_pos);		//strip crlf from last parameter
-				// //debug
-				// std::cerr << "START_POS: " << start_pos << " END_POS: " << end_pos << std::endl;
-				// //debug
 				ret.push_back(_message.substr(start_pos, end_pos - start_pos));	//add parameter to vector; 0 bytes == empty string
 				start_pos = _message.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
 			}
@@ -944,58 +934,8 @@ std::vector<std::string>	IRC_Server::Client::get_message(void)
 			_in_buf_state = IRC_Server::Client::Buffer_State(UNREADY);	//set  buffer to wait for more incoming data
 		}
 	}
-	// //debug
-	// for (std::vector<std::string>::const_iterator it = ret.begin(), end = ret.end(); it != end; ++it)
-	// 	std::cerr << *it << std::endl;
-	// //debug
-
 	return  (ret);
 }
-
-// std::vector<std::string>	IRC_Server::Client::get_message(void)
-// {
-// 	std::vector<std::string>	ret;
-
-// 	if (_in_buf_state == IRC_Server::Client::Buffer_State(READY))
-// 	{
-// 		std::string	cmd = get_cmd();
-// 		size_t		start_pos = 0;
-// 		size_t		end_pos;
-// 		if (cmd.empty() == false)												//if there is a command, we retrieve command and parameters
-// 		{
-// 			//size_t	end_pos;
-
-// 			ret.push_back(cmd);													//add command
-// 			start_pos = _msg_buf.find(cmd);										//set start_pos to beginning of cmd
-// 			start_pos = _msg_buf.find_first_of(" \r\n", start_pos);				//get first space or endline after cmd
-// 			start_pos = _msg_buf.find_first_not_of(' ', start_pos);				//tolerate leading spaces
-// 			while (_msg_buf[start_pos] != '\r' && _msg_buf[start_pos] != '\n')	//NOTHING not crlf terminated should get this far, if so fix at source!
-// 			{	
-// 				if (_msg_buf[start_pos] == ':')									//last param colon case
-// 				{
-// 					++start_pos;
-// 					end_pos = _msg_buf.find_first_of("\r\n\0");					//strip crlf from last parameter
-// 				}
-// 				else															//general param case (if starting pos >= _msg_buf.size(), npos is returned, but this should NOT happen here as everything MUST be cr or lf terminated)
-// 					end_pos = _msg_buf.find_first_of(" \r\n", start_pos);		//strip crlf from last parameter
-// 				// //debug
-// 				// std::cerr << "START_POS: " << start_pos << " END_POS: " << end_pos << std::endl;
-// 				// //debug
-// 				ret.push_back(_msg_buf.substr(start_pos, end_pos - start_pos));	//add parameter to vector; 0 bytes == empty string
-// 				start_pos = _msg_buf.find_first_not_of(' ', end_pos);			//tolerate trailing spaces
-// 			}
-// 			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);				//get the character after crlf termination; npos is OK too if there is no such character
-// 		}
-// 		else
-// 		{
-// 			end_pos = _msg_buf.find_first_of("\r\n", start_pos);
-// 			end_pos = _msg_buf.find_first_not_of("\r\n", end_pos);
-// 			ret[0] = cmd;														//we guarantee interpreters will receive argv with a command string when Client_Buffer state reports READY; if none exists, we provide an empty one
-// 		}
-// 		flush_msg_buf(end_pos); //buffer is always flushed with get_message when READY, even if there is no command
-// 	}
-// 	return  (ret);
-// }
 
 /*!
 ** @brief	Builds a source string for this Client instance in format:

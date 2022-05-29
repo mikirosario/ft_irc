@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_numeric_replies.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 19:44:08 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 15:05:19 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,20 +34,9 @@ std::string	IRC_Server::numeric_reply_start(Client const & recipient, char const
 	rpl += numeric;
 	rpl += " ";
 	if (recipient.is_registered() == true) //first parameter should be client name, but if client is unregistered this hasn't yet been recorded
-		rpl += recipient.get_nick() + " "; //debug //will have a get_client() for formatted replies: nick!user@userIP
+		rpl += recipient.get_nick() + " ";
 	return (rpl);
 }
-
-// std::string	IRC_Server::numeric_reply_start(Channel const & recipient, char const * numeric) const
-// {
-// 	std::string	rpl;
-
-// 	rpl += get_source() + " ";
-// 	rpl += numeric;
-// 	rpl += " ";
-// 	rpl += recipient.getChannelName() + " ";
-// 	return (rpl);
-// }
 
 /*!
 ** @brief	The @a reply will be properly ended with the @a description, or with
@@ -97,7 +86,7 @@ void		IRC_Server::send_rpl_WELCOME(Client & recipient)
 	welcome_msg += "Welcome to the ";
 	welcome_msg += _networkname;
 	welcome_msg += " Network, ";
-	welcome_msg += recipient.get_nick(); //debug //might put this longname/mask into static memory
+	welcome_msg += recipient.get_nick();
 	welcome_msg += "!";
 	welcome_msg += recipient.get_username();
 	welcome_msg += "@";
@@ -116,7 +105,7 @@ void		IRC_Server::send_rpl_YOURHOST(Client & recipient)
 	yourhost_msg += "Your host is ";
 	yourhost_msg += _servername;
 	yourhost_msg += ", running version ";
-	yourhost_msg += VERSION; //debug //currently derived from git tag and passed through clang
+	yourhost_msg += VERSION; //currently derived from git tag and passed through clang
 	numeric_reply_end(msg, yourhost_msg);
 	recipient.send_msg(msg);
 }
@@ -132,7 +121,6 @@ void		IRC_Server::send_rpl_CREATED(Client & recipient)
 	recipient.send_msg(msg);
 }
 
-//debug //finish these
 void		IRC_Server::send_rpl_MYINFO(Client & recipient)
 {
 	std::string msg = numeric_reply_start(recipient, RPL_MYINFO); 
@@ -178,9 +166,6 @@ void		IRC_Server::send_rpl_ISUPPORT(Client & recipient)
 	msg = msg_start + ss2.str();
 	numeric_reply_end(msg, "are supported on this server");
 	recipient.send_msg(msg);
-	// //debug
-	// std::cerr << "imprime " << msg << std::endl;
-	// //debug
 }
 
 void		IRC_Server::send_rpl_UMODEIS(Client & recipient)
@@ -191,11 +176,6 @@ void		IRC_Server::send_rpl_UMODEIS(Client & recipient)
 	numeric_reply_end(msg, std::string());
 	recipient.send_msg(msg);
 }
-
-//debug  //finish these
-
-// Join: replies to command
-
 
 void		IRC_Server::send_rpl_TOPIC(Client & recipient, Channel const & channel)
 {
@@ -220,7 +200,6 @@ void		IRC_Server::send_rpl_CHANNELMODEIS(Client & recipient, Channel const & cha
 	std::string msg = numeric_reply_start(recipient, RPL_CHANNELMODEIS);
 	msg += channel.getChannelName() + " ";
 	msg += channel.getModes();
-	//debug //+ arguments??
 	numeric_reply_end(msg, std::string());
 	recipient.send_msg(msg);
 }
@@ -263,7 +242,7 @@ void		IRC_Server::send_rpl_MOTDSTART(Client & recipient)
 	std::string	motd_msg;
 	motd_msg += "- ";
 	motd_msg += _serveraddr;
-	motd_msg += "Message of the day - ";
+	motd_msg += " Message of the day - ";
 
 	numeric_reply_end(msg, motd_msg);
 	recipient.send_msg(msg);
@@ -278,20 +257,6 @@ void		IRC_Server::send_rpl_ENDOFMOTD(Client & recipient)
 	numeric_reply_end(msg, motd_msg);
 	recipient.send_msg(msg);
 }
-
-/*void		IRC_Server::send_MOTD(Client & recipient) //hardcoded, replaced by file modt.txt
-{
-	send_rpl_MOTDSTART(recipient);
-
-	send_rpl_MOTD(recipient, ">=>       >=>     >=>           >==>    >=> >=======> >===>>=====>");
-	send_rpl_MOTD(recipient, ">> >=>   >>=>  >> >=>       >>  >> >=>  >=> >=>            >=>");
-	send_rpl_MOTD(recipient, ">=> >=> > >=>     >=>  >=>      >=> >=> >=> >=>            >=>");
-	send_rpl_MOTD(recipient, ">=>  >=>  >=> >=> >=> >=>  >=>  >=>  >=>>=> >=====>        >=>");
-	send_rpl_MOTD(recipient, ">=>   >>  >=> >=> >=>=>    >=>  >=>   > >=> >=>            >=>");
-	send_rpl_MOTD(recipient, ">=>       >=> >=> >=> >=>  >=>  >=>    >>=> >=>            >=>");
-	send_rpl_MOTD(recipient, ">=>       >=> >=> >=>  >=> >=>  >=>     >=> >=======>      >=>");
-	send_rpl_ENDOFMOTD(recipient);
-}*/
 
 void		IRC_Server::send_MOTD(Client & recipient) {
 
@@ -320,7 +285,6 @@ void		IRC_Server::send_rpl_MOTD(Client & recipient, std::string	motd_msg)
 	recipient.send_msg(msg);
 }
 
-//debug //if user invisibility is implemented, we will need to account for this!!
 /*!
 ** @brief	Builds and sends a NAMREPLY reply to @a recipient containing a list
 **			of all members of @a channel and terminates with an ENDOFNAMES reply
@@ -341,8 +305,7 @@ void		IRC_Server::send_rpl_NAMREPLY(Client & recipient, Channel const & channel)
 		std::string msg = numeric_reply_start(recipient, RPL_NAMREPLY); 
 		std::string member_list;
 
-			//debug //will want channel to give us this
-		msg += "= "; //debug //get channel status (= public, @ secret, *private), currently unimplemented so all channels are public
+		msg += "= "; //get channel status (= public, @ secret, *private), currently unimplemented so all channels are public
 		msg += channel.getChannelName();
 
 		member_list.reserve(MSG_BUF_SIZE * 2);
@@ -367,7 +330,6 @@ void		IRC_Server::send_rpl_NAMREPLY(Client & recipient, Channel const & channel)
 				member_list += *user_it + " ";
 			numeric_reply_end(msg_cpy, member_list);
 			recipient.send_msg(msg_cpy);
-			//msg_cpy.erase(msg_cpy.begin() + msg.size(), msg_cpy.end()); alternative, but is it more efficient than msg_cpy = msg?? ;)
 		}
 	}
 	send_rpl_ENDOFNAMES(recipient, channel.getChannelName());
@@ -391,8 +353,6 @@ void		IRC_Server::send_rpl_LISTSTART(Client & recipient)
 
 void		IRC_Server::send_rpl_LIST(Client & recipient, std::string const & channelName)
 {
-	//<channel> <# visible> :<topic>
-
 	std::string msg = numeric_reply_start(recipient, RPL_LIST);
  	std::string topic = _channels.find(channelName)->second.getTopic() + " ";
 	msg += channelName + " ";

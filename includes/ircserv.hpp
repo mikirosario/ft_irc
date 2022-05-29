@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/27 10:15:50 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 14:24:48 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,31 +14,27 @@
 # define IRCSERV_H
 
 #include <exception>
-
 #include <sstream>
 #include <string>
 #include <vector>
-#include <cstdio> //perror
+#include <cstdio>		//perror
 #include <algorithm>
 #include <map>
 #include <set>
 #include <bitset>
-
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <arpa/inet.h> //inet_ntop
+#include <arpa/inet.h>	//inet_ntop
 #include <netdb.h>
-#include <unistd.h> //close
+#include <unistd.h>		//close
 #include <fcntl.h>
 #include <poll.h>
 #include <iostream>
-#include <fstream> // I'm iostream but better
-#include <cstring> //for memset
+#include <fstream>
+#include <cstring>		//for memset
 
 #include "irc_numerics.hpp"
 #include "constants.hpp"
-
-//debug detect client disconnection and call remove_client_from_server on disconnect
 
 enum Args
 {
@@ -78,7 +74,6 @@ class IRC_Server
 		//Modules
 		#include "client.hpp"
 		#include "channel.hpp"
-		#include "database.hpp"
 		#include "ircserv_modules.hpp"
 		std::string								_oper_info[2];
 		std::string								_nethost; //no longer needed?? what??
@@ -108,7 +103,6 @@ class IRC_Server
 		Client *		find_client_by_nick(std::string const & nick);
 		Client const *	find_client_by_nick(std::string const & nick) const;
 		static void		remove_source(std::string & message);
-		//int			find_client_pos_by_nick(std::string const & nick); still undefined
 
 		//Server initialization
 		bool			init(std::string const & netinfo);
@@ -130,24 +124,18 @@ class IRC_Server
 		void	accept_connection(void);
 		bool	poll_listener(void) const;
 		bool	poll_client(int i) const;
-		//void	process_client_message(int i);
 		void	process_client_message(Client & client);
 		void	remove_client_from_server(size_t pos);
 		void	remove_client_from_server(Client const & client);
-		// void	remove_channel_from_server(Channel & channel);
-		// void	remove_channel_from_server(std::string & channel_name);
 		void	remove_flagged_clients(void);
-		// void	remove_flagged_channels(void);
 		
 		//Channel controls
-		//bool	add_channel(Channel const & new_channel); //debug //remove once overload below confirmed working
 		t_Channel_Map::iterator	add_channel(Client & creator, std::string const & channel_name, std::string const & key);
 		void	remove_channel(std::string const & channel_name);
 		bool	find_channel(std::string const & channel_name);
 		t_Channel_Map::iterator	get_channel_by_name(std::string const & channel_name);
-
 		void	remove_user_from_channel(Client const &client, std::string const & channel_name);
-		//void	remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg);
+
 		//Utils
 		bool				is_endline(char const c);
 		bool				confirm_pass(std::string const & client_pass) const;
@@ -155,8 +143,8 @@ class IRC_Server
 
 	public:
 		/* CONSTRUCTORS AND DESTRUCTOR */
-			IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo = std::string());	//Argument constructor
-			~IRC_Server(void);																								//Destructor
+			IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo = std::string());
+			~IRC_Server(void);
 		
 		/* GETTERS */
 		std::string const &	get_port(void) const;

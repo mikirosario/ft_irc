@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_other_replies.cpp                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 19:00:50 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 19:42:46 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 14:57:06 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,12 +67,15 @@ void		IRC_Server::non_numeric_reply_end(std::string & reply, std::string const &
 */
 void	IRC_Server::send_rpl_NICK(Client & recipient, std::string const & old_source) const
 {
+	typedef IRC_Server::Client::t_ChanMap::iterator t_ChanMapIt;
 	std::string msg = old_source;	//:old_nickname!username@hostname
 
 	msg += " NICK ";
 	msg += recipient.get_nick();	//new nick
 	non_numeric_reply_end(msg, std::string());
 	recipient.send_msg(msg);
+	for (t_ChanMapIt begin = recipient.get_chanlist().begin(), end = recipient.get_chanlist().end(); begin != end; ++begin)
+		begin->second->second.send_msg(&recipient, 0, msg);
 }
 
 /*!
@@ -163,28 +166,23 @@ void		IRC_Server::send_rpl_INVITE(Client & recipient, Client const & source, std
 */
 void		IRC_Server::send_rpl_JOIN(Channel const & recipient, Client const & source) const
 {
-	std::string msg = ":" + source.get_nick();
+	std::string msg = source.get_source();
 
 	msg += " JOIN ";
 	msg += recipient.getChannelName();
 	non_numeric_reply_end(msg, std::string());
-	//debug
-		std::cout << msg << std::endl;
-	//debug
+	// //debug
+	// 	std::cout << msg << std::endl;
+	// //debug
 	recipient.send_msg(NULL, 0, msg);
 }
 
 void		IRC_Server::send_rpl_PART(Client & recipient, Channel const & channel, std::string const & part_message) const
 {
-	//std::string msg_recipient = get_source() + " PART ";
-	// std::string msg_channel = recipient.get_source() + " PART ";
-	std::string msg_channel = ":" + recipient.get_nick() + " PART ";
+	std::string msg_channel = recipient.get_source() + " PART ";
 
-	//msg_recipient += channel.getChannelName();
 	msg_channel += channel.getChannelName();
-	//non_numeric_reply_end(msg_recipient, part_message);
 	non_numeric_reply_end(msg_channel, part_message);
-	//recipient.send_msg(msg_channel);
 	channel.send_msg(NULL, 0, msg_channel);
 }
 

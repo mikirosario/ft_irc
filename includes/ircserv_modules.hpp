@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_modules.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:38:32 by miki              #+#    #+#             */
-/*   Updated: 2022/05/28 19:39:28 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 16:43:58 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ static std::string &	preprocess_list_param(std::string & str, char delimiter);
 
 
 //interpreting
-	//-miki
 void	exec_cmd_BAILA(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_PASS(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NICK(Client & sender, std::vector<std::string> const & argv);
@@ -38,7 +37,7 @@ void	exec_cmd_NAMES(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_JOIN(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_MOTD(Client & sender, std::vector<std::string> const & argv);
 void	exec_cmd_NOTICE(Client & sender, std::vector<std::string> const & argv);
-bool	doChanModeChange(char sign, char mode, std::string const & arg, Client & recipient, Channel & channel);
+bool	doChanModeChange(char sign, char mode, std::string & arg, Client & recipient, Channel & channel);
 bool	register_client(Client & client);
 void	interpret_msg(Client & client);
 void	exec_cmd_PART(Client & sender, std::vector<std::string> const & argv);
@@ -89,15 +88,8 @@ void		send_rpl_ENDOFMOTD(Client & recipient);
 void		send_rpl_YOUREOPER(Client & recipient, std::string const & description);
 void		send_rpl_KILL(Client & killer, Client & killed, std::string const & description);
 void		send_rpl_KILL(Client & killed, std::string const & reason);
-// Esto no lo considero neceserio
 
-/*
-void		send_rpl_topicWhoTime(Client const & recipient, std::string const & command, std::string const & description)
-void		send_rpl_namReply(Client const & recipient, std::string const & command, std::string const & description)
-*/
-
-	//error numeric replies
-
+//error numeric replies
 void		send_err_UNKNOWNERROR(Client & recipient, std::string const & command, std::string const & description) const;
 void		send_err_UNKNOWNCOMMAND(Client & recipient, std::string const & command, std::string const & description) const;
 void		send_err_ALREADYREGISTERED(Client & recipient, std::string const & description) const;
@@ -123,13 +115,8 @@ void		send_err_ERR_CHANOPRIVSNEEDED(Client & recipient, Channel const & channel,
 void		send_err_USERSDONTMATCH(Client & recipient, std::string const & description) const;
 void		send_err_UMODEUNKNOWNFLAG(Client & recipient, std::string const & description) const;
 void		send_err_NOPRIVILEGES(Client & recipient, std::string const & description) const;
-	// Me quedo aqui hoy
-
-// Join
-
 void		send_err_NOSUCHCHANNEL(Client & recipient, std::string const & channel_nick, std::string const & description) const;
 void		send_err_TOOMANYCHANNELS(Client & recipient, std::string const & command, std::string const & description) const;
-
 void		send_err_BANNEDFROMCHAN(Client & recipient, Channel const & channel, std::string const & description) const;
 void		send_err_CHANNELISFULL (Client & recipient, std::string const & command, std::string const & description) const;
 void		send_err_INVITEONLYCHAN(Client & recipient, std::string const & command, std::string const & description) const;

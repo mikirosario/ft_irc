@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/28 19:40:37 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 17:23:47 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ bool IRC_Server::username_is_valid(std::string const &username)
 /*!
 ** @brief	Determines validity of @a channel_name as a channel name.
 **
-** @details	A channel name must start with '#' and be between 2 and 50 bytes			// debug //deprecated A channel name must start with '&', '#', '+' or '!' and be between
+** @details	A channel name must start with '#' and be between 2 and 50 bytes
 **			long, and may not contain ' ', '\a', ',' or '0'.
 ** @param	channel_name	A string proposed as a channel name.
 ** @return	true of @a channel_name is a valid channel name, otherwise false
@@ -342,8 +342,6 @@ void IRC_Server::exec_cmd_USER(Client &sender, std::vector<std::string> const &a
 	}
 }
 
-//(std::string() += "blah").size(); //debug //normal
-//(std::ostringstream() << "No recipient given (" << argv[0] << ")").str(); //debug //why not compiler????
 /*!
 ** @brief	Executes a PRIVMSG command originating from @a sender.
 **
@@ -382,10 +380,10 @@ void IRC_Server::exec_cmd_USER(Client &sender, std::vector<std::string> const &a
 **			level and will be sent to all channel members, '%' signifies halfop
 **			level, '@' signifies chanop level and '~' signifies owner level.
 **
-**			Any other prefix will not be accepted. 				//debug //currently implemented in channel object, maybe move logic here
+**			Any other prefix will not be accepted.
 **
 **			If multiple prefixes are sent, the one with the lowest privilege
-**			level will be used. For example: "@~%#" == "%#".	//debug // currently implemented in channel object, maybe move logic here
+**			level will be used. For example: "@~%#" == "%#".
 ** @param	sender	A reference to the client who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
 **					and its arguments (argv[1,...]) in a string vector.
@@ -399,17 +397,15 @@ void IRC_Server::exec_cmd_PRIVMSG(Client &sender, std::vector<std::string> const
 	{
 		std::ostringstream ss;
 		ss << "No recipient given (" << argv[0] << ")";
-		send_err_NORECIPIENT(sender, ss.str()); // debug //there HAS to be a way to one-line this xD
+		send_err_NORECIPIENT(sender, ss.str());
 	}
 	else if (argv[2].empty() == true)
 		send_err_NOTEXTTOSEND(sender, "No text to send");
 	else
 	{
-		// std::string				msg_source = sender.get_source() + " ";
 		std::string target;
 		Client *usr_recipient;
 		t_Channel_Map::iterator ch_recipient;
-		// std::stringstream		raw_target_list(remove_adjacent_duplicates(trim(const_cast<std::string &>(argv[1]), std::string(1, ',')), ','));
 		std::stringstream raw_target_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
 
 		do
@@ -426,7 +422,7 @@ void IRC_Server::exec_cmd_PRIVMSG(Client &sender, std::vector<std::string> const
 					size_t chname_pos;
 					if ((chname_pos = target.find_first_not_of("#", hash_pos)) == std::string::npos ||
 						(ch_recipient = _channels.find(target.substr(chname_pos - 1))) == _channels.end()) // it's a channel, but with an empty name OR that does not exist in _channels
-						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");		   // Don't know why, but RFC says use NOSUCHNICK, not NOSUCHCHANNEL, in this case!
+						send_err_NOSUCHNICK(sender, target.substr(hash_pos), "No such channel");
 					else																				   // it's a channel and it exists in _channels
 					{
 						std::string prefixes = target.substr(0, hash_pos); // get the pre-hash-pos prefixes, if any!!!!
@@ -468,8 +464,8 @@ void IRC_Server::exec_cmd_MOTD(Client &sender, std::vector<std::string> const &a
 {
 	if (argv.size() > 1 && argv[1].compare(_servername) != 0)
 		send_err_NOSUCHSERVER(sender, argv[1], "No such server");
-	else // debug //add MOTD at some point :p
-		send_err_NOMOTD(sender, "MOTD file is missing");
+	else
+		send_MOTD(sender);
 }
 
 /*!
@@ -504,8 +500,6 @@ void IRC_Server::exec_cmd_NOTICE(Client &sender, std::vector<std::string> const 
 			JOIN COMMAND
 *****************************************/
 
-// DUDAS
-// 	- when is NOSUCHCHANNEL thrown?? NOSUCHCHANNEL doesn't always mean CHANNEL created?
 void IRC_Server::exec_cmd_JOIN(IRC_Server::Client &sender, std::vector<std::string> const &argv)
 {
 	if (argv.size() < 2)
@@ -550,14 +544,11 @@ void IRC_Server::exec_cmd_JOIN(IRC_Server::Client &sender, std::vector<std::stri
 				else if (ret == 0) // garden gnomes interfered; probably memory-related
 					send_err_UNKNOWNERROR(sender, argv[0], "Cannot join channel");
 			}
-			// SEND_RPL
 			if (ret == 1) // somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
 			{
 				send_rpl_JOIN(chan_it->second, sender);
 				send_rpl_NAMREPLY(sender, chan_it->second);
 			}
-			// membership restriction checks go in addMember, coded in return value; check if banned, etc.
-			// key will be empty if there is none associated; 0 is for user level.
 		} while (raw_channel_list.eof() == false);
 	}
 }
@@ -568,9 +559,6 @@ void IRC_Server::exec_cmd_JOIN(IRC_Server::Client &sender, std::vector<std::stri
 
 void IRC_Server::exec_cmd_PART(Client &sender, std::vector<std::string> const &argv)
 {
-	// size_t argv_size = argv.size();
-	// std::vector<std::string> stringVector;
-
 	if (argv.size() < 2)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else
@@ -581,10 +569,8 @@ void IRC_Server::exec_cmd_PART(Client &sender, std::vector<std::string> const &a
 		do
 		{
 			std::getline(raw_channel_list, channel, ',');
-
 			if (raw_channel_list.fail() == true)
 				send_err_UNKNOWNERROR(sender, argv[0], "Invalid channel passed to std::getline()");
-
 			else
 			{
 				size_t hash_pos = channel.find_first_of("#");
@@ -607,36 +593,6 @@ void IRC_Server::exec_cmd_PART(Client &sender, std::vector<std::string> const &a
 			}
 		} while (raw_channel_list.eof() == false);
 	}
-	// for (std::vector<std::string>::iterator it = stringVector.begin(); it != stringVector.end(); it++)
-	// {
-	// 	std::string password = "";
-	// 	std::string expectsString(*it);
-
-	// 	//	Error encontrado. Find channel nos devuelve siempre 0 si ejecutamos "PART canalAleatorioInventado"
-
-	// 	bool existChannel = find_channel(expectsString);
-	// 	if(!existChannel)
-	// 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	// 	else
-	// 	{
-	// 		//send_err_NOSUCHCHANNEL(sender, argv[0], "Debug error");
-	// 		if (argv_size == 2)
-	// 			remove_user_from_channel(sender, expectsString);
-	// 		// else
-	// 		// {
-	// 		// 	size_t i = 2;
-	// 		// 	std::string tmp_msg;
-
-	// 		// 	while (i < argv_size)
-	// 		// 	{
-	// 		// 		tmp_msg += argv[i];
-	// 		// 		tmp_msg += " ";
-	// 		// 		i++;
-	// 		// 	}
-	// 		// 	remove_user_from_channel(sender, expectsString, tmp_msg);
-	// 		// }
-	// 	}
-	// }
 }
 
 /****************************************
@@ -672,12 +628,6 @@ void IRC_Server::exec_cmd_TOPIC(Client &sender, std::vector<std::string> const &
 			NAMES COMMAND
 *****************************************/
 
-/*
-
-	Con names, cualquier usuario puede ver los usuarios conectados a un canal siempre que no esten en modo invisible (+i)
-
-*/
-
 /*!
 ** @brief	Executes a NAMES command originating from @a sender.
 **
@@ -699,8 +649,6 @@ void IRC_Server::exec_cmd_TOPIC(Client &sender, std::vector<std::string> const &
 **
 **			If garden gnomes attack std::getline(), UNKNOWNERROR error reply is
 **			sent.
-**
-**			//debug //invisible user modes and private channel modes not yet implemented!!
 ** @param	sender	A reference to the client who sent the command.
 ** @param	argv	A reference to the message containing the command (argv[0])
 **					and its arguments (argv[1,...]) in a string vector.
@@ -709,7 +657,7 @@ void IRC_Server::exec_cmd_NAMES(Client &sender, std::vector<std::string> const &
 {
 	size_t argc = argv.size();
 	if (argc < 2)
-		send_err_NEEDMOREPARAMS(sender, "MODE", "Not enough parameters");
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	else
 	{
 		std::stringstream raw_channel_list(preprocess_list_param(const_cast<std::string &>(argv[1]), ','));
@@ -725,8 +673,6 @@ void IRC_Server::exec_cmd_NAMES(Client &sender, std::vector<std::string> const &
 				send_rpl_ENDOFNAMES(sender, channel);
 			else // found channel
 			{
-				// debug / error // Si la lista no es invisible por las flags +p o +s, entonces retornamos el nombre de el canal
-				//  Si no, el caso de error correspondiente ( ¿ o simplemente mostrar como si no existiera?)
 				if (sender.get_joined_channel(channel).second == true || chan_it->second.getModes().find('i') == std::string::npos)
 					send_rpl_NAMREPLY(sender, chan_it->second);
 			}
@@ -765,15 +711,10 @@ void IRC_Server::exec_cmd_LIST(Client &sender, std::vector<std::string> const &a
 		{
 			std::getline(raw_channel_list, channel, ',');
 			if (raw_channel_list.fail() == true)
-			{
 				send_err_UNKNOWNERROR(sender, argv[0], "Invalid target passed to std::getline()");
-			}
 			else if (channel_name_is_valid(channel) == false)
-			{
 				send_err_NOSUCHCHANNEL(sender, channel, "No such channel");
-			}
-			else if ((chan_it = _channels.find(channel)) != _channels.end())
-			{
+			else if ((chan_it = _channels.find(channel)) != _channels.end()) {
 				if (sender.get_joined_channel(channel).second == true || chan_it->second.getModes().find('i') == std::string::npos)
 					send_rpl_LIST(sender, chan_it->first);
 			}
@@ -797,7 +738,6 @@ void IRC_Server::exec_cmd_INVITE(Client &sender, std::vector<std::string> const 
 
 	if (argc < 3)
 		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
-	//	send_rpl_NOTICE(sender, sender, sender.get_invites()); IMPLEMENTACION NO TERMINADA DE /INVITE SIN PARAMETROS (NO OFICIAL)
 	if (target == NULL)
 		send_err_NOSUCHNICK(sender, argv[1], "No such nick");
 	else if (channelit == _channels.end())
@@ -813,7 +753,6 @@ void IRC_Server::exec_cmd_INVITE(Client &sender, std::vector<std::string> const 
 		target->set_channel_invitation(channelit);
 		if (target->get_invited_channel(argv[2]).second == true)
 		{
-			//	send_rpl_INVITED(sender, *target, channel); implementacion no por defecto
 			send_rpl_INVITING(sender, *target, channel);
 			send_rpl_INVITE(*target, sender, argv[2]);
 		}
@@ -864,16 +803,6 @@ void IRC_Server::exec_cmd_KICK(Client &sender, std::vector<std::string> const &a
 			}
 		} while (raw_target_list.eof() == false);
 	}
-	//	Comprobacion de que el usuario pertenece al canal del que busca eliminar a alguien. Error: ERR_NOTONCHANNEL
-
-	// Comprobacion de si el usuario tiene permisos suficientes para ejecutar el kick. Error: ERR_CHANOPRIVSNEEDED
-
-	// Comprobacion de si el usuario usuario buscado realmente existe en el canal. Error: ERR_USERNOTINCHANNEL
-
-	// ¡Posibilidad!	¿Tenemos que comprobar si un ops/hops esta intentando eliminar un ops/hops de mayor o igual rango?
-
-	// Eliminamos al usuario. De tener mas de tres argumentos depuramos el mensaje al igual que hacemos en TOPIC, con la diferencia de que
-	//	mandamos mensaje necesario. De no definir mensaje, usamos mensaje generico.
 }
 
 void	IRC_Server::exec_cmd_OPER(Client & sender, std::vector<std::string> const & argv)
@@ -902,7 +831,7 @@ void	IRC_Server::exec_cmd_OPER(Client & sender, std::vector<std::string> const &
 static bool validate_modestring(std::string const &modestring)
 {
 	size_t end_modes = modestring.find_first_of(' ');
-	// there is a space and a non-space before the space, orthere is no space but there as at least one non-space character
+	// there is a space and a non-space before the space, or there is no space but there as at least one non-space character
 	return ((end_modes != std::string::npos && end_modes > 0) || (end_modes == std::string::npos && modestring.size() > 0));
 }
 
@@ -960,14 +889,9 @@ static bool validateChanModeChange(char mode, char sign, std::string::const_iter
 	if ((type == 'B' || type == 'C') && has_arg == false) // Type C MUST have arg when being set and Type B MUST ALWAYS have arg, so change is invalid for these types if there is no arg
 		return false;
 	// Type A may either have arg or not; if there is an arg, we get it
-
 	std::string::const_iterator arg_end = next_arg;
 	while (arg_end != end_args && *arg_end != ' ')
 		++arg_end;
-	// if (next_arg != arg_end)								//get arg, if there is one, or empty arg otherwise
-	// 	arg.assign(next_arg, arg_end);
-	// else
-	// 	arg.clear();
 	arg.assign(next_arg, arg_end);
 	while (arg_end != end_args && *arg_end == ' ') // find next arg or end of args
 		++arg_end;
@@ -975,84 +899,29 @@ static bool validateChanModeChange(char mode, char sign, std::string::const_iter
 	return true;
 }
 
-// /*!
-// **	@brief	Sets or unsets all modes in @a modes parameter if they were not
-// **			already set or unset, respectively, and indicates which changes were
-// **			applied in the @a applied_changes string. Modes requiring an
-// **			argument to be set/unset will only be set/unset if an argument is
-// **			available and valid.
-// **
-// ** @param	modestring		Modes to set in the channel, and their arguments, if
-// **							any, in format [['sign''modes'...] ['arg'...]].
-// ** @param	applied_changes	An empty writable string where applied changes with
-// **							their arguments will be returned.
-// ** @return	false if any modes could not be set, otherwise true
-// */
-// bool	IRC_Server::execModeChanges(Channel & channel, std::string const & modestring, std::string & applied_changes)
-// {
-// 	std::string	applied_args;
-// 	size_t		start_pos = modestring.find_first_of("+-");
-// 	size_t		first_arg_pos;
-// 	size_t		del;
-// 	char		sign;
-// 	bool		ret;
-
-// 	if (start_pos == std::string::npos)
-// 		return false;
-// 	first_arg_pos = modestring.find_first_of(' ', start_pos);
-// 	std::string::const_iterator next_arg = (first_arg_pos == std::string::npos ? modestring.end() : modestring.begin() + ++first_arg_pos);
-// 	std::string::const_iterator end_args = modestring.end();
-// 	ret = true;
-// 	for (std::string::const_iterator it = modestring.begin() + start_pos, end = modestring.end(); it != end; ++it)
-// 	{
-// 		if (std::strchr("+-", *it) != NULL)								//set sign
-// 		{
-// 			sign = *it;
-// 			applied_changes.push_back(*it);
-// 		}
-// 		else if (std::strchr(SUPPORTED_CHANNEL_MODES, *it) != NULL)		//mode is known
-// 		{
-// 			std::string	arg;
-// 			if (sign == '+'
-// 				&&	validateModeChange(get_mode_type(*it), sign, next_arg, end_args, arg) == true) //set requested and mode not already set and mode change validated
-// 				{
-// 					channel.setMode(*it); //try to set mode
-// 					//add to banlist, etc.
-// 					//add applied arg if applicable
-// 				}
-// 			else if (sign == '-'
-// 					&& validateModeChange(get_mode_type(*it), sign, next_arg, end_args, arg) == true)	//unset requested and mode not already unset and mode change validated
-// 				_modes.erase(del, 1);					//unset mode //debug // duda, si quitas ban mode sin arg, el banlist se borra o se guarda???
-// 			applied_changes.push_back(*it);
-// 		}
-// 		else															//mode is unknown
-// 			ret = false;
-// 	}
-// 	return (ret);
-// }
-
-// static void	getChanModeIterators(std::string::iterator & first_mode, std::string::iterator & end_modes, std::string::iterator & first_arg, std::string::iterator & end_args)
-// {
-
-// }
-
-static bool validateMask(std::string const &mask_candidate)
+static bool validateMask(std::string &mask_candidate)
 {
 	std::string::const_iterator begin = mask_candidate.begin();
 	std::string::const_iterator end = mask_candidate.end();
 	size_t excl_pos;
 	size_t at_pos;
 
-	if (std::count(begin, end, '!') == 1 && std::count(begin, end, '@') == 1							 // One '!' and one '@'
+	if (mask_candidate.find_first_of("!@") == std::string::npos && mask_candidate.size() > 0)
+	{
+		mask_candidate += "!*@*";
+		return true;
+	}
+	else if (std::count(begin, end, '!') == 1 && std::count(begin, end, '@') == 1							 // One '!' and one '@'
 		&& (excl_pos = mask_candidate.find_first_of('!')) < (at_pos = mask_candidate.find_first_of('@')) //'!' comes before '@'
 		&& excl_pos > 0																					 // Any character comes before '!'
 		&& mask_candidate.find_first_not_of('!', excl_pos) < at_pos										 // Any character(s) separate '!' and '@'
 		&& mask_candidate.find_first_not_of('@', at_pos) < std::string::npos)							 // Any character(s) come after '@'
 		return true;
+		
 	return false;
 }
 
-bool	IRC_Server::doChanModeChange(char sign, char mode, std::string const & arg, Client & recipient, Channel & channel)
+bool	IRC_Server::doChanModeChange(char sign, char mode, std::string & arg, Client & recipient, Channel & channel)
 {
 	if (std::strchr("+-", sign) == NULL || std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL)
 		return false;
@@ -1109,12 +978,11 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 {
 	size_t argc = argv.size();
 	if (argc < 2)
-		send_err_NEEDMOREPARAMS(sender, "MODE", "Not enough parameters");
+		send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 	size_t hash_pos = argv[1].find_first_of("#");
 	if (hash_pos == std::string::npos) // it's a user (all supported user modes are type D, so no args expected)
 	{
 		Client *target = find_client_by_nick(argv[1]);
-
 		if (target == NULL) // user does not exist
 			send_err_NOSUCHNICK(sender, argv[1], "No such nick");
 		else if (case_insensitive_ascii_compare(sender.get_nick(), argv[1]) == false) // sender is not the same as target
@@ -1122,11 +990,10 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 		else if (argc < 3 ||
 				 (validate_modestring(argv[2])) == false) // no modestring given; si fuera c++11 haría un lambda
 			send_rpl_UMODEIS(sender);
-		else // debug //shouldn't o be privileged????? :p pregunta a raul
+		else
 		{
 			std::string applied_changes;
 			bool all_modes_supported;
-
 			all_modes_supported = target->set_modes(argv[2], applied_changes);
 			send_rpl_MODE(sender, applied_changes);
 			if (all_modes_supported == false)
@@ -1136,12 +1003,8 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 	else // it's a channel
 	{
 		t_Channel_Map::iterator target = get_channel_by_name(argv[1]);
-
 		if (target == _channels.end()) // channel does not exist
 			send_err_NOSUCHCHANNEL(sender, argv[1], "No such channel");
-		// else if (argc < 3 ||
-		// 		(first_sign_pos = argv[2].find_first_of("+-")) == std::string::npos ||
-		// 		argv[2].find_first_not_of("+-", first_sign_pos) == std::string::npos)	//no modestring given; si fuera c++11 haría un lambda
 		else if (argc < 3 ||
 				 (validate_modestring(argv[2])) == false) // no modestring given; si fuera c++11 haría un lambda
 			send_rpl_CHANNELMODEIS(sender, target->second);
@@ -1151,21 +1014,14 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 		{
 			// ok... fork it, i'm going with a pair... tired of this bs...
 			std::pair<std::string, std::string> modesandargs;
-			size_t end_modes_pos = argv[2].find_first_of(' ');
-			size_t start_args_pos = argv[2].size();
-			size_t tmp; // in c++17 this would not have to exist because conditional declarations :p
-			if (end_modes_pos == std::string::npos)
-				end_modes_pos = argv[2].size();
-			else if ((tmp = argv[2].find_first_not_of(' ', end_modes_pos)) != std::string::npos)
-				start_args_pos = tmp;
-
+			size_t end_modes_pos = argv[2].size();
 			std::string arg;
-
 			char sign = '+';
 			// for each mode in modestring
 			for (std::string::const_iterator mode_it = argv[2].begin(),
+											 //modes_end = argv[2].begin() + end_modes_pos,
 											 modes_end = argv[2].begin() + end_modes_pos,
-											 next_arg = argv[2].begin() + start_args_pos;
+											 next_arg = argv[3].begin();
 				 mode_it != modes_end; ++mode_it)
 			{
 				if (*mode_it == '+' || *mode_it == '-')
@@ -1173,25 +1029,16 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 					sign = *mode_it;
 					modesandargs.first += sign;
 				}
-				else if (validateChanModeChange(*mode_it, sign, next_arg, argv[2].end(), arg) == true && doChanModeChange(sign, *mode_it, arg, sender, target->second) == true)
+				else if (validateChanModeChange(*mode_it, sign, next_arg, argv[3].end(), arg) == true && doChanModeChange(sign, *mode_it, arg, sender, target->second) == true)
 					modesandargs.first += *mode_it, modesandargs.second += arg;
 			}
 			if (modesandargs.first.size() == 1 && std::strchr("+-", modesandargs.first[0]) != NULL)
 				modesandargs.first.clear();
-			else if (modesandargs.first.size() > 0 && std::strchr("+-", modesandargs.first[0]) == NULL) // debug //do no funciona con -b y cuando no hay cambios queda un signo sin nada al principio
+			else if (modesandargs.first.size() > 0 && std::strchr("+-", modesandargs.first[0]) == NULL)
 				modesandargs.first.insert(modesandargs.first.begin(), '+');
 			std::string applied_changes = modesandargs.first + " ";
 			applied_changes += modesandargs.second;
 			send_rpl_MODE(sender, target->second, applied_changes);
-
-			// for each mode in modestring
-			//	get set/unset flag
-			//	get mode type
-			//	get mode argument as applicable
-			//	react as appropriate
-			// mode does not exist -> modeunknown ???
-			// type b or c mode exists but lacks required argument -> ignore
-			// type a mode exists but lacks argument -> send mode list to user
 		}
 	}
 }
@@ -1203,9 +1050,7 @@ void IRC_Server::exec_cmd_QUIT(Client &sender, std::vector<std::string> const &a
 	if (argv.size() > 1)
 		reason = argv[1];
 	send_rpl_QUIT(sender, reason);
-	//	sender.leave_all_channels();
 }
-
 
 void	IRC_Server::exec_cmd_KILL(Client & sender, std::vector<std::string> const & argv)
 {
@@ -1236,8 +1081,8 @@ void IRC_Server::interpret_msg(Client &client)
 
 	// debug
 	for (std::vector<std::string>::iterator it = argv.begin(), end = argv.end(); it != end; ++it)
-		std::cerr << *it << " ";
-	std::cerr << std::endl;
+		std::cout << *it << " ";
+	std::cout << std::endl;
 	// debug
 
 	// this might work best as a cmd-method map, just need to standardize all the functions...
@@ -1264,7 +1109,7 @@ void IRC_Server::interpret_msg(Client &client)
 			exec_cmd_NAMES(client, argv);
 		else if (cmd == "PING")
 			exec_cmd_PING(client, argv);
-		else if (cmd == "BAILA") // debug //this was originally just the first test case, might leave it in as an easter egg though ;)
+		else if (cmd == "BAILA") //this was originally just the first test case, leaving it in as an easter egg though ;)
 			exec_cmd_BAILA(client, argv);
 		else if (cmd == "MOTD")
 			exec_cmd_MOTD(client, argv);

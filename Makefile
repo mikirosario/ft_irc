@@ -6,7 +6,7 @@
 #    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/05/08 14:04:35 by mrosario         ###   ########.fr        #
+#    Updated: 2022/05/29 14:22:49 by mrosario         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,6 @@ SRCFILES =	./main.cpp $(SRCDIR)/ircserv.cpp \
 			$(SRCDIR)/ircserv_other_replies.cpp \
 			$(SRCDIR)/client.cpp \
 			$(SRCDIR)/channel.cpp \
-			$(SRCDIR)/database.cpp \
 			$(SRCDIR)/custom_compare_objects.cpp \
 			$(SRCDIR)/constants.cpp
 

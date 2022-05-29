@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 16:59:52 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 15:02:04 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,10 +104,6 @@ bool	IRC_Server::get_network_info(std::string const & arg)
 		}
 		while (token_end != network_info_end);
 		ret = ((*netinfo[0]).size() & (*netinfo[1]).size() & (*netinfo[2]).size());	//if all netinfo fields have been filled, return true, else false
-		// //debug
-		// for (int x = 0; x < 3; ++x)
-		// 	std::cout << *netinfo[x] << std::endl;
-		// //debug
 	}
 	return (ret);
 }
@@ -181,17 +177,6 @@ int	IRC_Server::get_listener_socket(void) const
 		std::cerr << "getaddrinfo error: " << gai_strerror(gai_status) << std::endl;
 	else //attempt to open socket and listen
 	{
-		//debug iterate results list for valid entry
-
-		// //debug print all IP addresses in getaddrinfo list //comento el comentario
-		// std::cout << "Empieza aquí" << std::endl;
-		// for (struct addrinfo * ptr = res; ptr != NULL; ptr = ptr->ai_next)
-		// {
-		// 	char *strptr = inet_ntoa(reinterpret_cast<sockaddr_in *>(ptr->ai_addr)->sin_addr);
-		// 	std::cout << strptr << std::endl;
-		// }
-		// //debug
-
 		int	connection_sockfd;
 
 		if ((connection_sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) //socket opened on success
@@ -199,11 +184,11 @@ int	IRC_Server::get_listener_socket(void) const
 		else
 		{
 			if (bind(connection_sockfd, res->ai_addr, res->ai_addrlen) == -1)
-				perror("Bind socket file descriptor to IRC port failed");//debug, confirm whether strerror or perror is legal
+				perror("Bind socket file descriptor to IRC port failed");
 			else if (fcntl(connection_sockfd, F_SETFL, O_NONBLOCK) == - 1) //non-blocking flag
-				perror("Fcntl non-blocking call failed"); //debug, confirm whether strerror or perror is legal
+				perror("Fcntl non-blocking call failed");
 			else if (listen(connection_sockfd, 20) == -1)
-				perror("Listen on IRC port through socket file descriptor failed");//debug, confirm whether strerror or perror is legal
+				perror("Listen on IRC port through socket file descriptor failed");
 			else
 			{
 				ret = connection_sockfd;
@@ -211,9 +196,9 @@ int	IRC_Server::get_listener_socket(void) const
 			}
 			if (ret == -1)
 				if ((close(connection_sockfd)) == -1)
-					perror("Close socket from get_listener_socket failed");//debug, confirm whether strerror or perror is legal
+					perror("Close socket from get_listener_socket failed");
 		}
-		freeaddrinfo(res); //debug res is assigned if getaddrinfo fails? freeaddrinfo handles NULL ref?
+		freeaddrinfo(res);
 	}
 	return (ret);
 }
@@ -290,39 +275,15 @@ bool	IRC_Server::init(std::string const & netinfo)
 	return (ret);
 }
 
-// bool	IRC_Server::init(std::string const & netinfo)
-// {
-// 	bool	ret = false;
-// 	int		listener_fd;
-// 	if (get_network_info(netinfo))	//we don't use it
-// 		std::cout << "Has network info"	<< std::endl;
-
-// 	//server setup
-// 	listener_fd = get_listener_socket();
-// 	if (listener_fd == -1)				//setup failed; abort
-// 		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON GET_LISTENER_SOCKET CALL FAILED."));
-// 	else if (add_connection(listener_fd, ) == false)	//setup failed; we need servername to use as prefix in communications with clients
-// 		close_server((EXIT_FAILURE), std::string ("IRC_SERV OFFLINE ON ADD_CONNECTION CALL FAILED."));
-// 	else 								//setup succeeded; server initialization
-// 	{
-// 		_serveraddr = _clients[0].get_hostname();
-// 		_state = State(ONLINE);
-// 		//debug
-// 		std::cout << "IRC Server: " << _serveraddr << std::endl;
-// 		//debug
-// 		ret = true;
-// 		server_loop();
-// 	}
-// 	return (ret);
-// }
-
 bool	IRC_Server::set_serveraddr(void)
 {
 	struct hostent	*self;
 	bool			ret = false;
 	
 	if ((self = gethostbyname("localhost")) == NULL)
-		hstrerror(h_errno); //debug; this isn't explicitly allowed by subject either :p but will keep it here until evaluation for debugging purposes
+		// // this isn't explicitly allowed by subject either :p
+		//hstrerror(h_errno);
+		std::cerr << "Could not get host by name" << std::endl;
 	else
 	{
 		_serveraddr = inet_ntoa(*(reinterpret_cast<struct in_addr *>(self->h_addr)));
@@ -370,11 +331,6 @@ void	IRC_Server::close_connection(int const fd)
 }
 
 	// -- CONNECTION HANDLING -- //
-
-// /*! @brief	Retrieves the current address to which the Client passed as @a client
-// **			is connected.
-// */
-// std::string	
 
 /*!
 ** @brief	Adds an open connection to the IRC_Server's @a _pollfds and
@@ -495,7 +451,6 @@ void		IRC_Server::accept_connection(void)
 	socklen_t					addrlen = sizeof(remoteaddr);
 	char *						remoteIP;
 	int							new_connection;
-	static const std::vector<std::string> argv(1, "LIST"); //debug //quitar, probablemente
 	
 	new_connection = accept(_pfds[0].fd, reinterpret_cast<struct sockaddr *>(&remoteaddr), &addrlen);
 	if (new_connection == -1)
@@ -558,12 +513,10 @@ void	IRC_Server::process_client_message(Client & client)
 		case 0 :
 			exec_cmd_QUIT(client, argv);
 			std::cerr << "pollserver: socket " << client.get_sockfd() << " hung up." << std::endl;
-			//remove_client_from_server(client); //QUIT does this now
 			break ;
 		case -1 :
 			exec_cmd_QUIT(client, argv);
 			std::cerr << "recv error" << std::endl;
-			//remove_client_from_server(client);
 			break ;
 		//handover to interpreter module in default case
 		default : //loverly RFC stuff here; parse message, interpret commands, execute them, send messages to and fro, frolic, etc.
@@ -573,36 +526,8 @@ void	IRC_Server::process_client_message(Client & client)
 			//debug
 			if (client.append_to_msg_buf(server_msgbuf, nbytes) == false)
 				send_err_INPUTTOOLONG(client, "Input line was too long");
-			//do stuff
-
-			// //debug
-			// for (int j = 1; j < _connections; ++j)	//send to all clients (this is just test code, no RFC stuff yet)
-			// 	if (static_cast<size_t>(j) != client.get_pos()) //do not send to self
-			// 		if (send(_pfds[j].fd, server_msgbuf, nbytes, 0) == -1)
-			// 			std::cerr << "send error" << std::endl;
-			// //debug
-			
 			while (client.msg_is_ready())		//while loop here, keep interpreting all received client msgs until none are left
 				interpret_msg(client);
-
-				
-				//debug
-				//debug
-
-				// //debug get_param_count and get_message tests
-				// //MAKE get_param_count() PUBLIC TO TEST THIS
-				// // std::cout	<< "TEST PARAM_COUNT: \n"
-				// // 			<< _clients[i].get_param_count() << std::endl;
-				// std::cout << "TEST GET_MESSAGE:" << std::endl;
-				// //debug
-
-				// std::vector<std::string>	argv = _clients[i].get_message();
-
-				// //debug
-				// std::cout << "vector size: " << argv.size() << std::endl;
-				// for (size_t i = 0; i < argv.size(); ++i)
-				// 	std::cout << argv[i] << "\n";
-				// //debug
 	}
 }
 
@@ -623,10 +548,7 @@ void	IRC_Server::process_client_message(Client & client)
 void	IRC_Server::remove_client_from_server(size_t pos)
 {
 	if (_remove_list.size() > pos && pos > 0)
-	{
 		_remove_list.set(pos, true);
-		//_clients[pos].leave_all_channels();
-	}
 }
 
 /*!
@@ -644,48 +566,6 @@ void	IRC_Server::remove_client_from_server(Client const & client)
 {
 	remove_client_from_server(client.get_pos());
 }
-
-// /*!
-// ** @brief	Safely flags the Channel @a channel for removal from the server.
-// **
-// ** @details	The Channel @a channel will be marked for removal at the next
-// **			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
-// **			Channel from the server.
-// **
-// **			Queries the @a _channels vector for an iterator pointing to
-// **			@a channel and stores it in @a  _chan_remove_list. If @a channel is
-// **			is not present in the @a _channels vector, nothing is done, though
-// **			this should not be possible. :p
-// ** @param	channel	The Channel to be removed from the server.
-// */
-// void	IRC_Server::remove_channel_from_server(Channel & channel)
-// {
-// 	t_Channel_Map::iterator	it(_channels.find(channel.getChannelName()));
-
-// 	if (it != _channels.end())
-// 		_chan_remove_list.push_back(it);
-// }
-
-// /*!
-// ** @brief	Safely flags the Channel @a channel for removal from the server.
-// **
-// ** @details	The Channel @a channel will be marked for removal at the next
-// **			available opportunity. Use ANYWHERE and AT ANY TIME to remove a
-// **			Channel from the server.
-// **
-// **			This overload queries the @a _channels vector for an iterator
-// **			pointing to @a channel using the provided channel_name. The iterator
-// **			is stored in @a _chan_remove_list. If @a channel_name is not present
-// **			in the @a _channels vector, nothing is done.
-// ** @param	channel	The Channel to be removed from the server.
-// */
-// void	IRC_Server::remove_channel_from_server(std::string & channel_name)
-// {
-// 	t_Channel_Map::iterator	it(_channels.find(channel_name));
-
-// 	if (it != _channels.end())
-// 		_chan_remove_list.push_back(it);
-// }
 
 /*!
 ** @brief	Removes all Clients flagged for removal from the server.
@@ -718,6 +598,7 @@ void	IRC_Server::remove_flagged_clients(void)
 		if (_remove_list[i] == true)
 		{
 			_clients[i].leave_all_channels();
+			_clients[i].clear();
 			remove_connection(i);
 			--remove_count;
 		}
@@ -726,21 +607,6 @@ void	IRC_Server::remove_flagged_clients(void)
 	}
 	_remove_list.reset();
 }
-
-// void	IRC_Server::remove_flagged_channels(void)
-// {
-// 	for (std::vector<t_Channel_Map::iterator>::iterator it = _chan_remove_list.begin(), end = _chan_remove_list.end(); it != end; ++it)
-// 	{
-// 		(*it)->second.removeAllMembers();
-// 		_channels.erase(*it);
-// 	}
-// }
-
-// ---- CHANNEL CONTROL ---- //
-// bool	IRC_Server::add_channel(Channel const & new_channel)
-// {
-// 	return ((_channels.insert(std::make_pair(new_channel.getChannelName(), new_channel))).second);
-// }
 
 /*!
 ** @brief	Attempts to add a channel named @a channel_name with key @a key and
@@ -815,17 +681,7 @@ void	IRC_Server::remove_user_from_channel(Client const &client, std::string cons
 	t_Channel_Map::iterator it = _channels.find(channel_name);
 	if  (it != _channels.end())
 		it->second.removeMember(client.get_nick());
-	//_channels[channel_name].removeClient(client);
 }
-
-// void	IRC_Server::remove_user_from_channel(Client const &client, std::string const & channel_name, std::string const &msg)
-// {
-// 	t_Channel_Map::iterator it = _channels.find(channel_name);
-// 	if  (it != _channels.end())
-// 		it->second.removeMember(client.get_nick(), msg);
-// 	//_channels[channel_name].removeClient(client, msg);
-// }
-
 
 /*!
 ** @brief	Compares @a client_pass to the server's password.
@@ -913,12 +769,6 @@ std::string	IRC_Server::get_datetime(void)
 */
 void	IRC_Server::server_loop(void)
 {
-	// //debug
-	// Client	test_client;
-	// test_client.set_nick("miki");
-	// Channel	test_channel(test_client, std::string("cutre"));
-	// add_channel(test_channel);
-	// //debug
 	while (_state == State(ONLINE))
 	{
 		int	poll_count = poll(_pfds, _connections, -1);
@@ -933,7 +783,6 @@ void	IRC_Server::server_loop(void)
 				accept_connection();
 				--poll_count; //If listener had to be polled, we decrement poll_count as we did that job here.
 			}
-
 			//Poll clients
 			for (int i = 1; poll_count > 0; ++i) //first POLLIN with listener-only array MUST be a new connection; this for only tests client fds
 			{
@@ -948,7 +797,6 @@ void	IRC_Server::server_loop(void)
 					--poll_count;
 				}
 			}
-
 			//Remove clients flagged for removal
 			remove_flagged_clients();
 		}

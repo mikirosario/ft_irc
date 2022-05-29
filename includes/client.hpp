@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 22:24:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/28 17:44:10 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/05/29 14:20:37 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,12 +39,11 @@ class Client
 		std::string 		_hostname;		//Client's self-reported hostname?
 		std::string 		_username;		//Client's username
 		std::string 		_realname;		//Client's "real" name (sure it is, Gandalf Baggins)
-		//std::string	_longname;		//Client's name in format nickname!username@hostname. maybe replace build_source with this
 		std::string			_msg_buf;
 		std::string			_out_buf;
 		std::string			_message;
 		std::string 		_modes;
-		t_ChanMap			_channels;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
+		t_ChanMap			_channels;		//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
 		t_ChanMap			_invitelist;	//map of channame-chaniterators to channels to which a client is member; removing client or destroying channel should change this.
 		IRC_Server *		_parent_server;
 
@@ -83,7 +82,6 @@ class Client
 		void	set_username(std::string const & username);
 		void	set_realname(std::string const & realname);
 		bool	set_clientaddr(char const * remoteIP);
-		//void	set_hostname(std::string const & hostname);
 		bool	set_modes(std::string const & modes, std::string & applied_changes);
 		bool	set_operator_mode(void);
 		void	set_pass_validated(bool state);
@@ -120,7 +118,6 @@ class Client
 		t_ChanMap &								get_chanlist(void);
 		std::string const &						see_next_message(void) const;
 		std::string const &						see_msg_buf(void) const;
-
 };
 
 #endif
