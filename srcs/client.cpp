@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/29 15:03:03 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/05/30 20:03:51 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -465,10 +465,10 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 		//debug
 		std::cout << "My canonical name is? " << remoteaddrinfo->ai_canonname << std::endl;
 		//debug	
-		freeaddrinfo(remoteaddrinfo);
 	}
 	else
 		_clientaddr = clientaddr;
+	freeaddrinfo(remoteaddrinfo);
 	//debug
 	std::cout << "My name is: " << _hostname << std::endl;
 	//debug
