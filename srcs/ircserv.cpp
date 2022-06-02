@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/29 15:02:04 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/02 20:58:30 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -457,6 +457,8 @@ void		IRC_Server::accept_connection(void)
 		perror("poll_listener could not accept connection");
 	else if (remoteaddr.sin_family != AF_INET)
 		perror("accept_connection unable to resolve remote IP");
+	else if (fcntl(new_connection, F_SETFL, O_NONBLOCK) == - 1) //non-blocking flag is only inherited from listener in BSD implementation
+		perror("Fcntl non-blocking call failed");
 	else
 	{
 		remoteIP = inet_ntoa(remoteaddr.sin_addr);
