@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/29 14:24:48 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/02 22:59:27 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,10 @@
 
 #include "irc_numerics.hpp"
 #include "constants.hpp"
+
+class	IRC_Server;
+
+extern IRC_Server *	g_serverinstance;
 
 enum Args
 {
@@ -112,7 +116,6 @@ class IRC_Server
 		
 
 		//Closing
-		void	close_server(int const exit_type, std::string const & close_event);
 		void	close_connection(int fd);
 
 		//Connection handling
@@ -146,6 +149,9 @@ class IRC_Server
 			IRC_Server(std::string const & port, std::string const & pass, std::string const & netinfo = std::string());
 			~IRC_Server(void);
 		
+		/* CLOSE */
+		void	close_server(int const exit_type, std::string const & close_event);
+
 		/* GETTERS */
 		std::string const &	get_port(void) const;
 		std::string const & get_serveraddr(void) const;

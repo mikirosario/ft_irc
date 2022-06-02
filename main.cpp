@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/28 12:23:47 by mrosario          #+#    #+#             */
-/*   Updated: 2022/02/26 21:26:16 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/02 23:43:59 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,12 +73,12 @@
 
 // ---- CLOSE_SERVER ---- //
 /*!
-** @brief Closes program.
+** @brief Aborts server instantiation.
 **
 ** @param exit_type EXIT_SUCCESS or EXIT_FAILURE
 ** @param close_event Description of reason for closure.
 */
-void	close_server(int const exit_type, std::string const & close_event)
+void	abort(int const exit_type, std::string const & close_event)
 {
 	if (exit_type == EXIT_SUCCESS)
 		std::cout << '\n' << close_event << std::endl;
@@ -95,7 +95,12 @@ void	close_server(int const exit_type, std::string const & close_event)
 void	signal_handler(int sig)
 {
 	if (sig == SIGINT)
-		close_server(EXIT_SUCCESS, std::string("IRCSERV CLOSED ON CTRL+C/SIGINT."));
+	{
+		if (g_serverinstance == NULL)
+			abort(EXIT_SUCCESS, std::string("SERVER INSTANTIATION ABORTED."));
+		else
+			g_serverinstance->close_server(EXIT_SUCCESS, "IRCSERV CLOSED ON CTRL+C/SIGINT.");
+	}
 }
 
 // ---- GET_ARG --- //

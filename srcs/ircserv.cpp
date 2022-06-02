@@ -6,12 +6,14 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/06/02 20:58:30 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/06/02 23:46:11 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ircserv.hpp"
 #include <ctime>
+
+IRC_Server *	g_serverinstance = NULL;
 
 	// ---- CONSTRUCTORS AND DESTRUCTOR ---- //
 /*!
@@ -40,6 +42,7 @@ IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::
 																											_server_creation_time(get_datetime()),
 																											_connections(0)
 {
+	g_serverinstance = this;
 	for (size_t i = 0; i < MAX_CONNECTIONS; ++i)
 	{
 		const_cast<size_t &>(_clients[i].pos) = i;
@@ -303,9 +306,10 @@ bool	IRC_Server::set_serveraddr(void)
 void	IRC_Server::close_server(int const exit_type, std::string const & close_event)
 {
 	//close all connections.
-	for (int i = 0; i < _connections; ++i)
+	for (int i = _connections - 1; i >= 0; --i)
 		if (_pfds[i].fd > 0)
 			close_connection(_pfds[i].fd);
+	_connections = 0;
 	if (exit_type == EXIT_SUCCESS)
 		std::cout << '\n' << close_event << std::endl;
 	else
@@ -327,7 +331,6 @@ void	IRC_Server::close_connection(int const fd)
 		custom_err_msg += " failed.";
 		perror(custom_err_msg.data());
 	}
-
 }
 
 	// -- CONNECTION HANDLING -- //
@@ -774,8 +777,10 @@ void	IRC_Server::server_loop(void)
 	while (_state == State(ONLINE))
 	{
 		int	poll_count = poll(_pfds, _connections, -1);
-		
-		if (poll_count == -1)
+
+		if (_connections == 0)
+			continue ;
+		else if (poll_count == -1)
 			close_server(EXIT_FAILURE, std::string("FATAL poll error"));
 		else
 		{

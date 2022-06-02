@@ -441,7 +441,7 @@ bool	IRC_Server::Channel::send_msg(IRC_Server::Client const * sender, char privi
 	IRC_Server::Client *	recipient = NULL;
 
 	//debug
-	std::cerr << message << std::endl;
+	std::cout << message << std::endl;
 	//debug
 
 	switch (privilege_level)
