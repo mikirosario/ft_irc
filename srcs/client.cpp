@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/05/30 20:03:51 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/02 20:23:31 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -450,7 +450,8 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 {	
 	//attempt canonical name lookup
 	struct addrinfo		hints;
-	struct addrinfo *	remoteaddrinfo;
+	struct addrinfo *	remoteaddrinfo = NULL;
+	int					gai_error;
 	
 	std::memset(&hints, 0, sizeof(addrinfo));
 	hints.ai_family = AF_UNSPEC;	//IPv4 or IPv6 OK
@@ -459,7 +460,7 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 
 	if (clientaddr == NULL)
 		return (false);
-	else if (getaddrinfo(clientaddr, NULL, &hints, &remoteaddrinfo) != 0)
+	else if ((gai_error = getaddrinfo(clientaddr, NULL, &hints, &remoteaddrinfo)) != 0)
 	{
 		_clientaddr = remoteaddrinfo->ai_canonname;
 		//debug
@@ -468,7 +469,8 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 	}
 	else
 		_clientaddr = clientaddr;
-	freeaddrinfo(remoteaddrinfo);
+	if(gai_error)
+		freeaddrinfo(remoteaddrinfo);
 	//debug
 	std::cout << "My name is: " << _hostname << std::endl;
 	//debug
