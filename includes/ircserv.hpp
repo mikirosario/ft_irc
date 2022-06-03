@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/04 16:35:56 by mrosario          #+#    #+#             */
-/*   Updated: 2022/06/02 22:59:27 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/06/03 19:34:26 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,9 @@ class IRC_Server
 		#include "client.hpp"
 		#include "channel.hpp"
 		#include "ircserv_modules.hpp"
+		typedef void (IRC_Server::*CmdFunPtr)(IRC_Server::Client &, std::vector<std::string> const &);
+		typedef std::map<std::string, CmdFunPtr> t_Command_Map;
+
 		std::string								_oper_info[2];
 		std::string								_nethost; //no longer needed?? what??
 		std::string								_netport;
@@ -95,7 +98,8 @@ class IRC_Server
 		std::vector<t_Channel_Map::iterator>	_chan_remove_list;
 		int										_connections;
 		t_Channel_Map							_channels;
-		
+		t_Command_Map							_commands;
+	
 		/* UNUSABLE CONSTRUCTORS AND OVERLOADS */
 						IRC_Server(void);						//Default constructor
 						IRC_Server(IRC_Server const & server);	//Copy constructor
@@ -109,6 +113,7 @@ class IRC_Server
 		static void		remove_source(std::string & message);
 
 		//Server initialization
+		bool			build_command_map(void);
 		bool			init(std::string const & netinfo);
 		bool			set_serveraddr(void);
 		static void *	get_in_addr(struct sockaddr * sa);

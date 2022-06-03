@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/10 03:18:04 by mrosario          #+#    #+#             */
-/*   Updated: 2022/06/02 23:46:11 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/06/03 19:53:21 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include <ctime>
 
 IRC_Server *	g_serverinstance = NULL;
-
 	// ---- CONSTRUCTORS AND DESTRUCTOR ---- //
 /*!
 ** @brief	Construct a new IRC_Server object.
@@ -43,6 +42,7 @@ IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::
 																											_connections(0)
 {
 	g_serverinstance = this;
+	
 	for (size_t i = 0; i < MAX_CONNECTIONS; ++i)
 	{
 		const_cast<size_t &>(_clients[i].pos) = i;
@@ -51,7 +51,8 @@ IRC_Server::IRC_Server(std::string const & port, std::string const & pass, std::
 	_clients[0].set_operator_mode();
 	_oper_info[0] = "oper";
 	_oper_info[1] = _servpass + "oper";
-	init(netinfo);
+	if (build_command_map() == false || init(netinfo) == false)
+		close_server(EXIT_FAILURE, "Server Instantiation Failed");
 }
 
 /*!
@@ -144,6 +145,46 @@ void		IRC_Server::remove_source(std::string & message)
 }
 
 	// -- SERVER INITIALIZATION -- //
+
+/*!
+** @brief	Attempts to build a binary tree of command name keys and command
+**			function values.
+**
+** @return	true if successful, otherwise false
+*/
+bool		IRC_Server::build_command_map(void)
+{
+	//If only had my c++11 initializer lists *sniff* :_(
+	try
+	{
+		_commands.insert(std::make_pair("PASS", &IRC_Server::exec_cmd_PASS));
+		_commands.insert(std::make_pair("NICK", &IRC_Server::exec_cmd_NICK));
+		_commands.insert(std::make_pair("USER", &IRC_Server::exec_cmd_USER));
+		_commands.insert(std::make_pair("PRIVMSG", &IRC_Server::exec_cmd_PRIVMSG));
+		_commands.insert(std::make_pair("JOIN", &IRC_Server::exec_cmd_JOIN));
+		_commands.insert(std::make_pair("PART", &IRC_Server::exec_cmd_PART));
+		_commands.insert(std::make_pair("NAMES", &IRC_Server::exec_cmd_NAMES));
+		_commands.insert(std::make_pair("PING", &IRC_Server::exec_cmd_PING));
+		_commands.insert(std::make_pair("PRIVMSG", &IRC_Server::exec_cmd_PRIVMSG));
+		_commands.insert(std::make_pair("BAILA", &IRC_Server::exec_cmd_BAILA));
+		_commands.insert(std::make_pair("MOTD", &IRC_Server::exec_cmd_MOTD));
+		_commands.insert(std::make_pair("NOTICE", &IRC_Server::exec_cmd_NOTICE));
+		_commands.insert(std::make_pair("KICK", &IRC_Server::exec_cmd_KICK));
+		_commands.insert(std::make_pair("MODE", &IRC_Server::exec_cmd_MODE));
+		_commands.insert(std::make_pair("TOPIC", &IRC_Server::exec_cmd_TOPIC));
+		_commands.insert(std::make_pair("INVITE", &IRC_Server::exec_cmd_INVITE));
+		_commands.insert(std::make_pair("LIST", &IRC_Server::exec_cmd_LIST));
+		_commands.insert(std::make_pair("QUIT", &IRC_Server::exec_cmd_QUIT));
+		_commands.insert(std::make_pair("OPER", &IRC_Server::exec_cmd_OPER));
+		_commands.insert(std::make_pair("KILL", &IRC_Server::exec_cmd_KILL));
+	}
+	catch(std::exception const & e)
+	{
+		return false;
+	}
+	return true;
+}
+
 /*!
 ** @brief	Attempts to open a TCP stream socket to the port number returned by
 **			::get_port() to listen for incoming connections.
@@ -306,15 +347,18 @@ bool	IRC_Server::set_serveraddr(void)
 void	IRC_Server::close_server(int const exit_type, std::string const & close_event)
 {
 	//close all connections.
-	for (int i = _connections - 1; i >= 0; --i)
-		if (_pfds[i].fd > 0)
-			close_connection(_pfds[i].fd);
-	_connections = 0;
-	if (exit_type == EXIT_SUCCESS)
-		std::cout << '\n' << close_event << std::endl;
-	else
-		std::cerr << '\n' << close_event << '\n' << "CONTACT YOUR SERVER ADMIN." << std::endl;
-	_state = State(OFFLINE);
+	if (_state == State(ONLINE))
+	{
+		for (int i = _connections - 1; i >= 0; --i)
+			if (_pfds[i].fd > 0)
+				close_connection(_pfds[i].fd);
+		_connections = 0;
+		if (exit_type == EXIT_SUCCESS)
+			std::cout << '\n' << close_event << std::endl;
+		else
+			std::cerr << '\n' << close_event << '\n' << "CONTACT YOUR SERVER ADMIN." << std::endl;
+		_state = State(OFFLINE);
+	}
 }
 
 /*! @brief	Attempts to close a single open connection. Prints message to

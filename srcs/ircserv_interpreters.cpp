@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/05/29 17:23:47 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/03 19:59:49 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1077,7 +1077,7 @@ void	IRC_Server::exec_cmd_KILL(Client & sender, std::vector<std::string> const &
 */
 void IRC_Server::interpret_msg(Client &client)
 {
-	std::vector<std::string> argv = client.get_message();
+	std::vector<std::string>	argv = client.get_message();
 
 	// debug
 	for (std::vector<std::string>::iterator it = argv.begin(), end = argv.end(); it != end; ++it)
@@ -1085,53 +1085,21 @@ void IRC_Server::interpret_msg(Client &client)
 	std::cout << std::endl;
 	// debug
 
-	// this might work best as a cmd-method map, just need to standardize all the functions...
 	if (argv.size() < 1) // if somehow the client buffer contained no command, we do nothing with the message
 		return;
-	std::string &cmd = argv[0];
-	if (cmd == "PASS")
-		exec_cmd_PASS(client, argv);
-	else if (cmd == "NICK")
-		exec_cmd_NICK(client, argv);
-	else if (cmd == "USER")
-		exec_cmd_USER(client, argv);
-	else if (client.is_registered() == false)
+	std::string &	cmd = argv[0];
+	if (client.is_registered() == false && cmd != "PASS" && cmd != "NICK" && cmd != "USER")
 		send_err_NOTREGISTERED(client, "You must register with the server first");
 	else
 	{
-		if (cmd == "PRIVMSG") // PRIVMSG será el comando más común probablemente, así que lo dejo el primero y fuera del map
-			exec_cmd_PRIVMSG(client, argv);
-		else if (cmd == "JOIN")
-			exec_cmd_JOIN(client, argv);
-		else if (cmd == "PART")
-			exec_cmd_PART(client, argv);
-		else if (cmd == "NAMES")
-			exec_cmd_NAMES(client, argv);
-		else if (cmd == "PING")
-			exec_cmd_PING(client, argv);
-		else if (cmd == "BAILA") //this was originally just the first test case, leaving it in as an easter egg though ;)
-			exec_cmd_BAILA(client, argv);
-		else if (cmd == "MOTD")
-			exec_cmd_MOTD(client, argv);
-		else if (cmd == "NOTICE")
-			exec_cmd_NOTICE(client, argv);
-		else if (cmd == "KICK")
-			exec_cmd_KICK(client, argv);
-		else if (cmd == "MODE")
-			exec_cmd_MODE(client, argv);
-		else if (cmd == "TOPIC")
-			exec_cmd_TOPIC(client, argv);
-		else if (cmd == "INVITE")
-			exec_cmd_INVITE(client, argv);
-		else if (cmd == "LIST" || cmd == "list")
-			exec_cmd_LIST(client, argv);
-		else if (cmd == "QUIT")
-			exec_cmd_QUIT(client, argv);
-		else if (cmd == "OPER")
-			exec_cmd_OPER(client, argv);
-		else if (cmd == "KILL")
-			exec_cmd_KILL(client, argv);
-		else
+		t_Command_Map::iterator		it = _commands.find(cmd);
+
+		if (it == _commands.end())
 			send_err_UNKNOWNCOMMAND(client, cmd, "Unknown command");
+		else
+		{
+			t_Command_Map::mapped_type	command_function = it->second;
+			(this->*command_function)(client, argv);
+		}
 	}
 }
