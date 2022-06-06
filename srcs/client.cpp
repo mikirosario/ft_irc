@@ -6,7 +6,7 @@
 /*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 22:02:27 by miki              #+#    #+#             */
-/*   Updated: 2022/06/02 20:23:31 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/06/06 18:24:05 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -451,7 +451,6 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 	//attempt canonical name lookup
 	struct addrinfo		hints;
 	struct addrinfo *	remoteaddrinfo = NULL;
-	int					gai_error;
 	
 	std::memset(&hints, 0, sizeof(addrinfo));
 	hints.ai_family = AF_UNSPEC;	//IPv4 or IPv6 OK
@@ -460,7 +459,7 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 
 	if (clientaddr == NULL)
 		return (false);
-	else if ((gai_error = getaddrinfo(clientaddr, NULL, &hints, &remoteaddrinfo)) != 0)
+	else if (getaddrinfo(clientaddr, NULL, &hints, &remoteaddrinfo) != 0)
 	{
 		_clientaddr = remoteaddrinfo->ai_canonname;
 		//debug
@@ -469,7 +468,7 @@ bool	IRC_Server::Client::set_clientaddr(char const * clientaddr)
 	}
 	else
 		_clientaddr = clientaddr;
-	if(gai_error)
+	if(remoteaddrinfo != NULL)
 		freeaddrinfo(remoteaddrinfo);
 	//debug
 	std::cout << "My name is: " << _hostname << std::endl;
@@ -792,7 +791,7 @@ void		IRC_Server::Client::send_msg(std::string const & msg)
 void	IRC_Server::Client::send_output_buf(void)
 {
 	//debug
-	std::cerr << "OUTBUF CONTENT\n" << _out_buf << std::endl;
+	std::cout << "OUTBUF CONTENT\n" << _out_buf << std::endl;
 	//debug
 	ssize_t bytes_copied = send(_sockfd, _out_buf.data(), _out_buf.size(), 0);
 	if (bytes_copied < 0) //send errors will lead to kill command to avoid zombie clients
