@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/21 15:40:22 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/29 15:05:19 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/09 17:54:34 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -385,5 +385,6 @@ void	IRC_Server::send_rpl_INVITING(Client & sender, Client const & target , Chan
 	std::string msg = numeric_reply_start(sender, RPL_INVITING);
 	msg += target.get_nick() + " ";
 	msg += channel.getChannelName();
+	numeric_reply_end(msg, std::string());
 	sender.send_msg(msg);
 }

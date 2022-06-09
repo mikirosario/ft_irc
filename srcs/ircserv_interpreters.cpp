@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/06/03 19:59:49 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/06/09 17:38:52 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -546,6 +546,7 @@ void IRC_Server::exec_cmd_JOIN(IRC_Server::Client &sender, std::vector<std::stri
 			}
 			if (ret == 1) // somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
 			{
+				std::cerr << "Chiripi" << std::endl;
 				send_rpl_JOIN(chan_it->second, sender);
 				send_rpl_NAMREPLY(sender, chan_it->second);
 			}
