@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+         #
+#    By: igorneumann <igorneumann@student.42.fr>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/06 18:21:39 by mrosario          #+#    #+#              #
-#    Updated: 2022/05/29 14:22:49 by mrosario         ###   ########.fr        #
+#    Updated: 2022/06/07 11:02:01 by igorneumann      ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,7 +40,7 @@ OBJS = $(SRCFILES:.cpp=.o)
 
 INCLUDES = -I $(INCLDIR)
 
-CXXFLAGS = -Wall -Werror -Wextra -g -std=c++98 -DVERSION=\"$(GIT_VERSION)\"
+CXXFLAGS = -Wall -Werror -Wextra -g -std=c++98 -fsanitize=address -DVERSION=\"$(GIT_VERSION)\"
 
 all: $(NAME)
 

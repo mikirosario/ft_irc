@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: igorneumann <igorneumann@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/06/09 17:38:52 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/10 11:57:22 by igorneumann      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1022,7 +1022,7 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 			for (std::string::const_iterator mode_it = argv[2].begin(),
 											 //modes_end = argv[2].begin() + end_modes_pos,
 											 modes_end = argv[2].begin() + end_modes_pos,
-											 next_arg = argv[3].begin();
+											 next_arg = (argc > 3 ? argv[3].begin() : argv[2].end());
 				 mode_it != modes_end; ++mode_it)
 			{
 				if (*mode_it == '+' || *mode_it == '-')
@@ -1030,7 +1030,7 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 					sign = *mode_it;
 					modesandargs.first += sign;
 				}
-				else if (validateChanModeChange(*mode_it, sign, next_arg, argv[3].end(), arg) == true && doChanModeChange(sign, *mode_it, arg, sender, target->second) == true)
+				else if (validateChanModeChange(*mode_it, sign, next_arg, (argc > 3 ? argv[3].begin() : argv[2].end()), arg) == true && doChanModeChange(sign, *mode_it, arg, sender, target->second) == true)
 					modesandargs.first += *mode_it, modesandargs.second += arg;
 			}
 			if (modesandargs.first.size() == 1 && std::strchr("+-", modesandargs.first[0]) != NULL)
