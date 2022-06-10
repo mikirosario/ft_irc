@@ -6,7 +6,7 @@
 /*   By: igorneumann <igorneumann@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/06/10 11:57:22 by igorneumann      ###   ########.fr       */
+/*   Updated: 2022/06/10 12:57:20 by igorneumann      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -876,7 +876,7 @@ static bool validate_modestring(std::string const &modestring)
 */
 static bool validateChanModeChange(char mode, char sign, std::string::const_iterator &next_arg, std::string::const_iterator const &end_args, std::string &arg)
 {
-	if (std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL)
+	if (std::strchr(SUPPORTED_CHANNEL_MODES, mode) == NULL || next_arg == end_args)
 		return false;
 
 	char type = get_mode_type(mode);
@@ -1030,16 +1030,20 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 					sign = *mode_it;
 					modesandargs.first += sign;
 				}
-				else if (validateChanModeChange(*mode_it, sign, next_arg, (argc > 3 ? argv[3].begin() : argv[2].end()), arg) == true && doChanModeChange(sign, *mode_it, arg, sender, target->second) == true)
+				else if (validateChanModeChange(*mode_it, sign, next_arg, (argc > 3 ? argv[3].end() : argv[2].end()), arg) == true && doChanModeChange(sign, *mode_it, arg, sender, target->second) == true)
 					modesandargs.first += *mode_it, modesandargs.second += arg;
 			}
+			std::cout << "first is" << modesandargs.first << ", with size: " << modesandargs.first.size() << std::endl;
 			if (modesandargs.first.size() == 1 && std::strchr("+-", modesandargs.first[0]) != NULL)
 				modesandargs.first.clear();
 			else if (modesandargs.first.size() > 0 && std::strchr("+-", modesandargs.first[0]) == NULL)
 				modesandargs.first.insert(modesandargs.first.begin(), '+');
 			std::string applied_changes = modesandargs.first + " ";
 			applied_changes += modesandargs.second;
-			send_rpl_MODE(sender, target->second, applied_changes);
+			if (applied_changes.size() > 1)
+				send_rpl_MODE(sender, target->second, applied_changes);
+			else
+				send_err_NEEDMOREPARAMS(sender, argv[0], "Not enough parameters");
 		}
 	}
 }
