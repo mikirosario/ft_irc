@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/25 17:29:13 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/29 14:19:22 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/14 00:13:20 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ class Channel
 		void	removeAllMembers(void);
 		void	setOwner(Client const &OwnerUser2);
 		void	setTopic(std::string const &Topic);
+		bool	setChanOp(Client const & target);
+		bool	unsetChanOp(Client const & target);
 		bool	setKey(Client const & setter, std::string const & key);
 		bool	unsetKey(Client const & unsetter, std::string const & key);
 		bool	banMask(std::string const & mask);

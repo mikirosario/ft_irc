@@ -59,6 +59,29 @@ void IRC_Server::Channel::setTopic(std::string const & topic)
     _topic = topic;
 }
 
+bool	IRC_Server::Channel::setChanOp(Client const & target)
+{
+	bool							set_chanop = false;
+	t_ChannelMemberSet::iterator	it;
+
+	if	(((it = _halfops.find(target.get_nick())) != _halfops.end() && (set_chanop = _chanops.insert(*it).second) == true))
+		_halfops.erase(it);
+	else if ((it = _users.find(target.get_nick())) != _users.end() && (set_chanop = _chanops.insert(*it).second) == true)
+		_users.erase(it);
+	return set_chanop;
+}
+
+bool	IRC_Server::Channel::unsetChanOp(Client const & target)
+{
+	bool							unset_chanop = false;
+	t_ChannelMemberSet::iterator	it;
+	
+	if ((it = _chanops.find(target.get_nick())) != _chanops.end() && (unset_chanop = _users.insert(*it).second) == true)
+		_chanops.erase(it);
+	return unset_chanop;
+}
+
+
 /*!
 ** @brief	Attempts to make @a key the channel password. If 'k' mode is not set
 **			already, it will be set. If setter is not a chanop or setMode fails

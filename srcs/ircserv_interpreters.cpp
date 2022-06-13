@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/06/13 17:39:50 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/14 01:15:39 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -946,8 +946,17 @@ bool	IRC_Server::doChanModeChange(char sign, char mode, std::string & arg, Clien
 	}
 	else if (type == 'B' && arg.size() > 0)
 	{
+		Client *	chanop_target = NULL;
+
 		if (mode == 'k') // apply key mode
 			ret = sign == '+' ? channel.setKey(recipient, arg) : channel.unsetKey(recipient, arg);
+		else if (mode == 'o' && (chanop_target = find_client_by_nick(arg)) != NULL)
+		{
+			if (sign == '+' && channel.isChannelOperator(recipient) == true) // apply channel operator status
+				ret = channel.setChanOp(*chanop_target);
+			if (sign == '-' && (recipient.get_nick() == channel.getOwner() || &recipient == chanop_target))
+				ret = channel.unsetChanOp(*chanop_target);
+		}
 	}
 	else if (type == 'D')
 		if (mode == 'i') // apply invite-only mode

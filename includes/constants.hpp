@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   constants.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/26 21:55:45 by mrosario          #+#    #+#             */
-/*   Updated: 2022/05/29 14:21:31 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/13 22:51:56 by mikiencolor      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,9 @@
 #define CREATOR_USER 2
 #define MAX_CHANNELNAME_SIZE 50
 #define ISUPPORT_CHANTYPES "#"
-#define ISUPPORT_CHANMODES "b,k,,i"
+#define ISUPPORT_CHANMODES "b,ko,,i"
 #define SUPPORTED_CHANNEL_PREFIXES "~@%" //we support Founder, Operator, HalfOp || //Founder (q)~ // Operator (o)@ // HalfOp(h)%
-#define SUPPORTED_CHANNEL_MODES "bik" 
+#define SUPPORTED_CHANNEL_MODES "biko" 
 #define SUPPORTED_USER_MODES "oi"
 #define UNSUPPORTED_CHANNEL_PREFIXES "&+" //we don't support Protected or Voice
 #define INVALID_PASSWORD_RETURN	-1
