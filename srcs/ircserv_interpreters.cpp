@@ -6,7 +6,7 @@
 /*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/06/09 17:38:52 by mrosario         ###   ########.fr       */
+/*   Updated: 2022/06/13 17:39:50 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1014,6 +1014,8 @@ void IRC_Server::exec_cmd_MODE(Client &sender, std::vector<std::string> const &a
 		else
 		{
 			// ok... fork it, i'm going with a pair... tired of this bs...
+			if (argv.size() < 4)	// no mode arguments given
+				const_cast< std::vector<std::string> & >(argv).push_back(std::string());
 			std::pair<std::string, std::string> modesandargs;
 			size_t end_modes_pos = argv[2].size();
 			std::string arg;
