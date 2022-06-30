@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ircserv_interpreters.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mikiencolor <mikiencolor@student.42.fr>    +#+  +:+       +#+        */
+/*   By: mrosario <mrosario@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/12 12:43:06 by miki              #+#    #+#             */
-/*   Updated: 2022/06/14 01:15:39 by mikiencolor      ###   ########.fr       */
+/*   Updated: 2022/06/30 19:11:20 by mrosario         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -514,6 +514,7 @@ void IRC_Server::exec_cmd_JOIN(IRC_Server::Client &sender, std::vector<std::stri
 			raw_key_list << preprocess_list_param(const_cast<std::string &>(argv[2]), ',');
 		do // get channels
 		{
+			bool		was_invited = false;
 			std::string channel;
 			std::string key;
 			t_Channel_Map::iterator chan_it;
@@ -533,7 +534,7 @@ void IRC_Server::exec_cmd_JOIN(IRC_Server::Client &sender, std::vector<std::stri
 				else
 					ret = 1; // map insert success
 			}
-			else if (chan_it->second.getModes().find('i') != std::string::npos && sender.get_invited_channel(channel).second == false)
+			else if (chan_it->second.getModes().find('i') != std::string::npos && (was_invited = sender.get_invited_channel(channel).second) == false)
 				send_err_INVITEONLYCHAN(sender, channel, ":Cannot join channel (+i)");
 			else if ((ret = chan_it->second.addMember(sender, chan_it, key, 0)) != 1) // channel exists, sender attempts to join channel...
 			{																		  // but failed, because...
@@ -546,7 +547,8 @@ void IRC_Server::exec_cmd_JOIN(IRC_Server::Client &sender, std::vector<std::stri
 			}
 			if (ret == 1) // somehow, some way, the client made it through that spaghetti and actually managed to join. congratulations!!!! xD
 			{
-				std::cerr << "Chiripi" << std::endl;
+				if (was_invited == true)
+					sender.remove_channel_invitation(chan_it);
 				send_rpl_JOIN(chan_it->second, sender);
 				send_rpl_NAMREPLY(sender, chan_it->second);
 			}
